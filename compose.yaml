@@ -31,6 +31,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
     networks:
       - gateway
+      - internal
 
   database:
     image: mariadb:10.11
@@ -50,7 +51,7 @@ services:
       - /etc/localtime:/etc/localtime:ro # 🌟 Aligne l'horloge de la BDD
       - /etc/timezone:/etc/timezone:ro
     networks:
-      - gateway
+      - internal
 
   database_test:
     image: mariadb:10.11
@@ -62,7 +63,7 @@ services:
     tmpfs:
       - /var/lib/mysql
     networks:
-      - gateway
+      - internal
 
   mailer:
     image: axllent/mailpit:latest
@@ -70,17 +71,21 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=gateway" # <-- Aligné sur ton réseau global
+      - "traefik.docker.network=gateway"
       # Configuration unique en HTTP (Port 80)
       - "traefik.http.routers.${PROJECT_NAME}-mailer.rule=Host(`mail.${PROJECT_NAME}.localhost`)"
       - "traefik.http.routers.${PROJECT_NAME}-mailer.entrypoints=web"
       - "traefik.http.services.${PROJECT_NAME}-mailer.loadbalancer.server.port=8025"
     networks:
       - gateway
+      - internal
 
 volumes:
   database_data:
 
 networks:
-  gateway: # <-- On renomme pour matcher ton infra globale
+  gateway:
     external: true
+  internal:
+    # réseau isolé par projet — évite les conflits de noms de services entre projets
+    driver: bridge
