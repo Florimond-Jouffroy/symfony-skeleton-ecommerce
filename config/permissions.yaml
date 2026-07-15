@@ -1,0 +1,258 @@
+permissions:
+    # --- Médias ---
+    MEDIA_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir la bibliothèque de médias"
+
+    MEDIA_UPLOAD:
+        roles: [ ROLE_ADMIN ]
+        description: "Uploader un fichier dans la bibliothèque"
+
+    MEDIA_DELETE:
+        roles: [ ROLE_ADMIN ]
+        description: "Supprimer un fichier de la bibliothèque"
+
+    # --- Catégories ---
+    CATEGORY_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les catégories"
+
+    CATEGORY_CREATE:
+        roles: [ ROLE_ADMIN ]
+        description: "Créer une catégorie"
+
+    CATEGORY_DELETE:
+        roles: [ ROLE_ADMIN ]
+        description: "Supprimer une catégorie"
+
+    # --- Commandes ---
+    ORDER_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les commandes"
+
+    ORDER_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Modifier une commande (statut, note)"
+
+    ORDER_DELETE:
+        roles: [ ROLE_ADMIN ]
+        description: "Supprimer une commande"
+
+    # --- Produits ---
+    PRODUCT_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les produits"
+
+    PRODUCT_CREATE:
+        roles: [ ROLE_ADMIN ]
+        description: "Créer un produit"
+
+    PRODUCT_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Modifier un produit"
+
+    PRODUCT_DELETE:
+        roles: [ ROLE_ADMIN ]
+        description: "Supprimer un produit"
+
+    PRODUCT_PUBLISH:
+        roles: [ ROLE_ADMIN ]
+        description: "Publier / dépublier un produit"
+
+    PRODUCT_CATEGORY_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les catégories produits"
+
+    PRODUCT_CATEGORY_CREATE:
+        roles: [ ROLE_ADMIN ]
+        description: "Créer une catégorie produit"
+
+    PRODUCT_CATEGORY_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Modifier une catégorie produit"
+
+    PRODUCT_CATEGORY_DELETE:
+        roles: [ ROLE_ADMIN ]
+        description: "Supprimer une catégorie produit"
+
+    # --- Articles ---
+    ARTICLE_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir la liste des articles"
+
+    ARTICLE_CREATE:
+        roles: [ ROLE_ADMIN ]
+        description: "Créer un article"
+
+    ARTICLE_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Modifier un article"
+
+    ARTICLE_DELETE:
+        roles: [ ROLE_ADMIN ]
+        description: "Supprimer un article"
+
+    ARTICLE_PUBLISH:
+        roles: [ ROLE_ADMIN ]
+        description: "Publier / dépublier un article"
+
+    # --- Utilisateurs ---
+    USER_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir la liste des utilisateurs"
+
+    USER_RESET_PASSWORD:
+        roles: [ ROLE_ADMIN ]
+        description: "Réinitialiser le mot de passe d'un utilisateur"
+
+    USER_VERIFY:
+        roles: [ ROLE_ADMIN ]
+        description: "Vérifier le compte d'un utilisateur"
+
+    USER_RESEND_VERIFICATION:
+        roles: [ ROLE_ADMIN ]
+        description: "Renvoyer l'e-mail de vérification"
+
+    USER_EDIT_ROLES:
+        roles: [ ROLE_ADMIN ]
+        description: "Modifier les rôles d'un utilisateur"
+
+    USER_DELETE:
+        roles: [ ROLE_ADMIN ]
+        description: "Supprimer un utilisateur"
+
+    # --- Support ---
+    SUPPORT_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les tickets de support"
+
+    SUPPORT_REPLY:
+        roles: [ ROLE_ADMIN ]
+        description: "Répondre à un ticket de support"
+
+    SUPPORT_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Modifier le statut d'un ticket de support"
+
+    # --- Avis clients ---
+    REVIEW_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les avis clients"
+
+    REVIEW_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Approuver ou désapprouver un avis"
+
+    REVIEW_DELETE:
+        roles: [ ROLE_ADMIN ]
+        description: "Supprimer un avis client"
+
+    # --- FAQ ---
+    FAQ_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les questions FAQ"
+
+    FAQ_CREATE:
+        roles: [ ROLE_ADMIN ]
+        description: "Créer une question FAQ"
+
+    FAQ_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Modifier ou réordonner une question FAQ"
+
+    FAQ_DELETE:
+        roles: [ ROLE_ADMIN ]
+        description: "Supprimer une question FAQ"
+
+    # --- Pages statiques ---
+    PAGE_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les pages statiques"
+
+    PAGE_CREATE:
+        roles: [ ROLE_ADMIN ]
+        description: "Créer une page statique"
+
+    PAGE_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Modifier une page statique"
+
+    PAGE_DELETE:
+        roles: [ ROLE_ADMIN ]
+        description: "Supprimer une page statique"
+
+    # --- Codes promo ---
+    PROMO_CODE_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les codes promo"
+
+    PROMO_CODE_CREATE:
+        roles: [ ROLE_ADMIN ]
+        description: "Créer un code promo"
+
+    PROMO_CODE_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Modifier un code promo"
+
+    PROMO_CODE_DELETE:
+        roles: [ ROLE_ADMIN ]
+        description: "Supprimer un code promo"
+
+    # --- Livraison ---
+    SHIPPING_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les méthodes de livraison"
+
+    SHIPPING_CREATE:
+        roles: [ ROLE_ADMIN ]
+        description: "Créer une méthode de livraison"
+
+    SHIPPING_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Modifier une méthode de livraison"
+
+    SHIPPING_DELETE:
+        roles: [ ROLE_ADMIN ]
+        description: "Supprimer une méthode de livraison"
+
+    # --- Factures ---
+    INVOICE_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les factures"
+
+    INVOICE_CREATE:
+        roles: [ ROLE_ADMIN ]
+        description: "Générer une facture"
+
+    INVOICE_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Modifier le statut d'une facture"
+
+    INVOICE_DOWNLOAD:
+        roles: [ ROLE_ADMIN ]
+        description: "Télécharger une facture en PDF"
+
+    # --- Statistiques ---
+    STATISTICS_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir le tableau de bord statistiques"
+
+    # --- Notifications ---
+    NOTIFICATION_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les compteurs de notifications admin"
+
+    # --- Paramètres ---
+    SETTING_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les paramètres de l'application"
+
+    SETTING_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Modifier les paramètres de l'application"
+
+    # --- Journal d'activité ---
+    ACTIVITY_LOG_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir le journal d'activité admin"
+

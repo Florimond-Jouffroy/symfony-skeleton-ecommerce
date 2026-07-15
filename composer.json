@@ -1,0 +1,122 @@
+{
+    "type": "project",
+    "license": "proprietary",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:Florimond-Jouffroy/log-bundle.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:Florimond-Jouffroy/multi-db-migrations-bundle.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:Florimond-Jouffroy/core-bundle.git"
+        }
+    ],
+
+    "require": {
+        "php": ">=8.4",
+        "ext-ctype": "*",
+        "ext-iconv": "*",
+        "doctrine/doctrine-bundle": "^3.2.4",
+        "doctrine/doctrine-migrations-bundle": "^4.0",
+        "doctrine/orm": "^3.6.7",
+        "dompdf/dompdf": "^3.1",
+        "florimond/core-bundle": "^1.0",
+        "florimond/log-bundle": "^1.1",
+        "florimond/multi-db-migrations-bundle": "^1.0",
+        "phpdocumentor/reflection-docblock": "^6.0.3",
+        "phpstan/phpdoc-parser": "^2.3.2",
+        "symfony/apache-pack": "^1.0.1",
+        "symfony/console": "8.0.*",
+        "symfony/dotenv": "8.0.*",
+        "symfony/flex": "^2.11",
+        "symfony/framework-bundle": "8.0.*",
+        "symfony/mailer": "8.0.*",
+        "symfony/messenger": "8.0.*",
+        "symfony/property-access": "8.0.*",
+        "symfony/property-info": "8.0.*",
+        "symfony/runtime": "8.0.*",
+        "symfony/serializer": "8.0.*",
+        "symfony/twig-bundle": "8.0.*",
+        "symfony/ux-react": "^3.2",
+        "symfony/validator": "8.0.*",
+        "symfony/webpack-encore-bundle": "^2.4.1",
+        "symfony/yaml": "8.0.*",
+        "twig/extra-bundle": "^2.12|^3.24",
+        "twig/twig": "^2.12|^3.28"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true,
+            "phpstan/extension-installer": true,
+            "symfony/flex": true,
+            "symfony/runtime": true
+        },
+        "bump-after-update": true,
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "App\\Tests\\": "tests/"
+        }
+    },
+    "replace": {
+        "symfony/polyfill-ctype": "*",
+        "symfony/polyfill-iconv": "*",
+        "symfony/polyfill-php72": "*",
+        "symfony/polyfill-php73": "*",
+        "symfony/polyfill-php74": "*",
+        "symfony/polyfill-php80": "*",
+        "symfony/polyfill-php81": "*",
+        "symfony/polyfill-php82": "*",
+        "symfony/polyfill-php83": "*",
+        "symfony/polyfill-php84": "*"
+    },
+    "scripts": {
+        "auto-scripts": {
+            "cache:clear": "symfony-cmd",
+            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+        },
+        "post-install-cmd": [
+            "@auto-scripts"
+        ],
+        "post-update-cmd": [
+            "@auto-scripts"
+        ]
+    },
+    "conflict": {
+        "symfony/symfony": "*"
+    },
+    "extra": {
+        "symfony": {
+            "allow-contrib": false,
+            "require": "8.0.*"
+        }
+    },
+    "require-dev": {
+        "dama/doctrine-test-bundle": "^8.4",
+        "friendsofphp/php-cs-fixer": "^3.95.11",
+        "phpstan/extension-installer": "^1.4.3",
+        "phpstan/phpstan": "^2.2.4",
+        "phpstan/phpstan-doctrine": "^2.0.27",
+        "phpstan/phpstan-symfony": "^2.0.20",
+        "phpunit/phpunit": "^10.5.63",
+        "symfony/browser-kit": "8.0.*",
+        "symfony/css-selector": "8.0.*",
+        "symfony/maker-bundle": "^1.67",
+        "symfony/phpunit-bridge": "^8.1.1",
+        "symfony/stopwatch": "8.0.*",
+        "symfony/web-profiler-bundle": "8.0.*"
+    }
+}

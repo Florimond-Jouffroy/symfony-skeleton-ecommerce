@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% if maintenanceMode and is_granted('ROLE_ADMIN') %}
+    <div class="sticky top-0 z-[60] flex items-center justify-center gap-2 bg-yellow-400 px-4 py-2 text-xs font-medium text-yellow-900">
+        <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+        </svg>
+        Mode maintenance actif — les visiteurs voient une page de maintenance.
+        <a href="/admin/parametres" class="underline underline-offset-2 hover:opacity-75">Désactiver</a>
+    </div>
+    {% endif %}
+    <div class="flex min-h-screen flex-col">
+        {% include 'layout/_navbar.html.twig' %}
+        <main class="flex-1">
+            {% block content %}{% endblock %}
+        </main>
+        {% include 'layout/_footer.html.twig' %}
+    </div>
+
+    {% if shopEnabled %}
+    {# Badge panier : charge le compte depuis la session, écoute les mises à jour du SPA #}
+    <script>
+    (function () {
+        function updateBadge(count) {
+            var badge = document.getElementById('navbar-cart-count');
+            if (!badge) return;
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+            } else {
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+            }
+        }
+        fetch('/api/boutique/panier', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) { if (data) updateBadge(data.itemCount); })
+            .catch(function () {});
+        window.addEventListener('cartUpdated', function (e) {
+            updateBadge(e.detail && e.detail.count ? e.detail.count : 0);
+        });
+    })();
+    </script>
+    {% endif %}
+{% endblock %}

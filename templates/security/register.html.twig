@@ -1,0 +1,14 @@
+{% extends 'layout/public_base.html.twig' %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block content %}
+    <div {{ react_component('RegisterForm', {
+        registerUrl: urls.register,
+        resendUrl: urls.resend,
+        loginUrl: urls.login,
+        afterLoginUrl: urls.afterLoginUrl,
+        checkoutContext: urls.afterLoginUrl starts with '/boutique/commander',
+        appName: company.name
+    }) }}></div>
+{% endblock %}

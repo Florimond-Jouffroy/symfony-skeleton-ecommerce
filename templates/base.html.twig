@@ -1,0 +1,31 @@
+{# templates/base.html.twig #}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Mon Projet Symfony x React{% endblock %}</title>
+
+        {% block stylesheets %}
+            {# Dis à Symfony de charger le CSS compilé par Webpack #}
+            {{ encore_entry_link_tags('app') }}
+            {% block javascripts %}
+                {# Dis à Symfony de charger le JS compilé par Webpack #}
+                {{ encore_entry_script_tags('app') }}
+            {% endblock %}
+        {% endblock %}
+    </head>
+    <body>
+        {% if is_granted('IS_IMPERSONATOR') %}
+            <div class="flex items-center justify-center gap-3 bg-amber-500 px-4 py-2 text-sm font-medium text-amber-950">
+                <span>Vous naviguez en tant que <strong>{{ app.user.userIdentifier }}</strong></span>
+                <a href="{{ path('app_home', {'_switch_user': '_exit'}) }}" class="underline underline-offset-4 hover:no-underline">
+                    Revenir à mon compte
+                </a>
+            </div>
+        {% endif %}
+
+        {% block body %}{% endblock %}
+
+
+    </body>
+</html>

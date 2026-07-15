@@ -1,0 +1,16 @@
+{% extends 'layout/public_base.html.twig' %}
+
+{% block title %}Blog — {{ company.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ encore_entry_link_tags('blog') }}
+    {% block javascripts %}
+        {{ encore_entry_script_tags('blog') }}
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div id="blog-root"
+         data-urls="{{ urls|json_encode }}">
+    </div>
+{% endblock %}

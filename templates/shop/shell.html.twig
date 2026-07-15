@@ -1,0 +1,17 @@
+{% extends 'layout/public_base.html.twig' %}
+
+{% block title %}Boutique — {{ company.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ encore_entry_link_tags('shop') }}
+    {% block javascripts %}
+        {{ encore_entry_script_tags('shop') }}
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div id="shop-root"
+         data-urls="{{ urls|json_encode }}"
+         data-is-connected="{{ isConnected ? 'true' : 'false' }}">
+    </div>
+{% endblock %}

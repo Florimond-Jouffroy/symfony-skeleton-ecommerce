@@ -1,0 +1,17 @@
+florimond_multi_db_migrations:
+  database_urls:
+    main: '%env(string:DATABASE_URL)%'
+    log: '%env(resolve:LOG_DATABASE_URL)%'
+
+  sets:
+    main:
+      em: default
+      namespace: DoctrineMigrations\Main
+      dir: '%kernel.project_dir%/migrations/main'
+      target_key: main
+
+    log:
+      em: log
+      namespace: DoctrineMigrations\Log
+      dir: '%kernel.project_dir%/migrations/log'
+      target_key: log

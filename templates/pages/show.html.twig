@@ -1,0 +1,75 @@
+{% extends 'layout/public_base.html.twig' %}
+
+{% block title %}{{ page.title }} — {{ company.name }}{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl px-4 sm:px-6 py-14">
+    <h1 class="text-3xl font-bold tracking-tight mb-8">{{ page.title }}</h1>
+
+    <div class="prose-page space-y-4 text-sm leading-7 text-foreground">
+        {% for block in page.content.blocks ?? [] %}
+            {% set type = block.type %}
+            {% set data = block.data %}
+
+            {% if type == 'header' %}
+                {% set level = data.level ?? 2 %}
+                {% if level == 2 %}
+                    <h2 class="text-2xl font-bold mt-8 mb-2">{{ data.text|raw }}</h2>
+                {% elseif level == 3 %}
+                    <h3 class="text-xl font-semibold mt-6 mb-2">{{ data.text|raw }}</h3>
+                {% else %}
+                    <h4 class="text-lg font-semibold mt-4 mb-1">{{ data.text|raw }}</h4>
+                {% endif %}
+
+            {% elseif type == 'paragraph' %}
+                <p class="leading-7">{{ data.text|raw }}</p>
+
+            {% elseif type == 'list' %}
+                {% if data.style == 'ordered' %}
+                    <ol class="list-decimal pl-6 space-y-1">
+                        {% for item in data.items %}
+                            <li>{{ (item.content ?? item)|raw }}</li>
+                        {% endfor %}
+                    </ol>
+                {% else %}
+                    <ul class="list-disc pl-6 space-y-1">
+                        {% for item in data.items %}
+                            <li>{{ (item.content ?? item)|raw }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+            {% elseif type == 'quote' %}
+                <blockquote class="border-l-4 border-border pl-4 italic text-muted-foreground my-4">
+                    <p>{{ data.text|raw }}</p>
+                    {% if data.caption is defined and data.caption %}
+                        <cite class="mt-1 block text-xs not-italic text-muted-foreground">— {{ data.caption|raw }}</cite>
+                    {% endif %}
+                </blockquote>
+
+            {% elseif type == 'delimiter' %}
+                <hr class="my-8 border-border">
+
+            {% elseif type == 'code' %}
+                <pre class="rounded-md bg-muted px-4 py-3 overflow-x-auto text-xs font-mono"><code>{{ data.code }}</code></pre>
+
+            {% elseif type == 'image' %}
+                <figure class="my-6">
+                    <img
+                        src="{{ data.file.url }}"
+                        alt="{{ data.caption ?? '' }}"
+                        class="rounded-lg w-full object-cover"
+                        {% if data.stretched ?? false %}style="width:100%"{% endif %}
+                    >
+                    {% if data.caption %}
+                        <figcaption class="mt-2 text-center text-xs text-muted-foreground">{{ data.caption }}</figcaption>
+                    {% endif %}
+                </figure>
+
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <p class="mt-12 text-xs text-muted-foreground">Dernière mise à jour : {{ page.updatedAt|date('d/m/Y') }}</p>
+</div>
+{% endblock %}

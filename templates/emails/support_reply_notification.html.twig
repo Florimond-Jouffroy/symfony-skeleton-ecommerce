@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Réponse à votre demande</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 480px; margin: 40px auto; background: #fff; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        h1 { font-size: 22px; color: #1a1a2e; margin-bottom: 16px; }
+        p { color: #444; line-height: 1.6; margin: 0 0 16px; }
+        .subject { font-size: 13px; color: #888; margin-bottom: 20px; }
+        .reply-box { background: #f9f9f9; border: 1px solid #eee; border-radius: 6px; padding: 16px; margin: 16px 0; font-size: 14px; color: #333; line-height: 1.7; white-space: pre-line; }
+        .btn { display: inline-block; padding: 12px 28px; background: #1a1a2e; color: #fff; border-radius: 6px; text-decoration: none; font-weight: bold; margin: 16px 0; }
+        .footer { font-size: 12px; color: #888; margin-top: 32px; border-top: 1px solid #eee; padding-top: 16px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Nous vous avons répondu</h1>
+        <p>Bonjour {{ ticket.contactName }},</p>
+        <p class="subject">En réponse à votre demande : <strong>{{ ticket.subject }}</strong></p>
+        <div class="reply-box">{{ reply.body }}</div>
+        <p>Vous pouvez répondre ou consulter l'historique complet de votre ticket :</p>
+        <a href="{{ trackingUrl }}" class="btn">Voir mon ticket</a>
+        <div class="footer">
+            Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>
+            <span style="word-break:break-all;">{{ trackingUrl }}</span>
+        </div>
+    </div>
+</body>
+</html>

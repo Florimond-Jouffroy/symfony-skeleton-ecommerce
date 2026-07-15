@@ -1,0 +1,86 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: ${PROJECT_NAME}-app
+    restart: unless-stopped
+    environment:
+      PROJECT_NAME: ${PROJECT_NAME}
+      TZ: Europe/Paris
+      COMPOSER_AUTH: '{"github-oauth": {"github.com": "${GITHUB_COMPOSER_TOKEN}"}}'
+      COMPOSER_HOME: /tmp/composer
+      npm_config_cache: /tmp/npm-cache
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - .:/var/www/html:cached
+      - ./docker/config/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+      - ./docker/config/starship.toml:/root/.config/starship.toml:ro
+      - ./docker/apache/site-enabled/vhost.conf:/etc/apache2/sites-enabled/000-default.conf:ro
+      - ../log-bundle:/var/www/log-bundle:cached
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=gateway" # <-- Aligné sur ton réseau global
+      # Configuration unique en HTTP (Port 80)
+      - "traefik.http.routers.${PROJECT_NAME}.rule=Host(`${PROJECT_NAME}.localhost`)"
+      - "traefik.http.routers.${PROJECT_NAME}.entrypoints=web"
+      - "traefik.http.services.${PROJECT_NAME}.loadbalancer.server.port=80"
+      - /etc/localtime:/etc/localtime:ro # 🌟 Synchronise l'horloge système
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      - gateway
+
+  database:
+    image: mariadb:10.11
+    container_name: ${PROJECT_NAME}-db
+    restart: unless-stopped
+    command: --default-time-zone=SYSTEM
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      TZ: Europe/Paris
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - database_data:/var/lib/mysql:rw
+      - /etc/localtime:/etc/localtime:ro # 🌟 Aligne l'horloge de la BDD
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      - gateway
+
+  database_test:
+    image: mariadb:10.11
+    container_name: ${PROJECT_NAME}-db-test
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: app_test
+      TZ: Europe/Paris
+    tmpfs:
+      - /var/lib/mysql
+    networks:
+      - gateway
+
+  mailer:
+    image: axllent/mailpit:latest
+    container_name: ${PROJECT_NAME}-mailer
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=gateway" # <-- Aligné sur ton réseau global
+      # Configuration unique en HTTP (Port 80)
+      - "traefik.http.routers.${PROJECT_NAME}-mailer.rule=Host(`mail.${PROJECT_NAME}.localhost`)"
+      - "traefik.http.routers.${PROJECT_NAME}-mailer.entrypoints=web"
+      - "traefik.http.services.${PROJECT_NAME}-mailer.loadbalancer.server.port=8025"
+    networks:
+      - gateway
+
+volumes:
+  database_data:
+
+networks:
+  gateway: # <-- On renomme pour matcher ton infra globale
+    external: true

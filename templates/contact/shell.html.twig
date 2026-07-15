@@ -1,0 +1,18 @@
+{% extends 'layout/public_base.html.twig' %}
+
+{% block title %}Contact — {{ company.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ encore_entry_link_tags('contact') }}
+    {% block javascripts %}
+        {{ encore_entry_script_tags('contact') }}
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div id="contact-root"
+         data-is-connected="{{ isConnected ? 'true' : 'false' }}"
+         data-prefill-email="{{ prefillEmail }}"
+         data-urls="{{ urls|json_encode }}">
+    </div>
+{% endblock %}

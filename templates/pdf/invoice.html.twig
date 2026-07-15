@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "DejaVu Sans", sans-serif; font-size: 11px; color: #1a1a1a; background: #fff; }
+.page { padding: 40px; }
+
+/* Header */
+.header { display: block; margin-bottom: 36px; }
+.header-top { display: block; overflow: hidden; margin-bottom: 24px; }
+.logo-block { float: left; }
+.company-name { font-size: 22px; font-weight: bold; color: #1a1a1a; }
+.company-sub { font-size: 10px; color: #777; margin-top: 2px; }
+.invoice-title-block { float: right; text-align: right; }
+.invoice-label { font-size: 20px; font-weight: bold; color: #1a1a1a; }
+.invoice-number { font-size: 12px; color: #555; margin-top: 2px; }
+.clearfix { clear: both; }
+
+/* Status badge */
+.status-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+.status-pending   { background: #fef3c7; color: #92400e; }
+.status-paid      { background: #d1fae5; color: #065f46; }
+.status-cancelled { background: #fee2e2; color: #991b1b; }
+
+/* Party blocks */
+.parties { display: block; overflow: hidden; margin-bottom: 28px; }
+.party-block { float: left; width: 48%; }
+.party-block.right { float: right; text-align: left; }
+.party-label { font-size: 9px; font-weight: bold; color: #888; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; border-bottom: 1px solid #e5e7eb; padding-bottom: 3px; }
+.party-name { font-size: 12px; font-weight: bold; margin-bottom: 2px; }
+.party-line { font-size: 11px; color: #444; line-height: 1.5; }
+
+/* Meta info */
+.meta-table { width: 100%; margin-bottom: 28px; border-collapse: collapse; }
+.meta-table td { padding: 4px 8px; font-size: 10px; }
+.meta-table td:first-child { color: #888; width: 120px; }
+.meta-table td:last-child { font-weight: 500; }
+
+/* Items table */
+.items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+.items-table thead tr { background: #1a1a1a; color: #fff; }
+.items-table thead th { padding: 8px 10px; text-align: left; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+.items-table thead th.right { text-align: right; }
+.items-table tbody tr { border-bottom: 1px solid #f0f0f0; }
+.items-table tbody tr:nth-child(even) { background: #fafafa; }
+.items-table tbody td { padding: 7px 10px; font-size: 11px; }
+.items-table tbody td.right { text-align: right; }
+.items-table tbody td.muted { color: #777; font-size: 10px; }
+
+/* Totals */
+.totals-wrapper { display: block; overflow: hidden; }
+.totals-spacer { float: left; width: 55%; }
+.totals-table { float: right; width: 42%; border-collapse: collapse; }
+.totals-table td { padding: 5px 10px; font-size: 11px; }
+.totals-table td:first-child { color: #666; }
+.totals-table td:last-child { text-align: right; font-weight: 500; }
+.totals-table tr.total-final td { font-size: 13px; font-weight: bold; color: #1a1a1a; border-top: 2px solid #1a1a1a; padding-top: 8px; }
+.totals-table tr.discount td { color: #059669; }
+
+/* Footer */
+.footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid #e5e7eb; font-size: 9px; color: #999; text-align: center; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="page">
+
+    {# ── Header ── #}
+    <div class="header">
+        <div class="header-top">
+            <div class="logo-block">
+                <div class="company-name">{{ company.name }}</div>
+                <div class="company-sub">{{ company.address1 }} — {{ company.postal_code }} {{ company.city }}</div>
+            </div>
+            <div class="invoice-title-block">
+                <div class="invoice-label">FACTURE</div>
+                <div class="invoice-number">N° {{ invoice.invoiceNumber }}</div>
+                <div style="margin-top:6px">
+                    <span class="status-badge status-{{ invoice.status }}">
+                        {% if invoice.status == 'pending' %}En attente
+                        {% elseif invoice.status == 'paid' %}Payée
+                        {% else %}Annulée{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+    </div>
+
+    {# ── Parties ── #}
+    <div class="parties">
+        <div class="party-block">
+            <div class="party-label">Émetteur</div>
+            <div class="party-name">{{ company.name }}</div>
+            <div class="party-line">{{ company.address1 }}</div>
+            <div class="party-line">{{ company.postal_code }} {{ company.city }}, {{ company.country }}</div>
+            {% if company.siret %}<div class="party-line">SIRET : {{ company.siret }}</div>{% endif %}
+            {% if company.vat_number %}<div class="party-line">{{ company.vat_number }}</div>{% endif %}
+            {% if company.email %}<div class="party-line">{{ company.email }}</div>{% endif %}
+        </div>
+        <div class="party-block right">
+            <div class="party-label">Facturer à</div>
+            {% set addr = invoice.billingAddress %}
+            <div class="party-name">{{ addr.firstName }} {{ addr.lastName }}</div>
+            <div class="party-line">{{ addr.line1 }}</div>
+            {% if addr.line2 is defined and addr.line2 %}<div class="party-line">{{ addr.line2 }}</div>{% endif %}
+            <div class="party-line">{{ addr.postalCode }} {{ addr.city }}</div>
+            <div class="party-line">{{ addr.country ?? 'France' }}</div>
+            <div class="party-line" style="margin-top:4px;color:#555">{{ order.customer.email }}</div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+    {# ── Meta ── #}
+    <table class="meta-table">
+        <tr>
+            <td>Date de facture</td>
+            <td>{{ invoice.issuedAt|date('d/m/Y') }}</td>
+            <td width="40"></td>
+            <td style="color:#888;width:120px">Commande</td>
+            <td style="font-weight:500">{{ order.orderNumber }}</td>
+        </tr>
+        <tr>
+            <td>Date de commande</td>
+            <td>{{ order.createdAt|date('d/m/Y') }}</td>
+        </tr>
+    </table>
+
+    {# ── Articles ── #}
+    {% set rateMap = {} %}{% for l in lines %}{% set rateMap = rateMap|merge({(l.rate): 1}) %}{% endfor %}
+    {% set multiRate = rateMap|length > 1 %}
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width:{% if multiRate %}40%{% else %}45%{% endif %}">Désignation</th>
+                <th class="right" style="width:8%">Qté</th>
+                {% if multiRate %}<th class="right" style="width:8%">TVA</th>{% endif %}
+                <th class="right" style="width:14%">P.U. HT</th>
+                <th class="right" style="width:15%">Total HT</th>
+                <th class="right" style="width:15%">Total TTC</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in lines %}
+            <tr>
+                <td>
+                    {{ line.name }}
+                    {% if line.variant %}<br><span class="muted">{{ line.variant }}</span>{% endif %}
+                </td>
+                <td class="right">{{ line.qty }}</td>
+                {% if multiRate %}<td class="right muted">{{ line.rate }}%</td>{% endif %}
+                <td class="right">{{ (line.unitPriceHt / 100)|number_format(2, ',', ' ') }} €</td>
+                <td class="right">{{ (line.totalHt / 100)|number_format(2, ',', ' ') }} €</td>
+                <td class="right">{{ (line.totalTtc / 100)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {% endfor %}
+            {% if order.shippingAmount > 0 %}
+            <tr>
+                <td>Frais de livraison</td>
+                <td class="right">1</td>
+                {% if multiRate %}<td class="right muted">—</td>{% endif %}
+                <td class="right">{{ (invoice.shippingHt / 100)|number_format(2, ',', ' ') }} €</td>
+                <td class="right">{{ (invoice.shippingHt / 100)|number_format(2, ',', ' ') }} €</td>
+                <td class="right">{{ (order.shippingAmount / 100)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    {# ── Totaux ── #}
+    <div class="totals-wrapper">
+        <div class="totals-spacer"></div>
+        <table class="totals-table">
+            <tr>
+                <td>Sous-total HT</td>
+                <td>{{ (invoice.subtotalHt / 100)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {% if invoice.discountAmount > 0 %}
+            <tr class="discount">
+                <td>Remise</td>
+                <td>−{{ (invoice.discountAmount / 100)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {% endif %}
+            {% if order.shippingAmount > 0 %}
+            <tr>
+                <td>Livraison HT</td>
+                <td>{{ (invoice.shippingHt / 100)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>Total HT</td>
+                <td>{{ (invoice.totalHt / 100)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {# Détail TVA par taux #}
+            {% for row in invoice.taxBreakdown %}
+            <tr>
+                <td>TVA {{ row.rate }}%</td>
+                <td>{{ (row.taxAmount / 100)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {% endfor %}
+            {% if invoice.taxBreakdown|length > 1 %}
+            <tr style="border-top: 1px solid #e5e7eb;">
+                <td>Total TVA</td>
+                <td>{{ (invoice.taxAmount / 100)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {% endif %}
+            <tr class="total-final">
+                <td>Total TTC</td>
+                <td>{{ (invoice.totalTtc / 100)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+        </table>
+        <div class="clearfix"></div>
+    </div>
+
+    {# ── Footer ── #}
+    <div class="footer">
+        {{ company.name }}
+        {% if company.siret %} — SIRET : {{ company.siret }}{% endif %}
+        {% if company.vat_number %} — {{ company.vat_number }}{% endif %}<br>
+        {{ company.address1 }}, {{ company.postal_code }} {{ company.city }}, {{ company.country }}
+        {% if company.email %} — {{ company.email }}{% endif %}
+    </div>
+
+</div>
+</body>
+</html>

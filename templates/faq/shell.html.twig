@@ -1,0 +1,16 @@
+{% extends 'layout/public_base.html.twig' %}
+
+{% block title %}FAQ — {{ company.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ encore_entry_link_tags('faq') }}
+    {% block javascripts %}
+        {{ encore_entry_script_tags('faq') }}
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div id="faq-root"
+         data-urls="{{ urls|json_encode }}">
+    </div>
+{% endblock %}

@@ -1,0 +1,20 @@
+florimond_log:
+  app_name: '%env(APP_NAME)%'
+
+doctrine:
+  dbal:
+    connections:
+      log:
+        url: '%env(resolve:LOG_DATABASE_URL)%'
+  orm:
+    entity_managers:
+      log:
+        connection: log
+        naming_strategy: doctrine.orm.naming_strategy.underscore
+        mappings:
+          FlorimondLog:
+            is_bundle: false
+            type: attribute
+            dir: '%kernel.project_dir%/vendor/florimond/log-bundle/src/Entity'
+            prefix: 'Florimond\LogBundle\Entity'
+            alias: FlorimondLog

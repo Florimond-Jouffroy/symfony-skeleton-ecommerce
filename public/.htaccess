@@ -1,0 +1,29 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Détermine le dossier de base
+    RewriteCond %{REQUEST_URI}::$1 ^(/.+)/(.*)::\2$
+    RewriteRule ^(.*) - [E=BASE:%1]
+
+    # Redirige l'en-tête Authorization s'il est présent
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Supprime le /index.php de l'URL si l'utilisateur le tape à la main
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
+    RewriteRule ^index\.php(?:/(.*)|$) %{ENV:BASE}/$1 [R=301,L]
+
+    # Si le fichier ou le dossier demandé existe sur le disque, on le sert directement (ex: tes fichiers css/js dans build/)
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Sinon, on renvoie TOUT le trafic vers le index.php (pour que le routeur Symfony prenne le relais)
+    RewriteRule ^ %{ENV:BASE}/index.php [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    <IfModule mod_alias.c>
+        # Au cas où mod_rewrite n'est pas activé sur Apache
+        RedirectMatch 302 ^/$ /index.php/
+    </IfModule>
+</IfModule>

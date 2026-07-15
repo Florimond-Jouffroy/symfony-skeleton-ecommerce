@@ -1,0 +1,15 @@
+# config/packages/twig.yaml
+
+# Configuration globale pour tous les environnements (dev, prod, test)
+twig:
+    default_path: '%kernel.project_dir%/templates'
+    file_name_pattern: '*.twig'
+    form_themes:
+        - 'tailwind_2_layout.html.twig' # active le thème Tailwind pour tes formulaires
+    globals:
+        company: '%app.company%'
+
+# Surcharge spécifique uniquement pour l'environnement de Test
+when@test:
+    twig:
+        strict_variables: true

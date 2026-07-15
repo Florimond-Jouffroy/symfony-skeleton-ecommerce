@@ -1,0 +1,17 @@
+{% extends 'layout/public_base.html.twig' %}
+
+{% block title %}Mon compte — {{ company.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ encore_entry_link_tags('account') }}
+    {% block javascripts %}
+        {{ encore_entry_script_tags('account') }}
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div id="account-root"
+         data-urls="{{ urls|json_encode }}"
+         data-user-email="{{ userEmail }}">
+    </div>
+{% endblock %}

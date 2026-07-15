@@ -1,0 +1,67 @@
+doctrine:
+    dbal:
+        connections:
+            default:
+                url: '%env(resolve:DATABASE_URL)%'
+                profiling_collect_backtrace: '%kernel.debug%'
+            log:
+                url: '%env(resolve:LOG_DATABASE_URL)%'
+                profiling_collect_backtrace: '%kernel.debug%'
+
+    orm:
+        # 🌟 Seules ces deux options génériques ont le droit de rester à la racine
+        default_entity_manager: default
+        enable_native_lazy_objects: true
+
+        entity_managers:
+            default:
+                connection: default
+                auto_mapping: true
+                validate_xml_mapping: true
+                naming_strategy: doctrine.orm.naming_strategy.underscore
+                # 🌟 Déplacé ici pour le manager principal
+                identity_generation_preferences:
+                    Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
+                mappings:
+                    App:
+                        type: attribute
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Entity'
+                        prefix: 'App\Entity'
+                        alias: App
+
+            log:
+                connection: log
+                validate_xml_mapping: true
+                naming_strategy: doctrine.orm.naming_strategy.underscore
+                identity_generation_preferences:
+                    Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
+                mappings: [ ]
+
+when@test:
+    doctrine:
+        dbal:
+            connections:
+                default:
+                    dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+                log:
+                    dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
+when@prod:
+    doctrine:
+        orm:
+            auto_generate_proxy_classes: false
+            query_cache_driver:
+                type: pool
+                pool: doctrine.system_cache_pool
+            result_cache_driver:
+                type: pool
+                pool: doctrine.result_cache_pool
+
+    framework:
+        cache:
+            pools:
+                doctrine.result_cache_pool:
+                    adapter: cache.app
+                doctrine.system_cache_pool:
+                    adapter: cache.system

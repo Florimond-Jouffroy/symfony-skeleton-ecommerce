@@ -1,0 +1,14 @@
+{% extends 'layout/public_base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+    <div {{ react_component('LoginForm', {
+        loginUrl: urls.login,
+        redirectUrl: urls.redirect,
+        forgotPasswordUrl: urls.forgotPassword,
+        registerUrl: urls.register,
+        checkoutContext: urls.redirect starts with '/boutique/commander',
+        appName: company.name
+    }) }}></div>
+{% endblock %}

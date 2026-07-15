@@ -1,0 +1,62 @@
+{% extends 'layout/public_base.html.twig' %}
+
+{% block title %}Vérification de l'adresse e-mail{% endblock %}
+
+{% block content %}
+    <div class="lg:grid lg:grid-cols-2 min-h-[calc(100vh-4rem)]">
+        {# ── Colonne gauche : contenu ── #}
+        <div class="flex items-center justify-center px-6 py-16 lg:px-16 lg:py-24">
+            <div class="w-full max-w-md">
+                <div class="rounded-2xl border bg-card shadow-sm p-10 space-y-7 text-center">
+                    {% if success %}
+                        <div class="space-y-3">
+                            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-600">
+                                <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                </svg>
+                            </div>
+                            <div class="space-y-1.5">
+                                <h1 class="text-2xl font-bold tracking-tight">Adresse e-mail vérifiée !</h1>
+                                <p class="text-sm text-muted-foreground">
+                                    Votre compte est maintenant actif. Vous pouvez vous connecter.
+                                </p>
+                            </div>
+                        </div>
+                        <a href="{{ loginUrl }}"
+                           class="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+                            Se connecter
+                        </a>
+                    {% else %}
+                        <div class="space-y-3">
+                            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                                <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                                </svg>
+                            </div>
+                            <div class="space-y-1.5">
+                                <h1 class="text-2xl font-bold tracking-tight">Lien invalide ou expiré</h1>
+                                <p class="text-sm text-muted-foreground">
+                                    Ce lien de vérification n'est pas valide ou a déjà été utilisé.
+                                </p>
+                            </div>
+                        </div>
+                        <a href="{{ loginUrl }}"
+                           class="text-sm font-medium text-foreground underline-offset-4 hover:underline">
+                            Retour à la connexion
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ── Colonne droite : panneau décoratif ── #}
+        <div style="view-transition-name: auth-panel" class="hidden lg:flex lg:flex-col lg:items-center lg:justify-center bg-zinc-900 text-zinc-50 p-12">
+            <blockquote class="max-w-sm space-y-4 text-center">
+                <p class="text-xl font-medium leading-relaxed">
+                    "Une interface simple et efficace pour gérer votre activité au quotidien."
+                </p>
+                <footer class="text-sm text-zinc-400">{{ company.name }}</footer>
+            </blockquote>
+        </div>
+    </div>
+{% endblock %}

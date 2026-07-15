@@ -1,0 +1,7 @@
+doctrine_migrations:
+  migrations_paths:
+    'DoctrineMigrations\Main': '%kernel.project_dir%/migrations/main'
+    'DoctrineMigrations\Log': '%kernel.project_dir%/migrations/log'
+  enable_profiler: false
+  services:
+    'Doctrine\Migrations\Version\MigrationFactory': 'Florimond\MultiDbMigrationsBundle\Migrations\CustomMigrationFactory'

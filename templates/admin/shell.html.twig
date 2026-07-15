@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration{% endblock %}
+
+{% block stylesheets %}
+    {{ encore_entry_link_tags('admin') }}
+    {% block javascripts %}
+        {{ encore_entry_script_tags('admin') }}
+    {% endblock %}
+{% endblock %}
+
+{% block body %}
+    <div id="admin-root"
+         data-user-email="{{ userEmail }}"
+         data-logout-url="{{ logoutUrl }}"
+         data-permissions="{{ permissions|json_encode }}"
+         data-urls="{{ urls|json_encode }}"
+         data-app-name="{{ company.name }}"
+    ></div>
+{% endblock %}
