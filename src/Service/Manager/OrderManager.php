@@ -10,6 +10,7 @@ use App\Entity\OrderItem;
 use App\Entity\OrderStatusHistory;
 use App\Repository\OrderRepository;
 use App\Service\InvoiceService;
+use App\Service\OrderMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use Florimond\LogBundle\Service\Manager\ApplicationLogManager;
 
@@ -28,6 +29,7 @@ class OrderManager
         private readonly ApplicationLogManager $logManager,
         private readonly OrderRepository $orderRepository,
         private readonly InvoiceService $invoiceService,
+        private readonly OrderMailer $orderMailer,
     ) {
     }
 
@@ -114,6 +116,10 @@ class OrderManager
             && null === $this->invoiceService->findForOrder($order)
         ) {
             $this->invoiceService->generateForOrder($order);
+        }
+
+        if (Order::STATUS_SHIPPED === $newStatus) {
+            $this->orderMailer->sendOrderShipped($order);
         }
 
         return true;

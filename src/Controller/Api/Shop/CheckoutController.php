@@ -14,6 +14,7 @@ use App\Repository\ProductVariantRepository;
 use App\Repository\PromoCodeRepository;
 use App\Repository\ShippingMethodRepository;
 use App\Service\InvoiceService;
+use App\Service\OrderMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -35,6 +36,7 @@ class CheckoutController extends AbstractController
         OrderRepository $orderRepo,
         PromoCodeRepository $promoRepo,
         InvoiceService $invoiceService,
+        OrderMailer $orderMailer,
     ): JsonResponse {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -198,6 +200,9 @@ class CheckoutController extends AbstractController
         if ('on_order' === $invoiceService->getInvoiceTrigger()) {
             $invoiceService->generateForOrder($order);
         }
+
+        // ── 11. Send confirmation email ───────────────────────────────────────
+        $orderMailer->sendOrderConfirmation($order);
 
         return $this->json(['orderNumber' => $order->getOrderNumber()], Response::HTTP_CREATED);
     }
