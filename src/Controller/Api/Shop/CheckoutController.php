@@ -13,6 +13,7 @@ use App\Repository\ProductRepository;
 use App\Repository\ProductVariantRepository;
 use App\Repository\PromoCodeRepository;
 use App\Repository\ShippingMethodRepository;
+use App\Payment\PaymentProviderRegistry;
 use App\Service\InvoiceService;
 use App\Service\OrderMailer;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +38,7 @@ class CheckoutController extends AbstractController
         PromoCodeRepository $promoRepo,
         InvoiceService $invoiceService,
         OrderMailer $orderMailer,
+        PaymentProviderRegistry $paymentRegistry,
     ): JsonResponse {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -201,9 +203,26 @@ class CheckoutController extends AbstractController
             $invoiceService->generateForOrder($order);
         }
 
-        // ── 11. Send confirmation email ───────────────────────────────────────
-        $orderMailer->sendOrderConfirmation($order);
+        // ── 11. Payment ───────────────────────────────────────────────────────
+        $paymentProvider = $paymentRegistry->getActive();
 
-        return $this->json(['orderNumber' => $order->getOrderNumber()], Response::HTTP_CREATED);
+        if (null === $paymentProvider) {
+            // No payment provider: order is immediately ready, send confirmation
+            $orderMailer->sendOrderConfirmation($order);
+
+            return $this->json(['orderNumber' => $order->getOrderNumber()], Response::HTTP_CREATED);
+        }
+
+        $result = $paymentProvider->createIntent($order);
+
+        if (!$result->success) {
+            return $this->json(['message' => 'Impossible de créer l\'intention de paiement.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json([
+            'orderNumber'     => $order->getOrderNumber(),
+            'clientSecret'    => $result->clientSecret,
+            'stripePublicKey' => $paymentProvider->getPublicKey(),
+        ], Response::HTTP_CREATED);
     }
 }

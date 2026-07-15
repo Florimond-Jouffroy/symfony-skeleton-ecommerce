@@ -61,17 +61,40 @@ class SettingController extends AbstractController
             $this->settingRepo->setValue('site.maintenance', $payload['maintenanceMode'] ? 'true' : 'false');
         }
 
+        if (array_key_exists('stripeEnabled', $payload)) {
+            $this->settingRepo->setValue('payment.stripe.enabled', $payload['stripeEnabled'] ? 'true' : 'false');
+        }
+
+        if (isset($payload['stripePublicKey'])) {
+            $this->settingRepo->setValue('payment.stripe.public_key', trim((string) $payload['stripePublicKey']));
+        }
+
+        if (isset($payload['stripeSecretKey']) && '' !== trim((string) $payload['stripeSecretKey'])) {
+            $this->settingRepo->setValue('payment.stripe.secret_key', trim((string) $payload['stripeSecretKey']));
+        }
+
+        if (isset($payload['stripeWebhookSecret']) && '' !== trim((string) $payload['stripeWebhookSecret'])) {
+            $this->settingRepo->setValue('payment.stripe.webhook_secret', trim((string) $payload['stripeWebhookSecret']));
+        }
+
         return $this->json($this->buildPayload());
     }
 
     /** @return array<string, mixed> */
     private function buildPayload(): array
     {
+        $stripeSecretKey  = $this->settingRepo->getValue('payment.stripe.secret_key', '');
+        $stripeWebhookKey = $this->settingRepo->getValue('payment.stripe.webhook_secret', '');
+
         return [
-            'maintenanceMode' => $this->settingRepo->getValue('site.maintenance', 'false') === 'true',
-            'shopEnabled'     => $this->settingRepo->getValue('shop.enabled', 'true') === 'true',
-            'invoiceTrigger'  => $this->invoiceService->getInvoiceTrigger(),
-            'defaultTaxRate'  => $this->invoiceService->getDefaultTaxRate(),
+            'maintenanceMode'       => $this->settingRepo->getValue('site.maintenance', 'false') === 'true',
+            'shopEnabled'           => $this->settingRepo->getValue('shop.enabled', 'true') === 'true',
+            'invoiceTrigger'        => $this->invoiceService->getInvoiceTrigger(),
+            'defaultTaxRate'        => $this->invoiceService->getDefaultTaxRate(),
+            'stripeEnabled'         => $this->settingRepo->getValue('payment.stripe.enabled', 'false') === 'true',
+            'stripePublicKey'       => $this->settingRepo->getValue('payment.stripe.public_key', ''),
+            'stripeSecretKeySet'    => '' !== $stripeSecretKey,
+            'stripeWebhookSecretSet' => '' !== $stripeWebhookKey,
         ];
     }
 }

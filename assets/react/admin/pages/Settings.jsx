@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { api, getErrorMessage } from '../../utils/api';
 
 const TAX_RATE_OPTIONS = [
@@ -239,6 +240,148 @@ export default function Settings({ urls = {}, permissions = {} }) {
                         <strong>Informations entreprise</strong> — Nom, adresse, SIRET visibles sur les factures PDF.
                         À modifier dans <code>config/services.yaml</code> sous la clé <code>app.company</code>.
                     </div>
+                </div>
+            </div>
+
+            {/* ── Paiements ── */}
+            <StripeSection settings={settings} saving={saving} permissions={permissions} updateSetting={updateSetting} />
+        </div>
+    );
+}
+
+function StripeSection({ settings, saving, permissions, updateSetting }) {
+    const [showSk, setShowSk]       = useState(false);
+    const [showWh, setShowWh]       = useState(false);
+    const [skInput, setSkInput]     = useState('');
+    const [whInput, setWhInput]     = useState('');
+    const [pkInput, setPkInput]     = useState(settings?.stripePublicKey ?? '');
+    const [savingKeys, setSavingKeys] = useState(false);
+
+    const canEdit = permissions.canEditSettings !== false;
+
+    const saveKeys = async () => {
+        setSavingKeys(true);
+        try {
+            await updateSetting({
+                stripePublicKey:    pkInput.trim() || undefined,
+                stripeSecretKey:    skInput.trim() || undefined,
+                stripeWebhookSecret: whInput.trim() || undefined,
+            });
+            setSkInput('');
+            setWhInput('');
+        } finally {
+            setSavingKeys(false);
+        }
+    };
+
+    return (
+        <div className="rounded-lg border">
+            <div className="px-5 py-4 border-b bg-muted/40">
+                <h3 className="font-semibold text-sm">Paiement — Stripe</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                    Intégration Stripe pour les paiements en ligne. Les clés sont stockées en base de données.
+                </p>
+            </div>
+            <div className="p-5 space-y-6">
+
+                {/* Toggle */}
+                <div className="flex items-center justify-between gap-6">
+                    <div>
+                        <p className="text-sm font-medium">Activer Stripe</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                            Quand activé, le checkout affiche le formulaire de paiement Stripe.
+                            Désactivé, les commandes passent directement en attente (paiement manuel).
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={settings?.stripeEnabled}
+                        disabled={saving || !canEdit}
+                        onClick={() => updateSetting({ stripeEnabled: !settings?.stripeEnabled })}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                            settings?.stripeEnabled ? 'bg-primary' : 'bg-muted'
+                        } ${saving ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    >
+                        <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition-transform ${
+                            settings?.stripeEnabled ? 'translate-x-5' : 'translate-x-0'
+                        }`} />
+                    </button>
+                </div>
+
+                <div className="border-t" />
+
+                {/* Keys */}
+                <div className="space-y-4">
+                    <p className="text-sm font-medium">Clés API Stripe</p>
+
+                    {/* Public key */}
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">Clé publique (pk_…)</label>
+                        <input
+                            type="text"
+                            value={pkInput}
+                            onChange={e => setPkInput(e.target.value)}
+                            disabled={!canEdit}
+                            placeholder="pk_live_… ou pk_test_…"
+                            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                        />
+                    </div>
+
+                    {/* Secret key */}
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            Clé secrète (sk_…) {settings?.stripeSecretKeySet && <span className="text-green-600 ml-1">✓ définie</span>}
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={showSk ? 'text' : 'password'}
+                                value={skInput}
+                                onChange={e => setSkInput(e.target.value)}
+                                disabled={!canEdit}
+                                placeholder={settings?.stripeSecretKeySet ? '••••••••• (laisser vide pour conserver)' : 'sk_live_… ou sk_test_…'}
+                                className="w-full rounded-lg border border-input bg-background px-3 py-2 pr-10 text-sm font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                            />
+                            <button type="button" onClick={() => setShowSk(v => !v)} className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground">
+                                {showSk ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Webhook secret */}
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            Webhook secret (whsec_…) {settings?.stripeWebhookSecretSet && <span className="text-green-600 ml-1">✓ défini</span>}
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={showWh ? 'text' : 'password'}
+                                value={whInput}
+                                onChange={e => setWhInput(e.target.value)}
+                                disabled={!canEdit}
+                                placeholder={settings?.stripeWebhookSecretSet ? '••••••••• (laisser vide pour conserver)' : 'whsec_…'}
+                                className="w-full rounded-lg border border-input bg-background px-3 py-2 pr-10 text-sm font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                            />
+                            <button type="button" onClick={() => setShowWh(v => !v)} className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground">
+                                {showWh ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            </button>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={saveKeys}
+                        disabled={savingKeys || !canEdit || (!pkInput.trim() && !skInput.trim() && !whInput.trim())}
+                        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                    >
+                        {savingKeys ? 'Enregistrement…' : 'Enregistrer les clés'}
+                    </button>
+                </div>
+
+                <div className="rounded-md bg-muted/60 px-4 py-3 text-xs text-muted-foreground space-y-1">
+                    <p><strong>URL du webhook à configurer dans Stripe :</strong></p>
+                    <code className="block mt-1">{window.location.origin}/api/webhook/stripe</code>
+                    <p className="mt-2">Événements à écouter : <code>payment_intent.succeeded</code>, <code>payment_intent.payment_failed</code></p>
                 </div>
             </div>
         </div>

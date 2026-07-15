@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, ChevronRight, Lock, Package, ShoppingBag, Tag, UserPlus, X } from 'lucide-react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { api, ApiError, getErrorMessage } from '../../utils/api';
 import { useCart } from '../context/CartContext';
 
@@ -33,6 +35,8 @@ export default function Checkout({ urls }) {
     const [submitting, setSubmitting]           = useState(false);
     const [error, setError]                     = useState('');
     const [orderNumber, setOrderNumber]         = useState('');
+    const [clientSecret, setClientSecret]       = useState(null);
+    const [stripePublicKey, setStripePublicKey] = useState(null);
     const [promo, setPromo]                     = useState(null); // {code, type, value}
 
     // Check auth + pre-fill form from profile
@@ -111,9 +115,17 @@ export default function Checkout({ urls }) {
                 customerNote:     customerNote || null,
             });
             setOrderNumber(data.orderNumber);
-            // Refresh cart badge (cart cleared server-side)
             window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { count: 0 } }));
-            setStep(3);
+
+            if (data.clientSecret) {
+                // Payment required: go to Stripe step
+                setClientSecret(data.clientSecret);
+                setStripePublicKey(data.stripePublicKey);
+                setStep(3);
+            } else {
+                // No payment provider: order confirmed directly
+                setStep(4);
+            }
             window.scrollTo(0, 0);
         } catch (err) {
             setError(getErrorMessage(err));
@@ -143,7 +155,7 @@ export default function Checkout({ urls }) {
     return (
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
             {/* Progress */}
-            {step < 3 && <StepBar step={step} />}
+            {step < 4 && <StepBar step={step} hasPayment={!!clientSecret || step < 3} />}
 
             {step === 1 && (
                 <Step1
@@ -179,16 +191,27 @@ export default function Checkout({ urls }) {
                 />
             )}
 
-            {step === 3 && (
-                <Step3 orderNumber={orderNumber} navigate={navigate} />
+            {step === 3 && clientSecret && (
+                <Step3Payment
+                    clientSecret={clientSecret}
+                    stripePublicKey={stripePublicKey}
+                    orderNumber={orderNumber}
+                    onSuccess={() => { setStep(4); window.scrollTo(0, 0); }}
+                />
+            )}
+
+            {step === 4 && (
+                <StepConfirmation orderNumber={orderNumber} navigate={navigate} />
             )}
         </div>
     );
 }
 
 /* ── Step bar ── */
-function StepBar({ step }) {
-    const steps = ['Livraison', 'Récapitulatif', 'Confirmation'];
+function StepBar({ step, hasPayment }) {
+    const steps = hasPayment
+        ? ['Livraison', 'Récapitulatif', 'Paiement', 'Confirmation']
+        : ['Livraison', 'Récapitulatif', 'Confirmation'];
     return (
         <div className="mb-10 flex items-center justify-center gap-0">
             {steps.map((label, i) => {
@@ -503,8 +526,71 @@ function Step2({ address, selectedShipping, customerNote, cart, promo, error, su
     );
 }
 
-/* ── Step 3 : Confirmation ── */
-function Step3({ orderNumber, navigate }) {
+/* ── Step 3 : Paiement Stripe ── */
+function Step3Payment({ clientSecret, stripePublicKey, orderNumber, onSuccess }) {
+    const [stripePromise] = useState(() => loadStripe(stripePublicKey));
+
+    return (
+        <div className="mx-auto max-w-lg">
+            <h2 className="text-lg font-semibold mb-6">Paiement sécurisé</h2>
+            <div className="rounded-xl border border-border bg-card p-6">
+                <Elements stripe={stripePromise} options={{ clientSecret, locale: 'fr' }}>
+                    <StripePaymentForm orderNumber={orderNumber} onSuccess={onSuccess} />
+                </Elements>
+            </div>
+        </div>
+    );
+}
+
+function StripePaymentForm({ orderNumber, onSuccess }) {
+    const stripe   = useStripe();
+    const elements = useElements();
+    const [error, setError]       = useState('');
+    const [loading, setLoading]   = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!stripe || !elements) return;
+
+        setLoading(true);
+        setError('');
+
+        const { error: stripeError } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: `${window.location.origin}/boutique/commander`,
+            },
+            redirect: 'if_required',
+        });
+
+        if (stripeError) {
+            setError(stripeError.message ?? 'Une erreur est survenue.');
+            setLoading(false);
+        } else {
+            onSuccess();
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-5">
+            <PaymentElement />
+            {error && (
+                <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+            )}
+            <button
+                type="submit"
+                disabled={!stripe || loading}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+            >
+                <Lock className="h-4 w-4" />
+                {loading ? 'Traitement en cours…' : 'Payer maintenant'}
+            </button>
+        </form>
+    );
+}
+
+/* ── Step 4 : Confirmation ── */
+function StepConfirmation({ orderNumber, navigate }) {
     return (
         <div className="mx-auto max-w-lg text-center py-10 space-y-6">
             <div className="flex justify-center">
