@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { BookOpen, ChevronRight, ChevronsUpDown, ClipboardList, FileText, HelpCircle, Image, LayoutDashboard, LogOut, MessageCircle, Package, Receipt, Settings, ShoppingCart, Star, Tag, Ticket, Truck, Users } from 'lucide-react';
+import { BookOpen, ChevronRight, ChevronsUpDown, ClipboardList, FileText, HelpCircle, Image, LayoutDashboard, LogOut, MessageCircle, Package, Receipt, Settings, ShieldCheck, ShoppingCart, Star, Tag, Ticket, Truck, Users } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -52,6 +52,7 @@ const SHOP_ITEMS = [
     { to: '/categories-produits', icon: Tag,          label: 'Catégories',  permission: 'canViewProductCategories' },
     { to: '/livraison',           icon: Truck,        label: 'Livraison',   permission: 'canViewShipping' },
     { to: '/parametres',          icon: Settings,     label: 'Paramètres',  permission: 'canViewSettings' },
+    { to: '/securite',            icon: ShieldCheck,  label: 'Sécurité',    permission: null },
 ];
 
 function getInitials(email) {

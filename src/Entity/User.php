@@ -39,6 +39,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 64, nullable: true)]
     private ?string $verificationToken = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $totpSecret = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -126,6 +129,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    public function getTotpSecret(): ?string { return $this->totpSecret; }
+    public function setTotpSecret(?string $totpSecret): static { $this->totpSecret = $totpSecret; return $this; }
+    public function isTotpEnabled(): bool { return null !== $this->totpSecret; }
 
     /**
      * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.

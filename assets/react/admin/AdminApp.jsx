@@ -19,6 +19,7 @@ import ProductEditor from './pages/ProductEditor';
 import ProductsList from './pages/ProductsList';
 import MediaLibrary from './pages/MediaLibrary';
 import Settings from './pages/Settings';
+import TwoFactorSecurity from './pages/TwoFactorSecurity';
 import UsersList from './pages/UsersList';
 import ShippingMethods from './pages/ShippingMethods';
 
@@ -56,6 +57,7 @@ export default function AdminApp() {
                     <Route path="avis" element={<ReviewManager permissions={permissions} urls={urls} />} />
                     <Route path="livraison" element={<ShippingMethods permissions={permissions} urls={urls} />} />
                     <Route path="parametres" element={<Settings permissions={permissions} urls={urls} />} />
+                    <Route path="securite" element={<TwoFactorSecurity urls={urls} />} />
                     <Route path="journal" element={<ActivityLog urls={urls} />} />
                 </Route>
             </Routes>

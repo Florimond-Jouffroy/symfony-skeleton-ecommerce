@@ -8,6 +8,8 @@ use App\Dto\ConfirmPasswordResetDto;
 use App\Dto\LoginDto;
 use App\Dto\RegisterDto;
 use App\Dto\RequestPasswordResetDto;
+use App\Dto\TwoFactorVerifyDto;
+use OTPHP\TOTP;
 use App\Repository\PasswordResetTokenRepository;
 use App\Repository\UserRepository;
 use App\Security\LoginAuthenticator;
@@ -55,10 +57,51 @@ class AuthController extends AbstractController
             );
         }
 
+        if ($user->isTotpEnabled()) {
+            $request->getSession()->set('_2fa_pending', $user->getId());
+
+            return $this->json(['2fa_required' => true]);
+        }
+
         $security->login($user, LoginAuthenticator::class);
 
         return $this->json([
-            'id' => $user->getId(),
+            'id'    => $user->getId(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles(),
+        ]);
+    }
+
+    #[Route('/2fa/verifier', name: 'api_auth_2fa_verify', methods: ['POST'])]
+    public function verifyTwoFactor(
+        Request $request,
+        #[MapRequestPayload] TwoFactorVerifyDto $dto,
+        UserRepository $userRepository,
+        Security $security,
+    ): JsonResponse {
+        $userId = $request->getSession()->get('_2fa_pending');
+
+        if (!$userId) {
+            return $this->json(['message' => 'Session expirée. Veuillez vous reconnecter.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $user = $userRepository->find($userId);
+
+        if (!$user || !$user->isTotpEnabled()) {
+            return $this->json(['message' => 'Erreur d\'authentification.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $totp = TOTP::createFromSecret($user->getTotpSecret());
+
+        if (!$totp->verify($dto->code, null, 1)) {
+            return $this->json(['message' => 'Code invalide ou expiré.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $request->getSession()->remove('_2fa_pending');
+        $security->login($user, LoginAuthenticator::class);
+
+        return $this->json([
+            'id'    => $user->getId(),
             'email' => $user->getEmail(),
             'roles' => $user->getRoles(),
         ]);
