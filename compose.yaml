@@ -52,6 +52,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
     networks:
       - internal
+      - gateway
 
   database_test:
     image: mariadb:10.11
