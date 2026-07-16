@@ -27,7 +27,7 @@ HELP_COLOR = \033[36m
 NO_COLOR   = \033[0m
 
 .DEFAULT_GOAL := help
-.PHONY: help setup install up down stop restart build ps logs sh shell cmd cs vendor sf cc cc-hard db-main-create db-main-migration db-main-migrate db-main-drop db-main-reset db-log-create db-log-migrate db-log-drop db-log-reset db-setup db-test-setup stan perm composer composer-rm npm npm-rm npm-setup qa test create-admin
+.PHONY: help setup install up down stop restart build ps logs sh shell cmd cs vendor sf cc cc-hard db-main-create db-main-migration db-main-migrate db-main-drop db-main-reset db-log-create db-log-migrate db-log-drop db-log-reset db-setup db-test-setup stan perm composer composer-rm npm npm-rm npm-setup qa test create-admin fixtures fixtures-reset
 
 ## —— SYSTEM & CONFIGURATION ⚙️ ————————————————————————————————————————————————
 
@@ -184,6 +184,12 @@ npm-setup: npm-rm npm-build ## Réinstallation propre de NPM et build complet du
 
 create-admin: ## Crée ou promeut un compte admin (usage: make create-admin [email=x] [password=x])
 	$(CONSOLE) app:create-admin $(email) $(password)
+
+fixtures: ## Charge les fixtures de développement (sans vider la base)
+	$(CONSOLE) doctrine:fixtures:load --no-interaction --append
+
+fixtures-reset: db-main-reset ## Réinitialise la base principale et recharge les fixtures
+	$(CONSOLE) doctrine:fixtures:load --no-interaction
 
 ## —— QUALITÉ, TESTS & DROITS 🛠️ ————————————————————————————————————————————————
 
