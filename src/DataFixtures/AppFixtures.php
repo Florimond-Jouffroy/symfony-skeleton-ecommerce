@@ -51,10 +51,11 @@ class AppFixtures extends Fixture
     private function loadSettings(ObjectManager $em): void
     {
         $defaults = [
-            'site.maintenance'         => 'false',
-            'shop.enabled'             => 'true',
-            'invoice.trigger'          => 'on_confirm',
-            'invoice.default_tax_rate' => '20',
+            'site.maintenance'               => 'false',
+            'shop.enabled'                   => 'true',
+            'invoice.trigger'                => 'on_confirm',
+            'invoice.default_tax_rate'       => '20',
+            'security.2fa.trusted_device_days' => '30',
         ];
 
         $repo = $em->getRepository(AppSetting::class);

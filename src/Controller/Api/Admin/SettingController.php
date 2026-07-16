@@ -105,6 +105,14 @@ class SettingController extends AbstractController
             $this->settingRepo->setValue('payment.paypal.webhook_id', trim((string) $payload['paypalWebhookId']));
         }
 
+        if (isset($payload['twoFaRememberDays'])) {
+            $days = (int) $payload['twoFaRememberDays'];
+            if ($days < 0 || $days > 365) {
+                return $this->json(['message' => 'Valeur invalide pour twoFaRememberDays (0–365).'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+            $this->settingRepo->setValue('security.2fa.trusted_device_days', (string) $days);
+        }
+
         return $this->json($this->buildPayload());
     }
 
@@ -136,6 +144,7 @@ class SettingController extends AbstractController
             'paypalClientId'         => $this->settingRepo->getValue('payment.paypal.client_id', ''),
             'paypalClientSecretSet'  => '' !== $paypalClientSecret,
             'paypalWebhookIdSet'     => '' !== $paypalWebhookId,
+            'twoFaRememberDays'      => (int) $this->settingRepo->getValue('security.2fa.trusted_device_days', '30'),
         ];
     }
 }

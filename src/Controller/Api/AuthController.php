@@ -9,16 +9,19 @@ use App\Dto\LoginDto;
 use App\Dto\RegisterDto;
 use App\Dto\RequestPasswordResetDto;
 use App\Dto\TwoFactorVerifyDto;
-use OTPHP\TOTP;
+use App\Repository\AppSettingRepository;
 use App\Repository\PasswordResetTokenRepository;
 use App\Repository\UserRepository;
 use App\Security\LoginAuthenticator;
 use App\Service\AuthMailer;
 use App\Service\Manager\PasswordResetManager;
 use App\Service\Manager\UserManager;
+use App\Service\TrustedDeviceService;
+use OTPHP\TOTP;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -31,11 +34,14 @@ class AuthController extends AbstractController
         private readonly UserManager $userManager,
         private readonly PasswordResetManager $passwordResetManager,
         private readonly AuthMailer $authMailer,
+        private readonly AppSettingRepository $settingRepo,
+        private readonly TrustedDeviceService $trustedDeviceService,
     ) {
     }
 
     #[Route('/connexion', name: 'api_auth_login', methods: ['POST'])]
     public function login(
+        Request $request,
         #[MapRequestPayload] LoginDto $dto,
         UserRepository $userRepository,
         UserPasswordHasherInterface $passwordHasher,
@@ -58,9 +64,21 @@ class AuthController extends AbstractController
         }
 
         if ($user->isTotpEnabled()) {
+            $trustedDeviceDays = (int) $this->settingRepo->getValue('security.2fa.trusted_device_days', '30');
+
+            if ($trustedDeviceDays > 0 && $this->trustedDeviceService->isTrusted($request, $user)) {
+                $security->login($user, LoginAuthenticator::class);
+
+                return $this->json([
+                    'id'    => $user->getId(),
+                    'email' => $user->getEmail(),
+                    'roles' => $user->getRoles(),
+                ]);
+            }
+
             $request->getSession()->set('_2fa_pending', $user->getId());
 
-            return $this->json(['2fa_required' => true]);
+            return $this->json(['2fa_required' => true, 'trusted_device_days' => $trustedDeviceDays]);
         }
 
         $security->login($user, LoginAuthenticator::class);
@@ -100,11 +118,20 @@ class AuthController extends AbstractController
         $request->getSession()->remove('_2fa_pending');
         $security->login($user, LoginAuthenticator::class);
 
-        return $this->json([
+        $response = $this->json([
             'id'    => $user->getId(),
             'email' => $user->getEmail(),
             'roles' => $user->getRoles(),
         ]);
+
+        if ($dto->rememberDevice) {
+            $days = (int) $this->settingRepo->getValue('security.2fa.trusted_device_days', '30');
+            if ($days > 0) {
+                $this->trustedDeviceService->trust($response, $user, $days);
+            }
+        }
+
+        return $response;
     }
 
     #[Route('/inscription', name: 'api_auth_register', methods: ['POST'])]

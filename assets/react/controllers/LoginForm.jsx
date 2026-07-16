@@ -16,8 +16,10 @@ export default function LoginForm({
 }) {
     const [email, setEmail]       = useState('');
     const [password, setPassword] = useState('');
-    const [totpCode, setTotpCode] = useState('');
-    const [step, setStep]         = useState('credentials'); // 'credentials' | '2fa'
+    const [totpCode, setTotpCode]         = useState('');
+    const [rememberDevice, setRemember]   = useState(false);
+    const [trustedDays, setTrustedDays]   = useState(0);
+    const [step, setStep]                 = useState('credentials'); // 'credentials' | '2fa'
     const [error, setError]       = useState('');
     const [loading, setLoading]   = useState(false);
 
@@ -28,6 +30,7 @@ export default function LoginForm({
         try {
             const data = await api.post(resolveUrl(loginUrl), { email, password });
             if (data?.['2fa_required']) {
+                setTrustedDays(data?.['trusted_device_days'] ?? 0);
                 setStep('2fa');
             } else {
                 window.location.href = redirectUrl;
@@ -44,7 +47,7 @@ export default function LoginForm({
         setError('');
         setLoading(true);
         try {
-            await api.post(resolveUrl(twoFactorUrl), { code: totpCode });
+            await api.post(resolveUrl(twoFactorUrl), { code: totpCode, rememberDevice });
             window.location.href = redirectUrl;
         } catch (err) {
             setError(getErrorMessage(err, 'Code invalide ou expiré.'));
@@ -103,9 +106,22 @@ export default function LoginForm({
                                 <Button type="submit" className="w-full" disabled={loading || totpCode.length !== 6}>
                                     {loading ? 'Vérification…' : 'Confirmer'}
                                 </Button>
+                                {trustedDays > 0 && (
+                                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                                        <input
+                                            type="checkbox"
+                                            checked={rememberDevice}
+                                            onChange={e => setRemember(e.target.checked)}
+                                            className="h-4 w-4 rounded border-input accent-primary"
+                                        />
+                                        <span className="text-xs text-muted-foreground">
+                                            Se souvenir de cet appareil pendant {trustedDays} jour{trustedDays > 1 ? 's' : ''}
+                                        </span>
+                                    </label>
+                                )}
                                 <button
                                     type="button"
-                                    onClick={() => { setStep('credentials'); setError(''); setTotpCode(''); }}
+                                    onClick={() => { setStep('credentials'); setError(''); setTotpCode(''); setRemember(false); }}
                                     className="w-full text-xs text-muted-foreground hover:text-foreground text-center"
                                 >
                                     ← Retour à la connexion
