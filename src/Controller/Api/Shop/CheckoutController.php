@@ -220,9 +220,10 @@ class CheckoutController extends AbstractController
         }
 
         return $this->json([
-            'orderNumber'     => $order->getOrderNumber(),
-            'clientSecret'    => $result->clientSecret,
-            'stripePublicKey' => $paymentProvider->getPublicKey(),
+            'orderNumber' => $order->getOrderNumber(),
+            'provider'    => $paymentProvider->getName(),
+            'token'       => $result->clientSecret,
+            'publicKey'   => $paymentProvider->getPublicKey(),
         ], Response::HTTP_CREATED);
     }
 }

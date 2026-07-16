@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, ChevronRight, Lock, Package, ShoppingBag, Tag, UserPlus, X } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { api, ApiError, getErrorMessage } from '../../utils/api';
 import { useCart } from '../context/CartContext';
 
@@ -35,8 +36,9 @@ export default function Checkout({ urls }) {
     const [submitting, setSubmitting]           = useState(false);
     const [error, setError]                     = useState('');
     const [orderNumber, setOrderNumber]         = useState('');
-    const [clientSecret, setClientSecret]       = useState(null);
-    const [stripePublicKey, setStripePublicKey] = useState(null);
+    const [paymentProvider, setPaymentProvider] = useState(null); // 'stripe' | 'paypal' | null
+    const [paymentToken, setPaymentToken]       = useState(null);
+    const [paymentPublicKey, setPaymentPublicKey] = useState(null);
     const [promo, setPromo]                     = useState(null); // {code, type, value}
 
     // Check auth + pre-fill form from profile
@@ -117,13 +119,12 @@ export default function Checkout({ urls }) {
             setOrderNumber(data.orderNumber);
             window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { count: 0 } }));
 
-            if (data.clientSecret) {
-                // Payment required: go to Stripe step
-                setClientSecret(data.clientSecret);
-                setStripePublicKey(data.stripePublicKey);
+            if (data.provider && data.token) {
+                setPaymentProvider(data.provider);
+                setPaymentToken(data.token);
+                setPaymentPublicKey(data.publicKey);
                 setStep(3);
             } else {
-                // No payment provider: order confirmed directly
                 setStep(4);
             }
             window.scrollTo(0, 0);
@@ -155,7 +156,7 @@ export default function Checkout({ urls }) {
     return (
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
             {/* Progress */}
-            {step < 4 && <StepBar step={step} hasPayment={!!clientSecret || step < 3} />}
+            {step < 4 && <StepBar step={step} hasPayment={!!paymentToken || step <= 2} />}
 
             {step === 1 && (
                 <Step1
@@ -191,10 +192,11 @@ export default function Checkout({ urls }) {
                 />
             )}
 
-            {step === 3 && clientSecret && (
+            {step === 3 && paymentToken && (
                 <Step3Payment
-                    clientSecret={clientSecret}
-                    stripePublicKey={stripePublicKey}
+                    provider={paymentProvider}
+                    token={paymentToken}
+                    publicKey={paymentPublicKey}
                     orderNumber={orderNumber}
                     onSuccess={() => { setStep(4); window.scrollTo(0, 0); }}
                 />
@@ -526,40 +528,48 @@ function Step2({ address, selectedShipping, customerNote, cart, promo, error, su
     );
 }
 
-/* ── Step 3 : Paiement Stripe ── */
-function Step3Payment({ clientSecret, stripePublicKey, orderNumber, onSuccess }) {
-    const [stripePromise] = useState(() => loadStripe(stripePublicKey));
-
+/* ── Step 3 : Paiement (Stripe ou PayPal) ── */
+function Step3Payment({ provider, token, publicKey, orderNumber, onSuccess }) {
     return (
         <div className="mx-auto max-w-lg">
             <h2 className="text-lg font-semibold mb-6">Paiement sécurisé</h2>
             <div className="rounded-xl border border-border bg-card p-6">
-                <Elements stripe={stripePromise} options={{ clientSecret, locale: 'fr' }}>
-                    <StripePaymentForm orderNumber={orderNumber} onSuccess={onSuccess} />
-                </Elements>
+                {provider === 'stripe' && (
+                    <StripePaymentForm clientSecret={token} stripePublicKey={publicKey} onSuccess={onSuccess} />
+                )}
+                {provider === 'paypal' && (
+                    <PayPalPaymentForm paypalOrderId={token} clientId={publicKey} onSuccess={onSuccess} />
+                )}
             </div>
         </div>
     );
 }
 
-function StripePaymentForm({ orderNumber, onSuccess }) {
+function StripePaymentForm({ clientSecret, stripePublicKey, onSuccess }) {
+    const [stripePromise] = useState(() => loadStripe(stripePublicKey));
+
+    return (
+        <Elements stripe={stripePromise} options={{ clientSecret, locale: 'fr' }}>
+            <StripeForm onSuccess={onSuccess} />
+        </Elements>
+    );
+}
+
+function StripeForm({ onSuccess }) {
     const stripe   = useStripe();
     const elements = useElements();
-    const [error, setError]       = useState('');
-    const [loading, setLoading]   = useState(false);
+    const [error, setError]     = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!stripe || !elements) return;
-
         setLoading(true);
         setError('');
 
         const { error: stripeError } = await stripe.confirmPayment({
             elements,
-            confirmParams: {
-                return_url: `${window.location.origin}/boutique/commander`,
-            },
+            confirmParams: { return_url: `${window.location.origin}/boutique/commander` },
             redirect: 'if_required',
         });
 
@@ -574,9 +584,7 @@ function StripePaymentForm({ orderNumber, onSuccess }) {
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
             <PaymentElement />
-            {error && (
-                <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
-            )}
+            {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
             <button
                 type="submit"
                 disabled={!stripe || loading}
@@ -586,6 +594,35 @@ function StripePaymentForm({ orderNumber, onSuccess }) {
                 {loading ? 'Traitement en cours…' : 'Payer maintenant'}
             </button>
         </form>
+    );
+}
+
+function PayPalPaymentForm({ paypalOrderId, clientId, onSuccess }) {
+    const [error, setError] = useState('');
+
+    return (
+        <PayPalScriptProvider options={{ clientId, currency: 'EUR', intent: 'capture' }}>
+            <div className="space-y-4">
+                <p className="text-sm text-muted-foreground text-center">
+                    Vous allez être redirigé vers PayPal pour finaliser votre paiement.
+                </p>
+                {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
+                <PayPalButtons
+                    style={{ layout: 'vertical', shape: 'rect', label: 'pay' }}
+                    createOrder={() => paypalOrderId}
+                    onApprove={async (data, actions) => {
+                        try {
+                            await actions.order.capture();
+                            onSuccess();
+                        } catch {
+                            setError('Le paiement PayPal a échoué. Veuillez réessayer.');
+                        }
+                    }}
+                    onError={() => setError('Une erreur PayPal est survenue. Veuillez réessayer.')}
+                    onCancel={() => setError('Paiement annulé.')}
+                />
+            </div>
+        </PayPalScriptProvider>
     );
 }
 

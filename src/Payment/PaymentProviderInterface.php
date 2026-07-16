@@ -8,6 +8,8 @@ use App\Entity\Order;
 
 interface PaymentProviderInterface
 {
+    public function getName(): string;
+
     public function isEnabled(): bool;
 
     public function getPublicKey(): string;

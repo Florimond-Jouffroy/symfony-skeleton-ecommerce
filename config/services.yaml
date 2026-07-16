@@ -36,6 +36,9 @@ services:
     App\Payment\Provider\StripePaymentProvider:
         tags: ['app.payment_provider']
 
+    App\Payment\Provider\PayPalPaymentProvider:
+        tags: ['app.payment_provider']
+
     App\Payment\PaymentProviderRegistry:
         arguments:
             $providers: !tagged_iterator app.payment_provider

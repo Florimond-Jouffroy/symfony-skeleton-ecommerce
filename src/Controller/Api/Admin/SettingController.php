@@ -77,6 +77,26 @@ class SettingController extends AbstractController
             $this->settingRepo->setValue('payment.stripe.webhook_secret', trim((string) $payload['stripeWebhookSecret']));
         }
 
+        if (array_key_exists('paypalEnabled', $payload)) {
+            $this->settingRepo->setValue('payment.paypal.enabled', $payload['paypalEnabled'] ? 'true' : 'false');
+        }
+
+        if (array_key_exists('paypalSandbox', $payload)) {
+            $this->settingRepo->setValue('payment.paypal.sandbox', $payload['paypalSandbox'] ? 'true' : 'false');
+        }
+
+        if (isset($payload['paypalClientId'])) {
+            $this->settingRepo->setValue('payment.paypal.client_id', trim((string) $payload['paypalClientId']));
+        }
+
+        if (isset($payload['paypalClientSecret']) && '' !== trim((string) $payload['paypalClientSecret'])) {
+            $this->settingRepo->setValue('payment.paypal.client_secret', trim((string) $payload['paypalClientSecret']));
+        }
+
+        if (isset($payload['paypalWebhookId']) && '' !== trim((string) $payload['paypalWebhookId'])) {
+            $this->settingRepo->setValue('payment.paypal.webhook_id', trim((string) $payload['paypalWebhookId']));
+        }
+
         return $this->json($this->buildPayload());
     }
 
@@ -86,15 +106,23 @@ class SettingController extends AbstractController
         $stripeSecretKey  = $this->settingRepo->getValue('payment.stripe.secret_key', '');
         $stripeWebhookKey = $this->settingRepo->getValue('payment.stripe.webhook_secret', '');
 
+        $paypalClientSecret = $this->settingRepo->getValue('payment.paypal.client_secret', '');
+        $paypalWebhookId    = $this->settingRepo->getValue('payment.paypal.webhook_id', '');
+
         return [
-            'maintenanceMode'       => $this->settingRepo->getValue('site.maintenance', 'false') === 'true',
-            'shopEnabled'           => $this->settingRepo->getValue('shop.enabled', 'true') === 'true',
-            'invoiceTrigger'        => $this->invoiceService->getInvoiceTrigger(),
-            'defaultTaxRate'        => $this->invoiceService->getDefaultTaxRate(),
-            'stripeEnabled'         => $this->settingRepo->getValue('payment.stripe.enabled', 'false') === 'true',
-            'stripePublicKey'       => $this->settingRepo->getValue('payment.stripe.public_key', ''),
-            'stripeSecretKeySet'    => '' !== $stripeSecretKey,
+            'maintenanceMode'        => $this->settingRepo->getValue('site.maintenance', 'false') === 'true',
+            'shopEnabled'            => $this->settingRepo->getValue('shop.enabled', 'true') === 'true',
+            'invoiceTrigger'         => $this->invoiceService->getInvoiceTrigger(),
+            'defaultTaxRate'         => $this->invoiceService->getDefaultTaxRate(),
+            'stripeEnabled'          => $this->settingRepo->getValue('payment.stripe.enabled', 'false') === 'true',
+            'stripePublicKey'        => $this->settingRepo->getValue('payment.stripe.public_key', ''),
+            'stripeSecretKeySet'     => '' !== $stripeSecretKey,
             'stripeWebhookSecretSet' => '' !== $stripeWebhookKey,
+            'paypalEnabled'          => $this->settingRepo->getValue('payment.paypal.enabled', 'false') === 'true',
+            'paypalSandbox'          => $this->settingRepo->getValue('payment.paypal.sandbox', 'true') === 'true',
+            'paypalClientId'         => $this->settingRepo->getValue('payment.paypal.client_id', ''),
+            'paypalClientSecretSet'  => '' !== $paypalClientSecret,
+            'paypalWebhookIdSet'     => '' !== $paypalWebhookId,
         ];
     }
 }

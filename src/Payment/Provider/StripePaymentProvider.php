@@ -20,6 +20,11 @@ class StripePaymentProvider implements PaymentProviderInterface
     ) {
     }
 
+    public function getName(): string
+    {
+        return 'stripe';
+    }
+
     public function isEnabled(): bool
     {
         return $this->settingRepo->getValue('payment.stripe.enabled', 'false') === 'true'

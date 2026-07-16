@@ -245,6 +245,7 @@ export default function Settings({ urls = {}, permissions = {} }) {
 
             {/* ── Paiements ── */}
             <StripeSection settings={settings} saving={saving} permissions={permissions} updateSetting={updateSetting} />
+            <PayPalSection settings={settings} saving={saving} permissions={permissions} updateSetting={updateSetting} />
         </div>
     );
 }
@@ -382,6 +383,159 @@ function StripeSection({ settings, saving, permissions, updateSetting }) {
                     <p><strong>URL du webhook à configurer dans Stripe :</strong></p>
                     <code className="block mt-1">{window.location.origin}/api/webhook/stripe</code>
                     <p className="mt-2">Événements à écouter : <code>payment_intent.succeeded</code>, <code>payment_intent.payment_failed</code></p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function PayPalSection({ settings, saving, permissions, updateSetting }) {
+    const [showSecret, setShowSecret]   = useState(false);
+    const [secretInput, setSecretInput] = useState('');
+    const [clientIdInput, setClientIdInput] = useState(settings?.paypalClientId ?? '');
+    const [webhookIdInput, setWebhookIdInput] = useState('');
+    const [savingKeys, setSavingKeys]   = useState(false);
+
+    const canEdit = permissions.canEditSettings !== false;
+
+    const saveKeys = async () => {
+        setSavingKeys(true);
+        try {
+            await updateSetting({
+                paypalClientId:     clientIdInput.trim() || undefined,
+                paypalClientSecret: secretInput.trim() || undefined,
+                paypalWebhookId:    webhookIdInput.trim() || undefined,
+            });
+            setSecretInput('');
+            setWebhookIdInput('');
+        } finally {
+            setSavingKeys(false);
+        }
+    };
+
+    return (
+        <div className="rounded-lg border">
+            <div className="px-5 py-4 border-b bg-muted/40">
+                <h3 className="font-semibold text-sm">Paiement — PayPal</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                    Intégration PayPal via l'API Orders v2. Les clés sont stockées en base de données.
+                </p>
+            </div>
+            <div className="p-5 space-y-6">
+
+                {/* Toggle activé */}
+                <div className="flex items-center justify-between gap-6">
+                    <div>
+                        <p className="text-sm font-medium">Activer PayPal</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                            Quand activé, le checkout affiche les boutons PayPal.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={settings?.paypalEnabled}
+                        disabled={saving || !canEdit}
+                        onClick={() => updateSetting({ paypalEnabled: !settings?.paypalEnabled })}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                            settings?.paypalEnabled ? 'bg-primary' : 'bg-muted'
+                        } ${saving ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    >
+                        <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition-transform ${
+                            settings?.paypalEnabled ? 'translate-x-5' : 'translate-x-0'
+                        }`} />
+                    </button>
+                </div>
+
+                {/* Toggle sandbox */}
+                <div className="flex items-center justify-between gap-6">
+                    <div>
+                        <p className="text-sm font-medium">Mode sandbox</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                            Utilise l'environnement de test PayPal (sandbox.paypal.com).
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={settings?.paypalSandbox}
+                        disabled={saving || !canEdit}
+                        onClick={() => updateSetting({ paypalSandbox: !settings?.paypalSandbox })}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                            settings?.paypalSandbox ? 'bg-primary' : 'bg-muted'
+                        } ${saving ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    >
+                        <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition-transform ${
+                            settings?.paypalSandbox ? 'translate-x-5' : 'translate-x-0'
+                        }`} />
+                    </button>
+                </div>
+
+                <div className="border-t" />
+
+                {/* Keys */}
+                <div className="space-y-4">
+                    <p className="text-sm font-medium">Clés API PayPal</p>
+
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">Client ID (public)</label>
+                        <input
+                            type="text"
+                            value={clientIdInput}
+                            onChange={e => setClientIdInput(e.target.value)}
+                            disabled={!canEdit}
+                            placeholder="AaBb…"
+                            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                        />
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            Client Secret {settings?.paypalClientSecretSet && <span className="text-green-600 ml-1">✓ défini</span>}
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={showSecret ? 'text' : 'password'}
+                                value={secretInput}
+                                onChange={e => setSecretInput(e.target.value)}
+                                disabled={!canEdit}
+                                placeholder={settings?.paypalClientSecretSet ? '••••••••• (laisser vide pour conserver)' : 'EaBb…'}
+                                className="w-full rounded-lg border border-input bg-background px-3 py-2 pr-10 text-sm font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                            />
+                            <button type="button" onClick={() => setShowSecret(v => !v)} className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground">
+                                {showSecret ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            Webhook ID {settings?.paypalWebhookIdSet && <span className="text-green-600 ml-1">✓ défini</span>}
+                        </label>
+                        <input
+                            type="text"
+                            value={webhookIdInput}
+                            onChange={e => setWebhookIdInput(e.target.value)}
+                            disabled={!canEdit}
+                            placeholder={settings?.paypalWebhookIdSet ? '••••••••• (laisser vide pour conserver)' : 'ID du webhook PayPal'}
+                            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                        />
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={saveKeys}
+                        disabled={savingKeys || !canEdit || (!clientIdInput.trim() && !secretInput.trim() && !webhookIdInput.trim())}
+                        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                    >
+                        {savingKeys ? 'Enregistrement…' : 'Enregistrer les clés'}
+                    </button>
+                </div>
+
+                <div className="rounded-md bg-muted/60 px-4 py-3 text-xs text-muted-foreground space-y-1">
+                    <p><strong>URL du webhook à configurer dans PayPal :</strong></p>
+                    <code className="block mt-1">{window.location.origin}/api/webhook/paypal</code>
+                    <p className="mt-2">Événements à écouter : <code>PAYMENT.CAPTURE.COMPLETED</code>, <code>PAYMENT.CAPTURE.DENIED</code></p>
                 </div>
             </div>
         </div>
