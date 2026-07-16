@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "58952398d8c26431c52201bd60f23ab8",
+    "content-hash": "95ec24262ed2f82a011ddd4683e5ff18",
     "packages": [
         {
             "name": "doctrine/collections",
@@ -1385,17 +1385,11 @@
         },
         {
             "name": "florimond/log-bundle",
-            "version": "v1.1.0",
-            "source": {
-                "type": "git",
-                "url": "git@github.com:Florimond-Jouffroy/log-bundle.git",
-                "reference": "f64bd0c602fc404a97c12bbbcf00f29426848a4d"
-            },
+            "version": "1.2.0",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Florimond-Jouffroy/log-bundle/zipball/f64bd0c602fc404a97c12bbbcf00f29426848a4d",
-                "reference": "f64bd0c602fc404a97c12bbbcf00f29426848a4d",
-                "shasum": ""
+                "type": "path",
+                "url": "/var/www/log-bundle",
+                "reference": "0814c024bf0c06341c2bb69f366902c89bd709ee"
             },
             "require": {
                 "doctrine/doctrine-bundle": "^2.13 || ^3.0",
@@ -1437,11 +1431,10 @@
                 "florimond_log",
                 "symfony"
             ],
-            "support": {
-                "source": "https://github.com/Florimond-Jouffroy/log-bundle/tree/v1.1.0",
-                "issues": "https://github.com/Florimond-Jouffroy/log-bundle/issues"
-            },
-            "time": "2026-06-24T18:52:55+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": false
+            }
         },
         {
             "name": "florimond/multi-db-migrations-bundle",
