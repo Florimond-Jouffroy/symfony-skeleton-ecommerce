@@ -11,7 +11,6 @@ const TAX_RATE_OPTIONS = [
 ];
 
 const TABS = [
-    { id: 'general',     label: 'Général' },
     { id: 'facturation', label: 'Facturation' },
     { id: 'paiements',   label: 'Paiements' },
 ];
@@ -21,7 +20,7 @@ export default function Settings({ urls = {}, permissions = {} }) {
     const [loading, setLoading]   = useState(true);
     const [saving, setSaving]     = useState(false);
     const [feedback, setFeedback] = useState(null);
-    const [activeTab, setActiveTab] = useState('general');
+    const [activeTab, setActiveTab] = useState('facturation');
 
     useEffect(() => {
         api.get(urls.settings ?? '/api/admin/parametres')
@@ -66,6 +65,25 @@ export default function Settings({ urls = {}, permissions = {} }) {
                 </p>
             )}
 
+            {/* ── Toggles rapides ── */}
+            <div className="flex flex-wrap gap-3">
+                <Toggle
+                    label="Mode maintenance"
+                    description="Les visiteurs voient une page de maintenance. Les admins accèdent normalement."
+                    checked={!!settings?.maintenanceMode}
+                    danger
+                    disabled={saving || permissions.canEditSettings === false}
+                    onChange={() => updateSetting({ maintenanceMode: !settings?.maintenanceMode })}
+                />
+                <Toggle
+                    label="Boutique active"
+                    description={<>Les pages <code>/boutique/*</code> sont accessibles au public.</>}
+                    checked={!!settings?.shopEnabled}
+                    disabled={saving || permissions.canEditSettings === false}
+                    onChange={() => updateSetting({ shopEnabled: !settings?.shopEnabled })}
+                />
+            </div>
+
             {/* ── Barre d'onglets ── */}
             <div className="border-b">
                 <nav className="flex gap-1" aria-label="Sections des paramètres">
@@ -86,87 +104,6 @@ export default function Settings({ urls = {}, permissions = {} }) {
                 </nav>
             </div>
 
-            {/* ── Onglet Général ── */}
-            {activeTab === 'general' && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl">
-
-                    {/* Site */}
-                    <div className="rounded-lg border">
-                        <div className="px-5 py-4 border-b bg-muted/40">
-                            <h3 className="font-semibold text-sm">Site</h3>
-                            <p className="text-xs text-muted-foreground mt-0.5">Disponibilité du site pour les visiteurs</p>
-                        </div>
-                        <div className="p-5">
-                            <div className="flex items-center justify-between gap-6">
-                                <div>
-                                    <p className="text-sm font-medium">Mode maintenance</p>
-                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                        Quand activé, tous les visiteurs voient une page de maintenance.
-                                        Les administrateurs continuent d'accéder au site normalement.
-                                    </p>
-                                </div>
-                                <button
-                                    type="button"
-                                    role="switch"
-                                    aria-checked={settings?.maintenanceMode}
-                                    disabled={saving || permissions.canEditSettings === false}
-                                    onClick={() => updateSetting({ maintenanceMode: !settings?.maintenanceMode })}
-                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                                        settings?.maintenanceMode ? 'bg-destructive' : 'bg-muted'
-                                    } ${saving ? 'opacity-60 cursor-not-allowed' : ''}`}
-                                >
-                                    <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition-transform ${
-                                        settings?.maintenanceMode ? 'translate-x-5' : 'translate-x-0'
-                                    }`} />
-                                </button>
-                            </div>
-                            {settings?.maintenanceMode && (
-                                <div className="mt-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
-                                    Le site est actuellement en <strong>maintenance</strong>. Les visiteurs ne peuvent pas y accéder.
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Boutique */}
-                    <div className="rounded-lg border">
-                        <div className="px-5 py-4 border-b bg-muted/40">
-                            <h3 className="font-semibold text-sm">Boutique en ligne</h3>
-                            <p className="text-xs text-muted-foreground mt-0.5">Activer ou désactiver l'accès public à la boutique</p>
-                        </div>
-                        <div className="p-5">
-                            <div className="flex items-center justify-between gap-6">
-                                <div>
-                                    <p className="text-sm font-medium">Boutique active</p>
-                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                        Quand désactivée, les pages <code>/boutique/*</code> affichent un message de maintenance
-                                        et le lien dans la navigation est masqué.
-                                    </p>
-                                </div>
-                                <button
-                                    type="button"
-                                    role="switch"
-                                    aria-checked={settings?.shopEnabled}
-                                    disabled={saving || permissions.canEditSettings === false}
-                                    onClick={() => updateSetting({ shopEnabled: !settings?.shopEnabled })}
-                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                                        settings?.shopEnabled ? 'bg-primary' : 'bg-muted'
-                                    } ${saving ? 'opacity-60 cursor-not-allowed' : ''}`}
-                                >
-                                    <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition-transform ${
-                                        settings?.shopEnabled ? 'translate-x-5' : 'translate-x-0'
-                                    }`} />
-                                </button>
-                            </div>
-                            {settings?.shopEnabled === false && (
-                                <div className="mt-4 rounded-md bg-yellow-50 border border-yellow-200 px-4 py-3 text-sm text-yellow-800">
-                                    La boutique est actuellement <strong>désactivée</strong>. Les visiteurs voient une page de maintenance.
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* ── Onglet Facturation ── */}
             {activeTab === 'facturation' && (
@@ -282,6 +219,29 @@ export default function Settings({ urls = {}, permissions = {} }) {
                 </div>
             )}
 
+        </div>
+    );
+}
+
+function Toggle({ label, description, checked, onChange, disabled, danger = false }) {
+    return (
+        <div className={`flex items-center justify-between gap-6 rounded-lg border px-4 py-3 min-w-64 ${checked && danger ? 'border-destructive/40 bg-destructive/5' : 'bg-card'}`}>
+            <div>
+                <p className="text-sm font-medium">{label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+            </div>
+            <button
+                type="button"
+                role="switch"
+                aria-checked={checked}
+                disabled={disabled}
+                onClick={onChange}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    checked ? (danger ? 'bg-destructive' : 'bg-primary') : 'bg-muted'
+                } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+            >
+                <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
         </div>
     );
 }
