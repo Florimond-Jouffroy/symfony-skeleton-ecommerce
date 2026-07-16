@@ -113,6 +113,22 @@ class SettingController extends AbstractController
             $this->settingRepo->setValue('security.2fa.trusted_device_days', (string) $days);
         }
 
+        if (isset($payload['rateLimitMaxAttempts'])) {
+            $max = (int) $payload['rateLimitMaxAttempts'];
+            if ($max < 0 || $max > 100) {
+                return $this->json(['message' => 'Valeur invalide pour rateLimitMaxAttempts (0–100).'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+            $this->settingRepo->setValue('security.rate_limit.max_attempts', (string) $max);
+        }
+
+        if (isset($payload['rateLimitWindowMinutes'])) {
+            $window = (int) $payload['rateLimitWindowMinutes'];
+            if ($window < 1 || $window > 1440) {
+                return $this->json(['message' => 'Valeur invalide pour rateLimitWindowMinutes (1–1440).'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+            $this->settingRepo->setValue('security.rate_limit.window_minutes', (string) $window);
+        }
+
         return $this->json($this->buildPayload());
     }
 
@@ -144,7 +160,9 @@ class SettingController extends AbstractController
             'paypalClientId'         => $this->settingRepo->getValue('payment.paypal.client_id', ''),
             'paypalClientSecretSet'  => '' !== $paypalClientSecret,
             'paypalWebhookIdSet'     => '' !== $paypalWebhookId,
-            'twoFaRememberDays'      => (int) $this->settingRepo->getValue('security.2fa.trusted_device_days', '30'),
+            'twoFaRememberDays'        => (int) $this->settingRepo->getValue('security.2fa.trusted_device_days', '30'),
+            'rateLimitMaxAttempts'     => (int) $this->settingRepo->getValue('security.rate_limit.max_attempts', '5'),
+            'rateLimitWindowMinutes'   => (int) $this->settingRepo->getValue('security.rate_limit.window_minutes', '15'),
         ];
     }
 }

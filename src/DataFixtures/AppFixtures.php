@@ -55,7 +55,9 @@ class AppFixtures extends Fixture
             'shop.enabled'                   => 'true',
             'invoice.trigger'                => 'on_confirm',
             'invoice.default_tax_rate'       => '20',
-            'security.2fa.trusted_device_days' => '30',
+            'security.2fa.trusted_device_days'    => '30',
+            'security.rate_limit.max_attempts'    => '5',
+            'security.rate_limit.window_minutes'  => '15',
         ];
 
         $repo = $em->getRepository(AppSetting::class);

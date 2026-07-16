@@ -33,6 +33,10 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    App\Service\RateLimiterService:
+        arguments:
+            $cache: '@cache.app'
+
     App\Controller\Api\Admin\TwoFactorController:
         arguments:
             $appName: '%env(APP_NAME)%'

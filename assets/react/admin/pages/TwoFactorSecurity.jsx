@@ -12,9 +12,14 @@ export default function TwoFactorSecurity({ urls = {} }) {
     const [error, setError]           = useState('');
     const [saving, setSaving]         = useState(false);
     const [feedback, setFeedback]     = useState('');
-    const [trustedDays, setTrustedDays]   = useState(30);
-    const [savingDays, setSavingDays]     = useState(false);
-    const [daysInput, setDaysInput]       = useState(30);
+    const [trustedDays, setTrustedDays]       = useState(30);
+    const [savingDays, setSavingDays]         = useState(false);
+    const [daysInput, setDaysInput]           = useState(30);
+    const [maxAttempts, setMaxAttempts]       = useState(5);
+    const [windowMinutes, setWindowMinutes]   = useState(15);
+    const [attemptsInput, setAttemptsInput]   = useState(5);
+    const [windowInput, setWindowInput]       = useState(15);
+    const [savingRate, setSavingRate]         = useState(false);
     const codeRef = useRef(null);
 
     useEffect(() => {
@@ -26,10 +31,33 @@ export default function TwoFactorSecurity({ urls = {} }) {
                 setEnabled(statusData.enabled);
                 setTrustedDays(settingsData.twoFaRememberDays ?? 30);
                 setDaysInput(settingsData.twoFaRememberDays ?? 30);
+                setMaxAttempts(settingsData.rateLimitMaxAttempts ?? 5);
+                setWindowMinutes(settingsData.rateLimitWindowMinutes ?? 15);
+                setAttemptsInput(settingsData.rateLimitMaxAttempts ?? 5);
+                setWindowInput(settingsData.rateLimitWindowMinutes ?? 15);
             })
             .catch(() => setError('Impossible de charger le statut 2FA.'))
             .finally(() => setLoading(false));
     }, []);
+
+    const saveRateLimit = async () => {
+        setSavingRate(true);
+        try {
+            const data = await api.patch(urls.settings ?? '/api/admin/parametres', {
+                rateLimitMaxAttempts:   attemptsInput,
+                rateLimitWindowMinutes: windowInput,
+            });
+            setMaxAttempts(data.rateLimitMaxAttempts);
+            setWindowMinutes(data.rateLimitWindowMinutes);
+            setAttemptsInput(data.rateLimitMaxAttempts);
+            setWindowInput(data.rateLimitWindowMinutes);
+            setFeedback('Paramètres enregistrés.');
+        } catch {
+            setError('Impossible de sauvegarder les paramètres.');
+        } finally {
+            setSavingRate(false);
+        }
+    };
 
     const saveTrustedDays = async () => {
         setSavingDays(true);
@@ -312,6 +340,66 @@ export default function TwoFactorSecurity({ urls = {} }) {
                             La mémorisation est désactivée — le code 2FA sera demandé à chaque connexion.
                         </p>
                     )}
+                </div>
+            </div>
+
+            {/* ── Rate limiting ── */}
+            <div className="rounded-lg border">
+                <div className="px-5 py-4 border-b bg-muted/40">
+                    <h3 className="font-semibold text-sm">Protection brute-force</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                        Limite le nombre d'échecs sur les endpoints de connexion, inscription et réinitialisation
+                    </p>
+                </div>
+                <div className="p-5 space-y-5">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium">Tentatives max</label>
+                            <p className="text-xs text-muted-foreground">0 = désactivé</p>
+                            <input
+                                type="number"
+                                min={0}
+                                max={100}
+                                value={attemptsInput}
+                                onChange={e => setAttemptsInput(Math.max(0, Math.min(100, parseInt(e.target.value, 10) || 0)))}
+                                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium">Fenêtre (minutes)</label>
+                            <p className="text-xs text-muted-foreground">Durée de blocage après dépassement</p>
+                            <input
+                                type="number"
+                                min={1}
+                                max={1440}
+                                value={windowInput}
+                                onChange={e => setWindowInput(Math.max(1, Math.min(1440, parseInt(e.target.value, 10) || 1)))}
+                                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                        </div>
+                    </div>
+
+                    {attemptsInput === 0 && (
+                        <p className="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-md px-3 py-2">
+                            La protection brute-force est <strong>désactivée</strong>. Les endpoints d'authentification sont sans limite.
+                        </p>
+                    )}
+
+                    {attemptsInput > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                            Après <strong>{attemptsInput} échec{attemptsInput > 1 ? 's' : ''}</strong>, l'IP est bloquée pendant <strong>{windowInput} minute{windowInput > 1 ? 's' : ''}</strong>.
+                            Le compteur se réinitialise après une connexion réussie.
+                        </p>
+                    )}
+
+                    <button
+                        type="button"
+                        onClick={saveRateLimit}
+                        disabled={savingRate || (attemptsInput === maxAttempts && windowInput === windowMinutes)}
+                        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                    >
+                        {savingRate ? 'Enregistrement…' : 'Enregistrer'}
+                    </button>
                 </div>
             </div>
 

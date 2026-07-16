@@ -16,6 +16,7 @@ use App\Security\LoginAuthenticator;
 use App\Service\AuthMailer;
 use App\Service\Manager\PasswordResetManager;
 use App\Service\Manager\UserManager;
+use App\Service\RateLimiterService;
 use App\Service\TrustedDeviceService;
 use OTPHP\TOTP;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,6 +37,7 @@ class AuthController extends AbstractController
         private readonly AuthMailer $authMailer,
         private readonly AppSettingRepository $settingRepo,
         private readonly TrustedDeviceService $trustedDeviceService,
+        private readonly RateLimiterService $rateLimiter,
     ) {
     }
 
@@ -47,9 +49,19 @@ class AuthController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         Security $security,
     ): JsonResponse {
+        $ip          = $request->getClientIp() ?? 'unknown';
+        $maxAttempts = (int) $this->settingRepo->getValue('security.rate_limit.max_attempts', '5');
+        $windowSecs  = (int) $this->settingRepo->getValue('security.rate_limit.window_minutes', '15') * 60;
+
+        if (!$this->rateLimiter->isAllowed('login', $ip, $maxAttempts)) {
+            return $this->rateLimitResponse('login', $ip);
+        }
+
         $user = $userRepository->findOneBy(['email' => $dto->email]);
 
         if (!$user || !$passwordHasher->isPasswordValid($user, $dto->password)) {
+            $this->rateLimiter->hit('login', $ip, $windowSecs);
+
             return $this->json(
                 ['message' => 'Identifiants incorrects.'],
                 Response::HTTP_UNAUTHORIZED,
@@ -81,6 +93,7 @@ class AuthController extends AbstractController
             return $this->json(['2fa_required' => true, 'trusted_device_days' => $trustedDeviceDays]);
         }
 
+        $this->rateLimiter->reset('login', $ip);
         $security->login($user, LoginAuthenticator::class);
 
         return $this->json([
@@ -97,6 +110,14 @@ class AuthController extends AbstractController
         UserRepository $userRepository,
         Security $security,
     ): JsonResponse {
+        $ip          = $request->getClientIp() ?? 'unknown';
+        $maxAttempts = (int) $this->settingRepo->getValue('security.rate_limit.max_attempts', '5');
+        $windowSecs  = (int) $this->settingRepo->getValue('security.rate_limit.window_minutes', '15') * 60;
+
+        if (!$this->rateLimiter->isAllowed('2fa', $ip, $maxAttempts)) {
+            return $this->rateLimitResponse('2fa', $ip);
+        }
+
         $userId = $request->getSession()->get('_2fa_pending');
 
         if (!$userId) {
@@ -112,9 +133,12 @@ class AuthController extends AbstractController
         $totp = TOTP::createFromSecret($user->getTotpSecret());
 
         if (!$totp->verify($dto->code, null, 1)) {
+            $this->rateLimiter->hit('2fa', $ip, $windowSecs);
+
             return $this->json(['message' => 'Code invalide ou expiré.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        $this->rateLimiter->reset('2fa', $ip);
         $request->getSession()->remove('_2fa_pending');
         $security->login($user, LoginAuthenticator::class);
 
@@ -136,8 +160,19 @@ class AuthController extends AbstractController
 
     #[Route('/inscription', name: 'api_auth_register', methods: ['POST'])]
     public function register(
+        Request $request,
         #[MapRequestPayload] RegisterDto $dto,
     ): JsonResponse {
+        $ip          = $request->getClientIp() ?? 'unknown';
+        $maxAttempts = (int) $this->settingRepo->getValue('security.rate_limit.max_attempts', '5');
+        $windowSecs  = (int) $this->settingRepo->getValue('security.rate_limit.window_minutes', '15') * 60;
+
+        if (!$this->rateLimiter->isAllowed('register', $ip, $maxAttempts)) {
+            return $this->rateLimitResponse('register', $ip);
+        }
+
+        $this->rateLimiter->hit('register', $ip, $windowSecs);
+
         $user = $this->userManager->createFromDto($dto);
 
         if (!$user) {
@@ -171,9 +206,20 @@ class AuthController extends AbstractController
 
     #[Route('/reinitialisation-mot-de-passe/demande', name: 'api_auth_reset_password_request', methods: ['POST'])]
     public function requestPasswordReset(
+        Request $request,
         #[MapRequestPayload] RequestPasswordResetDto $dto,
         UserRepository $userRepository,
     ): JsonResponse {
+        $ip          = $request->getClientIp() ?? 'unknown';
+        $maxAttempts = (int) $this->settingRepo->getValue('security.rate_limit.max_attempts', '5');
+        $windowSecs  = (int) $this->settingRepo->getValue('security.rate_limit.window_minutes', '15') * 60;
+
+        if (!$this->rateLimiter->isAllowed('reset', $ip, $maxAttempts)) {
+            return $this->rateLimitResponse('reset', $ip);
+        }
+
+        $this->rateLimiter->hit('reset', $ip, $windowSecs);
+
         $user = $userRepository->findOneBy(['email' => $dto->email]);
 
         if ($user) {
@@ -215,5 +261,19 @@ class AuthController extends AbstractController
         $this->passwordResetManager->consumeToken($token);
 
         return $this->json(['message' => 'Votre mot de passe a été réinitialisé avec succès.']);
+    }
+
+    private function rateLimitResponse(string $type, string $ip): JsonResponse
+    {
+        $retryAfter = $this->rateLimiter->getRetryAfter($type, $ip);
+        $minutes    = (int) ceil($retryAfter / 60);
+
+        $response = $this->json(
+            ['message' => "Trop de tentatives. Réessayez dans {$minutes} minute(s).", 'retry_after' => $retryAfter],
+            Response::HTTP_TOO_MANY_REQUESTS,
+        );
+        $response->headers->set('Retry-After', (string) $retryAfter);
+
+        return $response;
     }
 }
