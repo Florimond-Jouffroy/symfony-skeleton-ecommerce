@@ -14,7 +14,6 @@ const TABS = [
     { id: 'general',     label: 'Général' },
     { id: 'facturation', label: 'Facturation' },
     { id: 'paiements',   label: 'Paiements' },
-    { id: 'securite',    label: 'Sécurité' },
 ];
 
 export default function Settings({ urls = {}, permissions = {} }) {
@@ -283,57 +282,6 @@ export default function Settings({ urls = {}, permissions = {} }) {
                 </div>
             )}
 
-            {/* ── Onglet Sécurité ── */}
-            {activeTab === 'securite' && (
-                <div className="rounded-lg border max-w-2xl">
-                    <div className="px-5 py-4 border-b bg-muted/40">
-                        <h3 className="font-semibold text-sm">Double authentification (2FA)</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                            Durée pendant laquelle un appareil de confiance peut se connecter sans redemander le code
-                        </p>
-                    </div>
-                    <div className="p-5 space-y-5">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                                Durée de confiance des appareils
-                            </label>
-                            <p className="text-xs text-muted-foreground">
-                                Après une 2FA réussie et l'activation de "Se souvenir de cet appareil",
-                                le code ne sera plus demandé pendant cette durée.
-                                Mettre <strong>0</strong> pour désactiver la fonctionnalité (code demandé à chaque connexion).
-                            </p>
-                            <div className="flex items-center gap-3">
-                                <input
-                                    type="number"
-                                    min={0}
-                                    max={365}
-                                    value={settings?.twoFaRememberDays ?? 30}
-                                    disabled={saving || permissions.canEditSettings === false}
-                                    onChange={e => {
-                                        const val = Math.max(0, Math.min(365, parseInt(e.target.value, 10) || 0));
-                                        updateSetting({ twoFaRememberDays: val });
-                                    }}
-                                    className="w-24 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
-                                />
-                                <span className="text-sm text-muted-foreground">jours (0 = désactivé)</span>
-                            </div>
-                        </div>
-
-                        {(settings?.twoFaRememberDays ?? 30) === 0 && (
-                            <div className="rounded-md bg-yellow-50 border border-yellow-200 px-4 py-3 text-sm text-yellow-800">
-                                La mémorisation des appareils est <strong>désactivée</strong>. Le code 2FA sera demandé à chaque connexion.
-                            </div>
-                        )}
-
-                        <div className="rounded-md bg-muted/60 px-4 py-3 text-xs text-muted-foreground space-y-1">
-                            <p>
-                                La confiance est stockée dans un cookie sécurisé (<code>HttpOnly</code>, <code>SameSite=Strict</code>)
-                                lié à l'appareil et à l'utilisateur. Effacer les cookies du navigateur révoque la confiance.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

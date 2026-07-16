@@ -3,23 +3,47 @@ import QRCode from 'qrcode';
 import { api, getErrorMessage } from '../../utils/api';
 
 export default function TwoFactorSecurity({ urls = {} }) {
-    const [enabled, setEnabled]   = useState(null);
-    const [loading, setLoading]   = useState(true);
-    const [step, setStep]         = useState('idle'); // 'idle' | 'setup' | 'disable'
-    const [setupData, setSetupData] = useState(null); // { secret, uri }
-    const [qrDataUrl, setQrDataUrl] = useState('');
-    const [code, setCode]         = useState('');
-    const [error, setError]       = useState('');
-    const [saving, setSaving]     = useState(false);
-    const [feedback, setFeedback] = useState('');
+    const [enabled, setEnabled]       = useState(null);
+    const [loading, setLoading]       = useState(true);
+    const [step, setStep]             = useState('idle'); // 'idle' | 'setup' | 'disable'
+    const [setupData, setSetupData]   = useState(null); // { secret, uri }
+    const [qrDataUrl, setQrDataUrl]   = useState('');
+    const [code, setCode]             = useState('');
+    const [error, setError]           = useState('');
+    const [saving, setSaving]         = useState(false);
+    const [feedback, setFeedback]     = useState('');
+    const [trustedDays, setTrustedDays]   = useState(30);
+    const [savingDays, setSavingDays]     = useState(false);
+    const [daysInput, setDaysInput]       = useState(30);
     const codeRef = useRef(null);
 
     useEffect(() => {
-        api.get(urls.twoFactor ?? '/api/admin/securite/2fa')
-            .then(data => setEnabled(data.enabled))
+        Promise.all([
+            api.get(urls.twoFactor ?? '/api/admin/securite/2fa'),
+            api.get(urls.settings  ?? '/api/admin/parametres'),
+        ])
+            .then(([statusData, settingsData]) => {
+                setEnabled(statusData.enabled);
+                setTrustedDays(settingsData.twoFaRememberDays ?? 30);
+                setDaysInput(settingsData.twoFaRememberDays ?? 30);
+            })
             .catch(() => setError('Impossible de charger le statut 2FA.'))
             .finally(() => setLoading(false));
     }, []);
+
+    const saveTrustedDays = async () => {
+        setSavingDays(true);
+        try {
+            const data = await api.patch(urls.settings ?? '/api/admin/parametres', { twoFaRememberDays: daysInput });
+            setTrustedDays(data.twoFaRememberDays);
+            setDaysInput(data.twoFaRememberDays);
+            setFeedback('Durée enregistrée.');
+        } catch {
+            setError('Impossible de sauvegarder la durée.');
+        } finally {
+            setSavingDays(false);
+        }
+    };
 
     useEffect(() => {
         if (step === 'idle') { setCode(''); setError(''); setSetupData(null); setQrDataUrl(''); }
@@ -246,6 +270,47 @@ export default function TwoFactorSecurity({ urls = {} }) {
                                 </button>
                             </div>
                         </form>
+                    )}
+                </div>
+            </div>
+
+            {/* ── Durée de confiance ── */}
+            <div className="rounded-lg border">
+                <div className="px-5 py-4 border-b bg-muted/40">
+                    <h3 className="font-semibold text-sm">Mémorisation des appareils</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                        Durée pendant laquelle un appareil de confiance peut se connecter sans redemander le code
+                    </p>
+                </div>
+                <div className="p-5 space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                        Après une 2FA réussie, l'utilisateur peut cocher "Se souvenir de cet appareil".
+                        Le code ne sera alors plus demandé pendant la durée ci-dessous.
+                        Mettre <strong>0</strong> pour désactiver cette option.
+                    </p>
+                    <div className="flex items-center gap-3">
+                        <input
+                            type="number"
+                            min={0}
+                            max={365}
+                            value={daysInput}
+                            onChange={e => setDaysInput(Math.max(0, Math.min(365, parseInt(e.target.value, 10) || 0)))}
+                            className="w-24 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                        <span className="text-sm text-muted-foreground">jours (0 = désactivé)</span>
+                        <button
+                            type="button"
+                            onClick={saveTrustedDays}
+                            disabled={savingDays || daysInput === trustedDays}
+                            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                        >
+                            {savingDays ? 'Enregistrement…' : 'Enregistrer'}
+                        </button>
+                    </div>
+                    {daysInput === 0 && (
+                        <p className="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-md px-3 py-2">
+                            La mémorisation est désactivée — le code 2FA sera demandé à chaque connexion.
+                        </p>
                     )}
                 </div>
             </div>
