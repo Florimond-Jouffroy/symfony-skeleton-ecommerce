@@ -6,11 +6,6 @@
 
     "repositories": [
         {
-            "type": "path",
-            "url": "/var/www/log-bundle",
-            "options": {"symlink": true}
-        },
-        {
             "type": "vcs",
             "url": "git@github.com:Florimond-Jouffroy/log-bundle.git"
         },

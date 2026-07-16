@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "95ec24262ed2f82a011ddd4683e5ff18",
+    "content-hash": "1f809ae22f16b0057da507d7bd2d8b33",
     "packages": [
         {
             "name": "doctrine/collections",
@@ -1386,10 +1386,16 @@
         {
             "name": "florimond/log-bundle",
             "version": "1.2.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:Florimond-Jouffroy/log-bundle.git",
+                "reference": "08a86275208d87c8a28f7a1264620f15f357de47"
+            },
             "dist": {
-                "type": "path",
-                "url": "/var/www/log-bundle",
-                "reference": "0814c024bf0c06341c2bb69f366902c89bd709ee"
+                "type": "zip",
+                "url": "https://api.github.com/repos/Florimond-Jouffroy/log-bundle/zipball/08a86275208d87c8a28f7a1264620f15f357de47",
+                "reference": "08a86275208d87c8a28f7a1264620f15f357de47",
+                "shasum": ""
             },
             "require": {
                 "doctrine/doctrine-bundle": "^2.13 || ^3.0",
@@ -1404,6 +1410,10 @@
             "require-dev": {
                 "doctrine/dbal": "^4.0",
                 "phpunit/phpunit": "^11.0"
+            },
+            "suggest": {
+                "symfony/mailer": "Required to capture mail sent/failed events (MailLog)",
+                "symfony/security-http": "Required to capture authentication events (AuthLog)"
             },
             "type": "symfony-bundle",
             "autoload": {
@@ -1431,10 +1441,7 @@
                 "florimond_log",
                 "symfony"
             ],
-            "transport-options": {
-                "symlink": true,
-                "relative": false
-            }
+            "time": "2026-07-16T16:16:22+00:00"
         },
         {
             "name": "florimond/multi-db-migrations-bundle",
