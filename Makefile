@@ -27,7 +27,7 @@ HELP_COLOR = \033[36m
 NO_COLOR   = \033[0m
 
 .DEFAULT_GOAL := help
-.PHONY: help setup install up down stop restart build ps logs sh shell cmd cs vendor sf cc cc-hard db-main-create db-main-migration db-main-migrate db-main-drop db-main-reset db-log-create db-log-migrate db-log-drop db-log-reset db-setup db-test-setup stan perm composer composer-rm npm npm-rm npm-setup qa test create-admin fixtures fixtures-reset
+.PHONY: help setup install up down stop restart build ps logs sh shell cmd cs vendor sf cc cc-hard db-main-create db-main-migration db-main-migrate db-main-drop db-main-reset db-log-create db-log-migrate db-log-drop db-log-reset db-setup db-test-setup stan perm composer composer-rm npm npm-rm npm-setup qa test create-admin fixtures fixtures-reset worker worker-failed worker-retry
 
 ## —— SYSTEM & CONFIGURATION ⚙️ ————————————————————————————————————————————————
 
@@ -190,6 +190,17 @@ fixtures: ## Charge les fixtures de développement (sans vider la base)
 
 fixtures-reset: db-main-reset ## Réinitialise la base principale et recharge les fixtures
 	$(CONSOLE) doctrine:fixtures:load --no-interaction --append
+
+## —— MESSENGER & WORKERS 📨 ————————————————————————————————————————————————————
+
+worker: ## Lance le worker Messenger en premier plan (emails async, retry automatique)
+	$(CONSOLE) messenger:consume async --time-limit=3600 -vv
+
+worker-failed: ## Affiche les messages en échec dans la file failed
+	$(CONSOLE) messenger:failed:show -vv
+
+worker-retry: ## Réessaie les messages en échec (usage: make worker-retry ou make worker-retry id=42)
+	$(CONSOLE) messenger:failed:retry $(id) -vv
 
 ## —— QUALITÉ, TESTS & DROITS 🛠️ ————————————————————————————————————————————————
 
