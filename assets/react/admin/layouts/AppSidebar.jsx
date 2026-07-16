@@ -51,8 +51,11 @@ const SHOP_ITEMS = [
     { to: '/produits',            icon: Package,      label: 'Produits',    permission: 'canViewProducts' },
     { to: '/categories-produits', icon: Tag,          label: 'Catégories',  permission: 'canViewProductCategories' },
     { to: '/livraison',           icon: Truck,        label: 'Livraison',   permission: 'canViewShipping' },
-    { to: '/parametres',          icon: Settings,     label: 'Paramètres',  permission: 'canViewSettings' },
-    { to: '/securite',            icon: ShieldCheck,  label: 'Sécurité',    permission: null },
+];
+
+const CONFIG_ITEMS = [
+    { to: '/parametres', icon: Settings,    label: 'Paramètres', permission: 'canViewSettings' },
+    { to: '/securite',   icon: ShieldCheck, label: 'Sécurité',   permission: null },
 ];
 
 function getInitials(email) {
@@ -115,12 +118,13 @@ export default function AppSidebar({ userEmail = '', logoutUrl = '/deconnexion',
 
     const allowed = (permission) => permission === null || permissions[permission] !== false;
 
-    const navItems  = NAV_ITEMS.filter(i => allowed(i.permission));
-    const blogItems = BLOG_ITEMS.filter(i => allowed(i.permission));
-    const shopItems = SHOP_ITEMS.filter(i => allowed(i.permission));
+    const navItems    = NAV_ITEMS.filter(i => allowed(i.permission));
+    const blogItems   = BLOG_ITEMS.filter(i => allowed(i.permission));
+    const shopItems   = SHOP_ITEMS.filter(i => allowed(i.permission));
+    const configItems = CONFIG_ITEMS.filter(i => allowed(i.permission));
 
     const isBlogActive = pathname.startsWith('/articles') || pathname.startsWith('/categories');
-    const isShopActive = pathname.startsWith('/commandes') || pathname.startsWith('/factures') || pathname.startsWith('/produits') || pathname.startsWith('/categories-produits') || pathname.startsWith('/livraison') || pathname.startsWith('/parametres');
+    const isShopActive = pathname.startsWith('/commandes') || pathname.startsWith('/factures') || pathname.startsWith('/produits') || pathname.startsWith('/categories-produits') || pathname.startsWith('/livraison');
 
     return (
         <Sidebar collapsible="icon">
@@ -177,6 +181,19 @@ export default function AppSidebar({ userEmail = '', logoutUrl = '/deconnexion',
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
+
+                {configItems.length > 0 && (
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Configuration</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                {configItems.map(item => (
+                                    <NavItem key={item.to} {...item} />
+                                ))}
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                )}
             </SidebarContent>
 
             {/* ── Footer : utilisateur ── */}
