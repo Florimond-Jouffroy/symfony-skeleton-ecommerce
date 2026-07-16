@@ -10,11 +10,18 @@ const TAX_RATE_OPTIONS = [
     { value: 0,   label: '0% — Exonéré (exportations, DOM-TOM)' },
 ];
 
+const TABS = [
+    { id: 'general',     label: 'Général' },
+    { id: 'facturation', label: 'Facturation' },
+    { id: 'paiements',   label: 'Paiements' },
+];
+
 export default function Settings({ urls = {}, permissions = {} }) {
     const [settings, setSettings] = useState(null);
     const [loading, setLoading]   = useState(true);
     const [saving, setSaving]     = useState(false);
     const [feedback, setFeedback] = useState(null);
+    const [activeTab, setActiveTab] = useState('general');
 
     useEffect(() => {
         api.get(urls.settings ?? '/api/admin/parametres')
@@ -47,7 +54,7 @@ export default function Settings({ urls = {}, permissions = {} }) {
     }
 
     return (
-        <div className="space-y-8 max-w-2xl">
+        <div className="space-y-6">
             <div>
                 <h2 className="text-2xl font-bold tracking-tight">Paramètres</h2>
                 <p className="text-sm text-muted-foreground mt-1">Configuration générale de la boutique</p>
@@ -59,193 +66,220 @@ export default function Settings({ urls = {}, permissions = {} }) {
                 </p>
             )}
 
-            {/* ── Site ── */}
-            <div className="rounded-lg border">
-                <div className="px-5 py-4 border-b bg-muted/40">
-                    <h3 className="font-semibold text-sm">Site</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">Disponibilité du site pour les visiteurs</p>
-                </div>
-                <div className="p-5">
-                    <div className="flex items-center justify-between gap-6">
-                        <div>
-                            <p className="text-sm font-medium">Mode maintenance</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                                Quand activé, tous les visiteurs voient une page de maintenance.
-                                Les administrateurs continuent d'accéder au site normalement.
-                            </p>
-                        </div>
+            {/* ── Barre d'onglets ── */}
+            <div className="border-b">
+                <nav className="flex gap-1" aria-label="Sections des paramètres">
+                    {TABS.map(tab => (
                         <button
+                            key={tab.id}
                             type="button"
-                            role="switch"
-                            aria-checked={settings?.maintenanceMode}
-                            disabled={saving || permissions.canEditSettings === false}
-                            onClick={() => updateSetting({ maintenanceMode: !settings?.maintenanceMode })}
-                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                                settings?.maintenanceMode ? 'bg-destructive' : 'bg-muted'
-                            } ${saving ? 'opacity-60 cursor-not-allowed' : ''}`}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                                activeTab === tab.id
+                                    ? 'border-primary text-foreground'
+                                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/40'
+                            }`}
                         >
-                            <span
-                                className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition-transform ${
-                                    settings?.maintenanceMode ? 'translate-x-5' : 'translate-x-0'
-                                }`}
-                            />
+                            {tab.label}
                         </button>
-                    </div>
-                    {settings?.maintenanceMode && (
-                        <div className="mt-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
-                            Le site est actuellement en <strong>maintenance</strong>. Les visiteurs ne peuvent pas accéder au site.
-                            Une bannière d'avertissement est affichée pour les administrateurs connectés.
-                        </div>
-                    )}
-                </div>
+                    ))}
+                </nav>
             </div>
 
-            {/* ── Boutique ── */}
-            <div className="rounded-lg border">
-                <div className="px-5 py-4 border-b bg-muted/40">
-                    <h3 className="font-semibold text-sm">Boutique en ligne</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">Activer ou désactiver l'accès public à la boutique</p>
-                </div>
-                <div className="p-5">
-                    <div className="flex items-center justify-between gap-6">
-                        <div>
-                            <p className="text-sm font-medium">Boutique active</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                                Quand désactivée, les pages <code>/boutique/*</code> affichent un message de maintenance
-                                et le lien dans la navigation est masqué. L'administration reste entièrement accessible.
-                            </p>
+            {/* ── Onglet Général ── */}
+            {activeTab === 'general' && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl">
+
+                    {/* Site */}
+                    <div className="rounded-lg border">
+                        <div className="px-5 py-4 border-b bg-muted/40">
+                            <h3 className="font-semibold text-sm">Site</h3>
+                            <p className="text-xs text-muted-foreground mt-0.5">Disponibilité du site pour les visiteurs</p>
                         </div>
-                        <button
-                            type="button"
-                            role="switch"
-                            aria-checked={settings?.shopEnabled}
-                            disabled={saving || permissions.canEditSettings === false}
-                            onClick={() => updateSetting({ shopEnabled: !settings?.shopEnabled })}
-                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                                settings?.shopEnabled ? 'bg-primary' : 'bg-muted'
-                            } ${saving ? 'opacity-60 cursor-not-allowed' : ''}`}
-                        >
-                            <span
-                                className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition-transform ${
-                                    settings?.shopEnabled ? 'translate-x-5' : 'translate-x-0'
-                                }`}
-                            />
-                        </button>
+                        <div className="p-5">
+                            <div className="flex items-center justify-between gap-6">
+                                <div>
+                                    <p className="text-sm font-medium">Mode maintenance</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                        Quand activé, tous les visiteurs voient une page de maintenance.
+                                        Les administrateurs continuent d'accéder au site normalement.
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={settings?.maintenanceMode}
+                                    disabled={saving || permissions.canEditSettings === false}
+                                    onClick={() => updateSetting({ maintenanceMode: !settings?.maintenanceMode })}
+                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                                        settings?.maintenanceMode ? 'bg-destructive' : 'bg-muted'
+                                    } ${saving ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                >
+                                    <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition-transform ${
+                                        settings?.maintenanceMode ? 'translate-x-5' : 'translate-x-0'
+                                    }`} />
+                                </button>
+                            </div>
+                            {settings?.maintenanceMode && (
+                                <div className="mt-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
+                                    Le site est actuellement en <strong>maintenance</strong>. Les visiteurs ne peuvent pas y accéder.
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    {settings?.shopEnabled === false && (
-                        <div className="mt-4 rounded-md bg-yellow-50 border border-yellow-200 px-4 py-3 text-sm text-yellow-800">
-                            La boutique est actuellement <strong>désactivée</strong>. Les visiteurs voient une page de maintenance.
-                        </div>
-                    )}
-                </div>
-            </div>
 
-            {/* ── Facturation ── */}
-            <div className="rounded-lg border">
-                <div className="px-5 py-4 border-b bg-muted/40">
-                    <h3 className="font-semibold text-sm">Facturation</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">Génération des factures et TVA par défaut</p>
-                </div>
-                <div className="p-5 space-y-6">
-
-                    {/* Déclencheur */}
-                    <div className="space-y-3">
-                        <div>
-                            <p className="text-sm font-medium">Déclencheur de la facture</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">Quand la facture est générée automatiquement</p>
+                    {/* Boutique */}
+                    <div className="rounded-lg border">
+                        <div className="px-5 py-4 border-b bg-muted/40">
+                            <h3 className="font-semibold text-sm">Boutique en ligne</h3>
+                            <p className="text-xs text-muted-foreground mt-0.5">Activer ou désactiver l'accès public à la boutique</p>
                         </div>
-                        <div className="space-y-2">
-                            {[
-                                {
-                                    value: 'on_order',
-                                    label: 'À la création de la commande',
-                                    description: 'Facture générée dès la validation du panier (statut En attente). Idéal pour les paiements immédiats.',
-                                },
-                                {
-                                    value: 'on_confirm',
-                                    label: "Lors de la confirmation par l'admin",
-                                    description: "Facture générée quand l'admin passe la commande en Confirmée. Recommandé pour les validations manuelles.",
-                                },
-                            ].map(({ value, label, description }) => {
-                                const active = settings?.invoiceTrigger === value;
-                                return (
-                                    <button
-                                        key={value}
-                                        type="button"
-                                        disabled={saving || permissions.canEditSettings === false}
-                                        onClick={() => !active && permissions.canEditSettings !== false && updateSetting({ invoiceTrigger: value })}
-                                        className={`w-full text-left rounded-lg border-2 p-4 transition-colors ${
-                                            active ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/40'
-                                        } ${saving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
-                                    >
-                                        <div className="flex items-start gap-3">
-                                            <div className={`mt-0.5 size-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                                                active ? 'border-primary' : 'border-muted-foreground/40'
-                                            }`}>
-                                                {active && <div className="size-2 rounded-full bg-primary" />}
+                        <div className="p-5">
+                            <div className="flex items-center justify-between gap-6">
+                                <div>
+                                    <p className="text-sm font-medium">Boutique active</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                        Quand désactivée, les pages <code>/boutique/*</code> affichent un message de maintenance
+                                        et le lien dans la navigation est masqué.
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={settings?.shopEnabled}
+                                    disabled={saving || permissions.canEditSettings === false}
+                                    onClick={() => updateSetting({ shopEnabled: !settings?.shopEnabled })}
+                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                                        settings?.shopEnabled ? 'bg-primary' : 'bg-muted'
+                                    } ${saving ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                >
+                                    <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition-transform ${
+                                        settings?.shopEnabled ? 'translate-x-5' : 'translate-x-0'
+                                    }`} />
+                                </button>
+                            </div>
+                            {settings?.shopEnabled === false && (
+                                <div className="mt-4 rounded-md bg-yellow-50 border border-yellow-200 px-4 py-3 text-sm text-yellow-800">
+                                    La boutique est actuellement <strong>désactivée</strong>. Les visiteurs voient une page de maintenance.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Onglet Facturation ── */}
+            {activeTab === 'facturation' && (
+                <div className="rounded-lg border max-w-2xl">
+                    <div className="px-5 py-4 border-b bg-muted/40">
+                        <h3 className="font-semibold text-sm">Facturation</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">Génération des factures et TVA par défaut</p>
+                    </div>
+                    <div className="p-5 space-y-6">
+
+                        {/* Déclencheur */}
+                        <div className="space-y-3">
+                            <div>
+                                <p className="text-sm font-medium">Déclencheur de la facture</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">Quand la facture est générée automatiquement</p>
+                            </div>
+                            <div className="space-y-2">
+                                {[
+                                    {
+                                        value: 'on_order',
+                                        label: 'À la création de la commande',
+                                        description: 'Facture générée dès la validation du panier (statut En attente). Idéal pour les paiements immédiats.',
+                                    },
+                                    {
+                                        value: 'on_confirm',
+                                        label: "Lors de la confirmation par l'admin",
+                                        description: "Facture générée quand l'admin passe la commande en Confirmée. Recommandé pour les validations manuelles.",
+                                    },
+                                ].map(({ value, label, description }) => {
+                                    const active = settings?.invoiceTrigger === value;
+                                    return (
+                                        <button
+                                            key={value}
+                                            type="button"
+                                            disabled={saving || permissions.canEditSettings === false}
+                                            onClick={() => !active && permissions.canEditSettings !== false && updateSetting({ invoiceTrigger: value })}
+                                            className={`w-full text-left rounded-lg border-2 p-4 transition-colors ${
+                                                active ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/40'
+                                            } ${saving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                                        >
+                                            <div className="flex items-start gap-3">
+                                                <div className={`mt-0.5 size-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                                    active ? 'border-primary' : 'border-muted-foreground/40'
+                                                }`}>
+                                                    {active && <div className="size-2 rounded-full bg-primary" />}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium">{label}</p>
+                                                    <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-medium">{label}</p>
-                                                <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="border-t" />
+
+                        {/* Taux de TVA par défaut */}
+                        <div className="space-y-3">
+                            <div>
+                                <p className="text-sm font-medium">Taux de TVA par défaut</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                    Appliqué aux produits dont la catégorie n'a pas de taux spécifique, et aux frais de livraison.
+                                </p>
+                            </div>
+                            <div className="space-y-2">
+                                {TAX_RATE_OPTIONS.map(({ value, label }) => {
+                                    const active = settings?.defaultTaxRate === value;
+                                    return (
+                                        <button
+                                            key={value}
+                                            type="button"
+                                            disabled={saving || permissions.canEditSettings === false}
+                                            onClick={() => !active && permissions.canEditSettings !== false && updateSetting({ defaultTaxRate: value })}
+                                            className={`w-full text-left rounded-lg border-2 px-4 py-3 transition-colors ${
+                                                active ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/40'
+                                            } ${saving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                                    active ? 'border-primary' : 'border-muted-foreground/40'
+                                                }`}>
+                                                    {active && <div className="size-2 rounded-full bg-primary" />}
+                                                </div>
+                                                <span className="text-sm">{label}</span>
                                             </div>
-                                        </div>
-                                    </button>
-                                );
-                            })}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="border-t" />
-
-                    {/* Taux de TVA par défaut */}
-                    <div className="space-y-3">
-                        <div>
-                            <p className="text-sm font-medium">Taux de TVA par défaut</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                                Appliqué aux produits dont la catégorie n'a pas de taux spécifique, et aux frais de livraison.
-                            </p>
+                        <div className="rounded-md bg-muted/60 px-4 py-3 text-xs text-muted-foreground">
+                            <strong>Taux par catégorie</strong> — Pour appliquer un taux différent sur certains produits,
+                            configurez-le directement sur la catégorie dans{' '}
+                            <strong>Boutique → Catégories</strong>. Il prend le dessus sur le taux par défaut.
+                            <br /><br />
+                            <strong>Informations entreprise</strong> — Nom, adresse, SIRET visibles sur les factures PDF.
+                            À modifier dans <code>config/services.yaml</code> sous la clé <code>app.company</code>.
                         </div>
-                        <div className="space-y-2">
-                            {TAX_RATE_OPTIONS.map(({ value, label }) => {
-                                const active = settings?.defaultTaxRate === value;
-                                return (
-                                    <button
-                                        key={value}
-                                        type="button"
-                                        disabled={saving || permissions.canEditSettings === false}
-                                        onClick={() => !active && permissions.canEditSettings !== false && updateSetting({ defaultTaxRate: value })}
-                                        className={`w-full text-left rounded-lg border-2 px-4 py-3 transition-colors ${
-                                            active ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/40'
-                                        } ${saving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                                                active ? 'border-primary' : 'border-muted-foreground/40'
-                                            }`}>
-                                                {active && <div className="size-2 rounded-full bg-primary" />}
-                                            </div>
-                                            <span className="text-sm">{label}</span>
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    <div className="rounded-md bg-muted/60 px-4 py-3 text-xs text-muted-foreground">
-                        <strong>Taux par catégorie</strong> — Pour appliquer un taux différent sur certains produits,
-                        configurez-le directement sur la catégorie dans{' '}
-                        <strong>Boutique → Catégories</strong>. Il prend le dessus sur le taux par défaut.
-                        <br /><br />
-                        <strong>Informations entreprise</strong> — Nom, adresse, SIRET visibles sur les factures PDF.
-                        À modifier dans <code>config/services.yaml</code> sous la clé <code>app.company</code>.
                     </div>
                 </div>
-            </div>
+            )}
 
-            {/* ── Paiements ── */}
-            <StripeSection settings={settings} saving={saving} permissions={permissions} updateSetting={updateSetting} />
-            <PayPalSection settings={settings} saving={saving} permissions={permissions} updateSetting={updateSetting} />
+            {/* ── Onglet Paiements ── */}
+            {activeTab === 'paiements' && (
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <StripeSection settings={settings} saving={saving} permissions={permissions} updateSetting={updateSetting} />
+                    <PayPalSection settings={settings} saving={saving} permissions={permissions} updateSetting={updateSetting} />
+                </div>
+            )}
         </div>
     );
 }
