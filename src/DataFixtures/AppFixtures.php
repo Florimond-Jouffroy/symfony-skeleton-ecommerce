@@ -57,7 +57,11 @@ class AppFixtures extends Fixture
             'invoice.default_tax_rate' => '20',
         ];
 
+        $repo = $em->getRepository(AppSetting::class);
         foreach ($defaults as $key => $value) {
+            if ($repo->find($key)) {
+                continue;
+            }
             $setting = new AppSetting();
             $setting->setSettingKey($key)->setValue($value);
             $em->persist($setting);
@@ -122,8 +126,14 @@ class AppFixtures extends Fixture
             ['name' => 'Livres',      'slug' => 'livres',      'taxRate' => 5,   'position' => 5],
         ];
 
+        $repo     = $em->getRepository(ProductCategory::class);
         $entities = [];
         foreach ($categories as $data) {
+            $existing = $repo->findOneBy(['slug' => $data['slug']]);
+            if ($existing) {
+                $entities[$data['slug']] = $existing;
+                continue;
+            }
             $cat = new ProductCategory();
             $cat->setName($data['name'])
                 ->setSlug($data['slug'])
@@ -145,6 +155,7 @@ class AppFixtures extends Fixture
      */
     private function loadProducts(ObjectManager $em, array $categories): array
     {
+        $repo     = $em->getRepository(Product::class);
         $products = [];
 
         // Produits simples (sans variantes)
@@ -167,6 +178,11 @@ class AppFixtures extends Fixture
         ];
 
         foreach ($simpleProducts as $data) {
+            $existing = $repo->findOneBy(['slug' => $data['slug']]);
+            if ($existing) {
+                $products[] = $existing;
+                continue;
+            }
             $product = $this->makeProduct(
                 $data['name'],
                 $data['slug'],
@@ -243,6 +259,11 @@ class AppFixtures extends Fixture
         ];
 
         foreach ($variantProducts as $data) {
+            $existing = $repo->findOneBy(['slug' => $data['slug']]);
+            if ($existing) {
+                $products[] = $existing;
+                continue;
+            }
             $product = $this->makeProduct(
                 $data['name'],
                 $data['slug'],
@@ -326,7 +347,11 @@ class AppFixtures extends Fixture
             ],
         ];
 
+        $repo = $em->getRepository(PromoCode::class);
         foreach ($codes as $data) {
+            if ($repo->findOneBy(['code' => $data['code']])) {
+                continue;
+            }
             $promo = new PromoCode();
             $promo->setCode($data['code'])
                   ->setType($data['type'])
@@ -342,20 +367,27 @@ class AppFixtures extends Fixture
 
     private function loadUsers(ObjectManager $em): void
     {
-        $admin = new User();
-        $admin->setEmail('florimond.jouffroy@gmail.com')
-              ->setRoles(['ROLE_ADMIN'])
-              ->setIsVerified(true);
-        $admin->setPassword($this->passwordHasher->hashPassword($admin, '7@changer'));
-        $em->persist($admin);
+        $repo = $em->getRepository(User::class);
+
+        if (!$repo->findOneBy(['email' => 'florimond.jouffroy@gmail.com'])) {
+            $admin = new User();
+            $admin->setEmail('florimond.jouffroy@gmail.com')
+                  ->setRoles(['ROLE_ADMIN'])
+                  ->setIsVerified(true);
+            $admin->setPassword($this->passwordHasher->hashPassword($admin, '7@changer'));
+            $em->persist($admin);
+        }
 
         for ($i = 1; $i <= 5; $i++) {
-            $user = new User();
-            $user->setEmail("user{$i}@example.com")
-                 ->setRoles([])
-                 ->setIsVerified(true);
-            $user->setPassword($this->passwordHasher->hashPassword($user, 'password'));
-            $em->persist($user);
+            $email = "user{$i}@example.com";
+            if (!$repo->findOneBy(['email' => $email])) {
+                $user = new User();
+                $user->setEmail($email)
+                     ->setRoles([])
+                     ->setIsVerified(true);
+                $user->setPassword($this->passwordHasher->hashPassword($user, 'password'));
+                $em->persist($user);
+            }
         }
     }
 

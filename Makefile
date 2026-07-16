@@ -189,7 +189,7 @@ fixtures: ## Charge les fixtures de développement (sans vider la base)
 	$(CONSOLE) doctrine:fixtures:load --no-interaction --append
 
 fixtures-reset: db-main-reset ## Réinitialise la base principale et recharge les fixtures
-	$(CONSOLE) doctrine:fixtures:load --no-interaction
+	$(CONSOLE) doctrine:fixtures:load --no-interaction --append
 
 ## —— QUALITÉ, TESTS & DROITS 🛠️ ————————————————————————————————————————————————
 
