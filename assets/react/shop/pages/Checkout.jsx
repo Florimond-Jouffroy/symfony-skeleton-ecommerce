@@ -87,6 +87,21 @@ export default function Checkout({ urls }) {
             .catch(() => {});
     }, []);
 
+    // Retour depuis Mollie : restaure la commande depuis sessionStorage
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('mollie_return') !== '1') return;
+        const saved = sessionStorage.getItem('mollie_order');
+        if (saved) {
+            setOrderNumber(saved);
+            sessionStorage.removeItem('mollie_order');
+        }
+        setStep(4);
+        window.scrollTo(0, 0);
+        // Nettoie le param de l'URL sans recharger
+        window.history.replaceState({}, '', window.location.pathname);
+    }, []);
+
     const addrField = (key, value) => setAddress((a) => ({ ...a, [key]: value }));
 
     const handleStep1Submit = (e) => {
@@ -540,6 +555,9 @@ function Step3Payment({ provider, token, publicKey, orderNumber, onSuccess }) {
                 {provider === 'paypal' && (
                     <PayPalPaymentForm paypalOrderId={token} clientId={publicKey} onSuccess={onSuccess} />
                 )}
+                {provider === 'mollie' && (
+                    <MollieRedirectForm checkoutUrl={token} orderNumber={orderNumber} />
+                )}
             </div>
         </div>
     );
@@ -623,6 +641,32 @@ function PayPalPaymentForm({ paypalOrderId, clientId, onSuccess }) {
                 />
             </div>
         </PayPalScriptProvider>
+    );
+}
+
+function MollieRedirectForm({ checkoutUrl, orderNumber }) {
+    const handleRedirect = () => {
+        if (orderNumber) {
+            sessionStorage.setItem('mollie_order', orderNumber);
+        }
+        window.location.href = checkoutUrl;
+    };
+
+    return (
+        <div className="space-y-5 text-center">
+            <p className="text-sm text-muted-foreground">
+                Vous allez être redirigé vers la page de paiement sécurisée Mollie.
+                Votre commande est enregistrée — vous recevrez une confirmation par e-mail après le paiement.
+            </p>
+            <button
+                type="button"
+                onClick={handleRedirect}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+                <Lock className="h-4 w-4" />
+                Payer avec Mollie
+            </button>
+        </div>
     );
 }
 

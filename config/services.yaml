@@ -39,6 +39,9 @@ services:
     App\Payment\Provider\PayPalPaymentProvider:
         tags: ['app.payment_provider']
 
+    App\Payment\Provider\MolliePaymentProvider:
+        tags: ['app.payment_provider']
+
     App\Payment\PaymentProviderRegistry:
         arguments:
             $providers: !tagged_iterator app.payment_provider

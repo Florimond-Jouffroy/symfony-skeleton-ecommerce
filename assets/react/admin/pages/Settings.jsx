@@ -278,6 +278,7 @@ export default function Settings({ urls = {}, permissions = {} }) {
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <StripeSection settings={settings} saving={saving} permissions={permissions} updateSetting={updateSetting} />
                     <PayPalSection settings={settings} saving={saving} permissions={permissions} updateSetting={updateSetting} />
+                    <MollieSection settings={settings} saving={saving} permissions={permissions} updateSetting={updateSetting} />
                 </div>
             )}
         </div>
@@ -570,6 +571,115 @@ function PayPalSection({ settings, saving, permissions, updateSetting }) {
                     <p><strong>URL du webhook à configurer dans PayPal :</strong></p>
                     <code className="block mt-1">{window.location.origin}/api/webhook/paypal</code>
                     <p className="mt-2">Événements à écouter : <code>PAYMENT.CAPTURE.COMPLETED</code>, <code>PAYMENT.CAPTURE.DENIED</code></p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function MollieSection({ settings, saving, permissions, updateSetting }) {
+    const [showKey, setShowKey]     = useState(false);
+    const [keyInput, setKeyInput]   = useState('');
+    const [savingKey, setSavingKey] = useState(false);
+
+    const canEdit = permissions.canEditSettings !== false;
+
+    const saveKey = async () => {
+        setSavingKey(true);
+        try {
+            await updateSetting({ mollieApiKey: keyInput.trim() || undefined });
+            setKeyInput('');
+        } finally {
+            setSavingKey(false);
+        }
+    };
+
+    return (
+        <div className="rounded-lg border">
+            <div className="px-5 py-4 border-b bg-muted/40">
+                <h3 className="font-semibold text-sm">Paiement — Mollie</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                    Intégration Mollie (iDEAL, Bancontact, CB…). Paiement par redirection vers la page hébergée Mollie.
+                </p>
+            </div>
+            <div className="p-5 space-y-6">
+
+                {/* Toggle */}
+                <div className="flex items-center justify-between gap-6">
+                    <div>
+                        <p className="text-sm font-medium">Activer Mollie</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                            Quand activé, le checkout redirige vers la page de paiement Mollie.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={settings?.mollieEnabled}
+                        disabled={saving || !canEdit}
+                        onClick={() => updateSetting({ mollieEnabled: !settings?.mollieEnabled })}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                            settings?.mollieEnabled ? 'bg-primary' : 'bg-muted'
+                        } ${saving ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    >
+                        <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition-transform ${
+                            settings?.mollieEnabled ? 'translate-x-5' : 'translate-x-0'
+                        }`} />
+                    </button>
+                </div>
+
+                <div className="border-t" />
+
+                {/* API Key */}
+                <div className="space-y-4">
+                    <p className="text-sm font-medium">Clé API Mollie</p>
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            Clé API (test_… ou live_…)
+                            {settings?.mollieApiKeySet && (
+                                <span className="text-green-600 ml-1">
+                                    ✓ définie
+                                    {settings.mollieApiKeyPrefix && (
+                                        <span className="text-muted-foreground ml-1">
+                                            ({settings.mollieApiKeyPrefix}…)
+                                        </span>
+                                    )}
+                                </span>
+                            )}
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={showKey ? 'text' : 'password'}
+                                value={keyInput}
+                                onChange={e => setKeyInput(e.target.value)}
+                                disabled={!canEdit}
+                                placeholder={settings?.mollieApiKeySet ? '••••••••• (laisser vide pour conserver)' : 'test_… ou live_…'}
+                                className="w-full rounded-lg border border-input bg-background px-3 py-2 pr-10 text-sm font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                            />
+                            <button type="button" onClick={() => setShowKey(v => !v)} className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground">
+                                {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            </button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Trouvez vos clés dans le tableau de bord Mollie → Développeurs → Clés API.
+                            Utilisez <code>test_</code> en développement, <code>live_</code> en production.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={saveKey}
+                        disabled={savingKey || !canEdit || !keyInput.trim()}
+                        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                    >
+                        {savingKey ? 'Enregistrement…' : 'Enregistrer la clé'}
+                    </button>
+                </div>
+
+                <div className="rounded-md bg-muted/60 px-4 py-3 text-xs text-muted-foreground space-y-1">
+                    <p><strong>URL du webhook à configurer dans Mollie :</strong></p>
+                    <code className="block mt-1">{window.location.origin}/api/webhook/mollie</code>
+                    <p className="mt-2">Mollie envoie automatiquement le statut de paiement à cette URL après chaque transaction.</p>
                 </div>
             </div>
         </div>

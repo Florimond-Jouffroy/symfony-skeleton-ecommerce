@@ -77,6 +77,14 @@ class SettingController extends AbstractController
             $this->settingRepo->setValue('payment.stripe.webhook_secret', trim((string) $payload['stripeWebhookSecret']));
         }
 
+        if (array_key_exists('mollieEnabled', $payload)) {
+            $this->settingRepo->setValue('payment.mollie.enabled', $payload['mollieEnabled'] ? 'true' : 'false');
+        }
+
+        if (isset($payload['mollieApiKey']) && '' !== trim((string) $payload['mollieApiKey'])) {
+            $this->settingRepo->setValue('payment.mollie.api_key', trim((string) $payload['mollieApiKey']));
+        }
+
         if (array_key_exists('paypalEnabled', $payload)) {
             $this->settingRepo->setValue('payment.paypal.enabled', $payload['paypalEnabled'] ? 'true' : 'false');
         }
@@ -109,6 +117,8 @@ class SettingController extends AbstractController
         $paypalClientSecret = $this->settingRepo->getValue('payment.paypal.client_secret', '');
         $paypalWebhookId    = $this->settingRepo->getValue('payment.paypal.webhook_id', '');
 
+        $mollieApiKey = $this->settingRepo->getValue('payment.mollie.api_key', '');
+
         return [
             'maintenanceMode'        => $this->settingRepo->getValue('site.maintenance', 'false') === 'true',
             'shopEnabled'            => $this->settingRepo->getValue('shop.enabled', 'true') === 'true',
@@ -118,6 +128,9 @@ class SettingController extends AbstractController
             'stripePublicKey'        => $this->settingRepo->getValue('payment.stripe.public_key', ''),
             'stripeSecretKeySet'     => '' !== $stripeSecretKey,
             'stripeWebhookSecretSet' => '' !== $stripeWebhookKey,
+            'mollieEnabled'          => $this->settingRepo->getValue('payment.mollie.enabled', 'false') === 'true',
+            'mollieApiKeySet'        => '' !== $mollieApiKey,
+            'mollieApiKeyPrefix'     => '' !== $mollieApiKey ? substr($mollieApiKey, 0, 5) : '',
             'paypalEnabled'          => $this->settingRepo->getValue('payment.paypal.enabled', 'false') === 'true',
             'paypalSandbox'          => $this->settingRepo->getValue('payment.paypal.sandbox', 'true') === 'true',
             'paypalClientId'         => $this->settingRepo->getValue('payment.paypal.client_id', ''),
