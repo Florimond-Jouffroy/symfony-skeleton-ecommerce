@@ -128,9 +128,9 @@ class SupportController extends AbstractController
         SupportTicketRepository $repo,
         EntityManagerInterface $em,
         SupportMailer $mailer,
-        #[Autowire(param: 'app.company')] array $company = [],
         CustomerRepository $customerRepo,
         OrderRepository $orderRepo,
+        #[Autowire(param: 'app.company')] array $company = [],
     ): JsonResponse {
         $this->denyAccessUnlessGranted(SupportVoter::REPLY);
 

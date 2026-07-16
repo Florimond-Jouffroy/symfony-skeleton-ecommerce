@@ -19,6 +19,7 @@ use App\Service\Manager\UserManager;
 use App\Service\RateLimiterService;
 use App\Service\TrustedDeviceService;
 use OTPHP\TOTP;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -130,7 +131,7 @@ class AuthController extends AbstractController
             return $this->json(['message' => 'Erreur d\'authentification.'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $totp = TOTP::createFromSecret($user->getTotpSecret());
+        $totp = TOTP::createFromSecret($user->getTotpSecret(), new NativeClock());
 
         if (!$totp->verify($dto->code, null, 1)) {
             $this->rateLimiter->hit('2fa', $ip, $windowSecs);

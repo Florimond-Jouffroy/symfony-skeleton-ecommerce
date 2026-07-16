@@ -8,6 +8,7 @@ use App\Dto\TwoFactorVerifyDto;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use OTPHP\TOTP;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,7 +38,7 @@ class TwoFactorController extends AbstractController
         $user = $this->getUser();
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $totp = TOTP::generate();
+        $totp = TOTP::generate(new NativeClock());
         $totp->setLabel($user->getEmail());
         $totp->setIssuer($this->appName);
 
@@ -70,7 +71,7 @@ class TwoFactorController extends AbstractController
             return $this->json(['message' => 'Session expirée. Relancez la configuration.'], Response::HTTP_CONFLICT);
         }
 
-        $totp = TOTP::createFromSecret($secret);
+        $totp = TOTP::createFromSecret($secret, new NativeClock());
 
         if (!$totp->verify($dto->code, null, 1)) {
             return $this->json(['message' => 'Code invalide. Vérifiez que l\'heure de votre appareil est correcte.'], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -96,7 +97,7 @@ class TwoFactorController extends AbstractController
             return $this->json(['message' => 'La 2FA n\'est pas activée.'], Response::HTTP_CONFLICT);
         }
 
-        $totp = TOTP::createFromSecret($user->getTotpSecret());
+        $totp = TOTP::createFromSecret($user->getTotpSecret(), new NativeClock());
 
         if (!$totp->verify($dto->code, null, 1)) {
             return $this->json(['message' => 'Code invalide.'], Response::HTTP_UNPROCESSABLE_ENTITY);

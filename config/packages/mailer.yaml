@@ -2,3 +2,8 @@ framework:
     mailer:
         dsn: '%env(MAILER_DSN)%'
         message_bus: messenger.default_bus
+
+when@test:
+    framework:
+        mailer:
+            message_bus: false
