@@ -115,6 +115,11 @@ class PayPalPaymentProvider implements PaymentProviderInterface
             ?? null;
     }
 
+    public function extractEventId(object $event): ?string
+    {
+        return $event->id ?? null;
+    }
+
     public function isPaymentSucceeded(object $event): bool
     {
         return ($event->event_type ?? '') === 'PAYMENT.CAPTURE.COMPLETED';

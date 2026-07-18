@@ -103,6 +103,11 @@ class MolliePaymentProvider implements PaymentProviderInterface
         return $event->metadata?->orderNumber ?? null;
     }
 
+    public function extractEventId(object $event): ?string
+    {
+        return $event->id ?? null;
+    }
+
     public function isPaymentSucceeded(object $event): bool
     {
         return ($event->status ?? '') === 'paid';

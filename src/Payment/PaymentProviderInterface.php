@@ -29,6 +29,12 @@ interface PaymentProviderInterface
     public function extractOrderNumber(object $event): ?string;
 
     /**
+     * Returns a stable, unique identifier for the event (used for idempotency),
+     * or null if the provider does not expose one.
+     */
+    public function extractEventId(object $event): ?string;
+
+    /**
      * Returns true if the event signals a successful payment.
      */
     public function isPaymentSucceeded(object $event): bool;
