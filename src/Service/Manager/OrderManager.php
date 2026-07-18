@@ -30,6 +30,7 @@ class OrderManager
         private readonly OrderRepository $orderRepository,
         private readonly InvoiceService $invoiceService,
         private readonly OrderMailer $orderMailer,
+        private readonly StockManager $stockManager,
     ) {}
 
     /**
@@ -98,6 +99,13 @@ class OrderManager
         }
 
         $order->setStatus($newStatus);
+
+        // Commande annulée avant expédition : on relibère le stock réservé au checkout.
+        // (Le cas "refunded" — après livraison — est laissé au futur flux de retours,
+        // le restockage y dépend du retour physique des articles.)
+        if (Order::STATUS_CANCELLED === $newStatus) {
+            $this->stockManager->restoreForOrder($order);
+        }
 
         $history = new OrderStatusHistory();
         $history->setOrder($order);

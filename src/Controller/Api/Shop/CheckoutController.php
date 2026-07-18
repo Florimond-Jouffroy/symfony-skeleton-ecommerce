@@ -7,6 +7,7 @@ namespace App\Controller\Api\Shop;
 use App\Entity\Customer;
 use App\Entity\Order;
 use App\Entity\OrderItem;
+use App\Exception\InsufficientStockException;
 use App\Payment\PaymentProviderRegistry;
 use App\Repository\CustomerRepository;
 use App\Repository\OrderRepository;
@@ -15,6 +16,7 @@ use App\Repository\ProductVariantRepository;
 use App\Repository\PromoCodeRepository;
 use App\Repository\ShippingMethodRepository;
 use App\Service\InvoiceService;
+use App\Service\Manager\StockManager;
 use App\Service\OrderMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -39,6 +41,7 @@ class CheckoutController extends AbstractController
         InvoiceService $invoiceService,
         OrderMailer $orderMailer,
         PaymentProviderRegistry $paymentRegistry,
+        StockManager $stockManager,
     ): JsonResponse {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -159,41 +162,47 @@ class CheckoutController extends AbstractController
                 'postalCode' => trim((string) ($addr['postalCode'] ?? '')),
                 'country'    => trim((string) ($addr['country'] ?? 'France')),
             ]);
-        $em->persist($order);
 
-        // ── 8. Create OrderItems & decrement stock ────────────────────────────
-        $subtotalFinal = 0;
-        foreach ($validatedItems as $data) {
-            $item = new OrderItem();
-            $item
-                ->setOrder($order)
-                ->setProduct($data['product'])
-                ->setVariant($data['variant'])
-                ->setProductName($data['name'])
-                ->setVariantName($data['varName'])
-                ->setUnitPrice($data['unitPrice'])
-                ->setQuantity($data['qty']);
-            $item->recalculateTotal();
-            $subtotalFinal += $item->getTotal();
-            $em->persist($item);
+        // ── 8. Persist order + items and decrement stock atomically ───────────
+        // Le décrément se fait sous verrou pessimiste dans une transaction :
+        // le stock est revérifié sur sa valeur fraîche → pas de survente concurrente.
+        // Un stock insuffisant lève InsufficientStockException → rollback, aucune commande.
+        try {
+            $em->wrapInTransaction(function () use (
+                $em, $stockManager, $validatedItems, $order,
+                $discountAmount, $shippingAmount, $promoCode,
+            ): void {
+                $em->persist($order);
 
-            // Decrement stock
-            if (null !== $data['variant']) {
-                $data['variant']->setStock($data['variant']->getStock() - $data['qty']);
-            } else {
-                $data['product']->setStock($data['product']->getStock() - $data['qty']);
-            }
+                $subtotalFinal = 0;
+                foreach ($validatedItems as $line) {
+                    $item = new OrderItem();
+                    $item
+                        ->setOrder($order)
+                        ->setProduct($line['product'])
+                        ->setVariant($line['variant'])
+                        ->setProductName($line['name'])
+                        ->setVariantName($line['varName'])
+                        ->setUnitPrice($line['unitPrice'])
+                        ->setQuantity($line['qty']);
+                    $item->recalculateTotal();
+                    $subtotalFinal += $item->getTotal();
+                    $em->persist($item);
+                }
+
+                $stockManager->decrementForLines($validatedItems);
+
+                $order->setSubtotal($subtotalFinal);
+                $order->setDiscountAmount($discountAmount);
+                if (null !== $promoCode) {
+                    $order->setPromoCode($promoCode->getCode());
+                    $promoCode->incrementUsedCount();
+                }
+                $order->setTotal(max(0, $subtotalFinal - $discountAmount + $shippingAmount));
+            });
+        } catch (InsufficientStockException $e) {
+            return $this->json(['message' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
-        $order->setSubtotal($subtotalFinal);
-        $order->setDiscountAmount($discountAmount);
-        if ($promoCode) {
-            $order->setPromoCode($promoCode->getCode());
-            $promoCode->incrementUsedCount();
-        }
-        $order->setTotal(max(0, $subtotalFinal - $discountAmount + $shippingAmount));
-
-        $em->flush();
 
         // ── 9. Clear cart & promo ─────────────────────────────────────────────
         $request->getSession()->remove('shop_cart');
