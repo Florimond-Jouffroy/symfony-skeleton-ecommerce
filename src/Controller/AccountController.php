@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Repository\AppSettingRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -12,7 +13,7 @@ class AccountController extends AbstractController
 {
     #[Route('/mon-compte', name: 'account_index')]
     #[Route('/mon-compte/{path}', name: 'account_catchall', requirements: ['path' => '.+'])]
-    public function index(): Response
+    public function index(AppSettingRepository $settingRepo): Response
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
@@ -23,11 +24,13 @@ class AccountController extends AbstractController
                 'profileUpdate'  => $this->generateUrl('api_account_profile_update'),
                 'passwordUpdate' => $this->generateUrl('api_account_password_update'),
                 'orders'         => $this->generateUrl('api_account_orders_list'),
+                'returns'        => $this->generateUrl('api_account_returns_list'),
                 'support'        => $this->generateUrl('api_account_support_list'),
                 'reviews'        => $this->generateUrl('api_account_reviews_list'),
                 'logout'         => $this->generateUrl('app_security_logout'),
             ],
-            'userEmail' => $user->getEmail(),
+            'userEmail'      => $user->getEmail(),
+            'returnsEnabled' => 'true' === $settingRepo->getValue('returns.enabled', 'false'),
         ]);
     }
 }
