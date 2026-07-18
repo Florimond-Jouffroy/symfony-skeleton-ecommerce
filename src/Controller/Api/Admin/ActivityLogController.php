@@ -27,7 +27,7 @@ class ActivityLogController extends AbstractController
 
         try {
             $from = $fromStr ? new \DateTimeImmutable($fromStr) : null;
-            $to   = $toStr   ? (new \DateTimeImmutable($toStr))->setTime(23, 59, 59) : null;
+            $to   = $toStr ? (new \DateTimeImmutable($toStr))->setTime(23, 59, 59) : null;
         } catch (\Exception) {
             $from = null;
             $to   = null;

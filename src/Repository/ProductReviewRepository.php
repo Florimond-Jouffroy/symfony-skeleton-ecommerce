@@ -41,7 +41,7 @@ class ProductReviewRepository extends ServiceEntityRepository
             ->getSingleResult();
 
         return [
-            'avgRating' => $row['avg'] !== null ? round((float) $row['avg'], 1) : null,
+            'avgRating' => null !== $row['avg'] ? round((float) $row['avg'], 1) : null,
             'count'     => (int) $row['cnt'],
         ];
     }

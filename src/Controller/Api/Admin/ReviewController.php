@@ -38,7 +38,7 @@ class ReviewController extends AbstractController
     {
         $this->denyAccessUnlessGranted(ReviewVoter::VIEW);
 
-        $filter = $request->query->get('approved');
+        $filter   = $request->query->get('approved');
         $approved = match ($filter) {
             'true'  => true,
             'false' => false,

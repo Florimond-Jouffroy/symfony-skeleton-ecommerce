@@ -101,42 +101,144 @@ class Product
         $this->updatedAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getName(): string { return $this->name; }
-    public function setName(string $name): self { $this->name = $name; return $this; }
+    public function getName(): string
+    {
+        return $this->name;
+    }
 
-    public function getSlug(): string { return $this->slug; }
-    public function setSlug(string $slug): self { $this->slug = $slug; return $this; }
+    public function setName(string $name): self
+    {
+        $this->name = $name;
 
-    public function getDescription(): ?array { return $this->description; }
-    public function setDescription(?array $description): self { $this->description = $description; return $this; }
+        return $this;
+    }
 
-    public function getPrice(): int { return $this->price; }
-    public function setPrice(int $price): self { $this->price = $price; return $this; }
+    public function getSlug(): string
+    {
+        return $this->slug;
+    }
 
-    public function getCompareAtPrice(): ?int { return $this->compareAtPrice; }
-    public function setCompareAtPrice(?int $compareAtPrice): self { $this->compareAtPrice = $compareAtPrice; return $this; }
+    public function setSlug(string $slug): self
+    {
+        $this->slug = $slug;
 
-    public function getStatus(): string { return $this->status; }
-    public function setStatus(string $status): self { $this->status = $status; return $this; }
-    public function isDraft(): bool { return self::STATUS_DRAFT === $this->status; }
-    public function isPublished(): bool { return self::STATUS_PUBLISHED === $this->status; }
+        return $this;
+    }
 
-    public function getStock(): int { return $this->stock; }
-    public function setStock(int $stock): self { $this->stock = $stock; return $this; }
+    public function getDescription(): ?array
+    {
+        return $this->description;
+    }
 
-    public function getLowStockThreshold(): int { return $this->lowStockThreshold; }
-    public function setLowStockThreshold(int $lowStockThreshold): self { $this->lowStockThreshold = $lowStockThreshold; return $this; }
+    public function setDescription(?array $description): self
+    {
+        $this->description = $description;
 
-    public function hasVariants(): bool { return $this->hasVariants; }
-    public function setHasVariants(bool $hasVariants): self { $this->hasVariants = $hasVariants; return $this; }
+        return $this;
+    }
 
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
+    public function getPrice(): int
+    {
+        return $this->price;
+    }
+
+    public function setPrice(int $price): self
+    {
+        $this->price = $price;
+
+        return $this;
+    }
+
+    public function getCompareAtPrice(): ?int
+    {
+        return $this->compareAtPrice;
+    }
+
+    public function setCompareAtPrice(?int $compareAtPrice): self
+    {
+        $this->compareAtPrice = $compareAtPrice;
+
+        return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function isDraft(): bool
+    {
+        return self::STATUS_DRAFT === $this->status;
+    }
+
+    public function isPublished(): bool
+    {
+        return self::STATUS_PUBLISHED === $this->status;
+    }
+
+    public function getStock(): int
+    {
+        return $this->stock;
+    }
+
+    public function setStock(int $stock): self
+    {
+        $this->stock = $stock;
+
+        return $this;
+    }
+
+    public function getLowStockThreshold(): int
+    {
+        return $this->lowStockThreshold;
+    }
+
+    public function setLowStockThreshold(int $lowStockThreshold): self
+    {
+        $this->lowStockThreshold = $lowStockThreshold;
+
+        return $this;
+    }
+
+    public function hasVariants(): bool
+    {
+        return $this->hasVariants;
+    }
+
+    public function setHasVariants(bool $hasVariants): self
+    {
+        $this->hasVariants = $hasVariants;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
 
     /** @return Collection<int, ProductCategory> */
-    public function getCategories(): Collection { return $this->categories; }
+    public function getCategories(): Collection
+    {
+        return $this->categories;
+    }
 
     /**
      * Remplace toutes les catégories du produit par le tableau fourni.
@@ -149,12 +251,19 @@ class Product
         foreach ($categories as $cat) {
             $this->categories->add($cat);
         }
+
         return $this;
     }
 
     /** @return Collection<int, ProductImage> */
-    public function getImages(): Collection { return $this->images; }
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
 
     /** @return Collection<int, ProductVariant> */
-    public function getVariants(): Collection { return $this->variants; }
+    public function getVariants(): Collection
+    {
+        return $this->variants;
+    }
 }

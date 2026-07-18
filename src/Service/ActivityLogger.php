@@ -13,8 +13,7 @@ class ActivityLogger
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly Security $security,
-    ) {
-    }
+    ) {}
 
     public function log(
         string $action,

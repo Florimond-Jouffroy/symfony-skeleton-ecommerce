@@ -26,9 +26,7 @@ class OrderVoter extends Voter
     public const string EDIT   = 'ORDER_EDIT';
     public const string DELETE = 'ORDER_DELETE';
 
-    public function __construct(private readonly PermissionService $permissionService)
-    {
-    }
+    public function __construct(private readonly PermissionService $permissionService) {}
 
     protected function supports(string $attribute, mixed $subject): bool
     {

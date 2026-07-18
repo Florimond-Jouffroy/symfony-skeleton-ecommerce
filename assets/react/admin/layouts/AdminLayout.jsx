@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, Globe, ShoppingCart, MessageCircle, Star, WrenchIcon } from 'lucide-react';
+import { Bell, Globe, ShoppingCart, MessageCircle, Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { api } from '../../utils/api';
 import AppSidebar from './AppSidebar';
 
@@ -128,32 +127,9 @@ function NotificationBell({ notificationsUrl, permissions = {} }) {
     );
 }
 
-export default function AdminLayout({ userEmail = '', logoutUrl = '/deconnexion', notificationsUrl = null, settingsUrl = '/api/admin/parametres', permissions = {}, appName = 'Admin' }) {
+export default function AdminLayout({ userEmail = '', logoutUrl = '/deconnexion', notificationsUrl = null, permissions = {}, appName = 'Admin' }) {
     const { pathname } = useLocation();
     const title = getTitle(pathname);
-
-    const [maintenanceMode, setMaintenanceMode] = useState(null);
-    const [confirmOpen, setConfirmOpen]         = useState(false);
-    const [toggling, setToggling]               = useState(false);
-
-    useEffect(() => {
-        api.get(settingsUrl)
-            .then(data => setMaintenanceMode(data.maintenanceMode))
-            .catch(() => {});
-    }, []);
-
-    const handleToggle = async () => {
-        setToggling(true);
-        try {
-            const data = await api.patch(settingsUrl, { maintenanceMode: !maintenanceMode });
-            setMaintenanceMode(data.maintenanceMode);
-        } catch {
-            // silently ignore — the Settings page will show the error if needed
-        } finally {
-            setToggling(false);
-            setConfirmOpen(false);
-        }
-    };
 
     return (
         <TooltipProvider>
@@ -168,20 +144,6 @@ export default function AdminLayout({ userEmail = '', logoutUrl = '/deconnexion'
 
                         <div className="ml-auto flex items-center gap-2">
                             <NotificationBell notificationsUrl={notificationsUrl} permissions={permissions} />
-                            {maintenanceMode !== null && (
-                                <button
-                                    type="button"
-                                    onClick={() => setConfirmOpen(true)}
-                                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                                        maintenanceMode
-                                            ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                                            : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                                    }`}
-                                >
-                                    <WrenchIcon className="size-4" />
-                                    <span>{maintenanceMode ? 'Maintenance active' : 'Maintenance'}</span>
-                                </button>
-                            )}
                             <a
                                 href="/"
                                 className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
@@ -191,41 +153,6 @@ export default function AdminLayout({ userEmail = '', logoutUrl = '/deconnexion'
                             </a>
                         </div>
                     </header>
-
-                    <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>
-                                    {maintenanceMode ? 'Désactiver le mode maintenance ?' : 'Activer le mode maintenance ?'}
-                                </DialogTitle>
-                                <DialogDescription>
-                                    {maintenanceMode
-                                        ? 'Le site redeviendra accessible à tous les visiteurs.'
-                                        : 'Tous les visiteurs verront une page de maintenance. Vous continuerez à accéder au site normalement en tant qu\'administrateur.'
-                                    }
-                                </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                                <button
-                                    type="button"
-                                    onClick={() => setConfirmOpen(false)}
-                                    className="rounded-md px-4 py-2 text-sm border hover:bg-accent transition-colors"
-                                >
-                                    Annuler
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleToggle}
-                                    disabled={toggling}
-                                    className={`rounded-md px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-60 ${
-                                        maintenanceMode ? 'bg-green-600 hover:bg-green-700' : 'bg-yellow-500 hover:bg-yellow-600'
-                                    }`}
-                                >
-                                    {toggling ? 'En cours…' : maintenanceMode ? 'Désactiver' : 'Activer'}
-                                </button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
 
                     {/* key sur le pathname : relance l'animation d'entrée à chaque changement de page */}
                     <div

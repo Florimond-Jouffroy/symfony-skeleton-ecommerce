@@ -10,6 +10,7 @@ use App\Entity\OrderItem;
 use App\Entity\OrderStatusHistory;
 use App\Repository\OrderRepository;
 use App\Service\InvoiceService;
+use App\Service\OrderMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use Florimond\LogBundle\Service\Manager\ApplicationLogManager;
 
@@ -28,8 +29,8 @@ class OrderManager
         private readonly ApplicationLogManager $logManager,
         private readonly OrderRepository $orderRepository,
         private readonly InvoiceService $invoiceService,
-    ) {
-    }
+        private readonly OrderMailer $orderMailer,
+    ) {}
 
     /**
      * Crée une commande complète avec ses lignes et son premier historique.
@@ -37,8 +38,8 @@ class OrderManager
      * Le statut initial est toujours "pending".
      *
      * @param array<array{productName: string, variantName?: string|null, unitPrice: int, quantity: int, productId?: int|null, variantId?: int|null}> $items
-     * @param array<string, string> $shippingAddress
-     * @param array<string, string>|null $billingAddress
+     * @param array<string, string>                                                                                                                   $shippingAddress
+     * @param array<string, string>|null                                                                                                              $billingAddress
      */
     public function create(
         Customer $customer,
@@ -114,6 +115,10 @@ class OrderManager
             && null === $this->invoiceService->findForOrder($order)
         ) {
             $this->invoiceService->generateForOrder($order);
+        }
+
+        if (Order::STATUS_SHIPPED === $newStatus) {
+            $this->orderMailer->sendOrderShipped($order);
         }
 
         return true;

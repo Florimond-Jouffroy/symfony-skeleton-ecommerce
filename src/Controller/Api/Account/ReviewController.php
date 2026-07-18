@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controller\Api\Account;
 
 use App\Entity\ProductReview;
-use App\Repository\CustomerRepository;
 use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
 use App\Repository\ProductReviewRepository;

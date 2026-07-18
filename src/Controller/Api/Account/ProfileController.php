@@ -6,13 +6,13 @@ namespace App\Controller\Api\Account;
 
 use App\Entity\Customer;
 use App\Repository\CustomerRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/api/compte')]
 class ProfileController extends AbstractController
@@ -95,11 +95,11 @@ class ProfileController extends AbstractController
     private function serialize(string $email, ?Customer $customer): array
     {
         return [
-            'email'     => $email,
-            'firstName' => $customer?->getFirstName() ?? '',
-            'lastName'  => $customer?->getLastName() ?? '',
-            'phone'     => $customer?->getPhone(),
-            'hasProfile' => $customer !== null,
+            'email'      => $email,
+            'firstName'  => $customer?->getFirstName() ?? '',
+            'lastName'   => $customer?->getLastName() ?? '',
+            'phone'      => $customer?->getPhone(),
+            'hasProfile' => null !== $customer,
         ];
     }
 }

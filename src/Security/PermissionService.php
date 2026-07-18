@@ -25,9 +25,9 @@ class PermissionService
 
         foreach ($data['permissions'] as $key => $config) {
             $this->permissions[$key] = [
-                'roles' => $config['roles'],
+                'roles'       => $config['roles'],
                 'description' => $config['description'] ?? '',
-                'conditions' => $config['conditions'] ?? [],
+                'conditions'  => $config['conditions'] ?? [],
             ];
         }
     }

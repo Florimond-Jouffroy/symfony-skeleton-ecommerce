@@ -40,16 +40,49 @@ class OrderStatusHistory
         $this->createdAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getOrder(): Order { return $this->order; }
-    public function setOrder(Order $order): self { $this->order = $order; return $this; }
+    public function getOrder(): Order
+    {
+        return $this->order;
+    }
 
-    public function getStatus(): string { return $this->status; }
-    public function setStatus(string $status): self { $this->status = $status; return $this; }
+    public function setOrder(Order $order): self
+    {
+        $this->order = $order;
 
-    public function getComment(): ?string { return $this->comment; }
-    public function setComment(?string $comment): self { $this->comment = $comment; return $this; }
+        return $this;
+    }
 
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function setComment(?string $comment): self
+    {
+        $this->comment = $comment;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }

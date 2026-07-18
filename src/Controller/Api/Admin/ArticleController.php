@@ -20,25 +20,24 @@ class ArticleController extends AbstractController
 {
     public function __construct(
         private readonly ArticleManager $articleManager,
-    ) {
-    }
+    ) {}
 
     #[Route('', name: 'api_admin_articles_list', methods: ['GET'])]
     public function list(Request $request, ArticleRepository $articleRepository): JsonResponse
     {
         $this->denyAccessUnlessGranted(ArticleVoter::VIEW);
 
-        $page = max(1, $request->query->getInt('page', 1));
-        $pageSize = min(100, max(1, $request->query->getInt('pageSize', 20)));
+        $page       = max(1, $request->query->getInt('page', 1));
+        $pageSize   = min(100, max(1, $request->query->getInt('pageSize', 20)));
         $query      = $request->query->getString('q');
         $categoryId = $request->query->getInt('categoryId') ?: null;
 
         $result = $articleRepository->searchPaginated('' !== $query ? $query : null, $page, $pageSize, $categoryId);
 
         return $this->json([
-            'items' => array_map($this->serializeArticle(...), $result['items']),
-            'total' => $result['total'],
-            'page' => $page,
+            'items'    => array_map($this->serializeArticle(...), $result['items']),
+            'total'    => $result['total'],
+            'page'     => $page,
             'pageSize' => $pageSize,
         ]);
     }
@@ -48,7 +47,7 @@ class ArticleController extends AbstractController
     {
         $this->denyAccessUnlessGranted(ArticleVoter::CREATE);
 
-        /** @var array{title?: mixed, content?: mixed, excerpt?: mixed, coverImage?: mixed} $payload */
+        /** @var array{title?: mixed, content?: mixed, excerpt?: mixed, coverImage?: mixed, categoryIds?: mixed} $payload */
         $payload = $request->toArray();
 
         $title = is_string($payload['title'] ?? null) ? trim((string) $payload['title']) : '';
@@ -60,7 +59,7 @@ class ArticleController extends AbstractController
         $excerpt = is_string($payload['excerpt'] ?? null) && '' !== trim((string) $payload['excerpt'])
             ? trim((string) $payload['excerpt'])
             : null;
-        $coverImage  = is_string($payload['coverImage'] ?? null) && '' !== trim((string) $payload['coverImage'])
+        $coverImage = is_string($payload['coverImage'] ?? null) && '' !== trim((string) $payload['coverImage'])
             ? trim((string) $payload['coverImage'])
             : null;
         $categoryIds = array_filter(array_map('intval', (array) ($payload['categoryIds'] ?? [])));
@@ -90,7 +89,7 @@ class ArticleController extends AbstractController
     {
         $this->denyAccessUnlessGranted(ArticleVoter::EDIT, $article);
 
-        /** @var array{title?: mixed, content?: mixed, excerpt?: mixed, coverImage?: mixed} $payload */
+        /** @var array{title?: mixed, content?: mixed, excerpt?: mixed, coverImage?: mixed, categoryIds?: mixed} $payload */
         $payload = $request->toArray();
 
         $title = is_string($payload['title'] ?? null) ? trim((string) $payload['title']) : '';
@@ -102,7 +101,7 @@ class ArticleController extends AbstractController
         $excerpt = is_string($payload['excerpt'] ?? null) && '' !== trim((string) $payload['excerpt'])
             ? trim((string) $payload['excerpt'])
             : null;
-        $coverImage  = is_string($payload['coverImage'] ?? null) && '' !== trim((string) $payload['coverImage'])
+        $coverImage = is_string($payload['coverImage'] ?? null) && '' !== trim((string) $payload['coverImage'])
             ? trim((string) $payload['coverImage'])
             : null;
         $categoryIds = array_filter(array_map('intval', (array) ($payload['categoryIds'] ?? [])));

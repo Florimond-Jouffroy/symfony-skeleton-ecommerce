@@ -92,7 +92,7 @@ class Order
 
     /**
      * Shipping address snapshot.
-     * Keys: firstName, lastName, line1, line2?, city, postalCode, country
+     * Keys: firstName, lastName, line1, line2?, city, postalCode, country.
      *
      * @var array<string, string>
      */
@@ -154,56 +154,180 @@ class Order
         return in_array($status, self::TRANSITIONS[$this->status] ?? [], true);
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getOrderNumber(): string { return $this->orderNumber; }
-    public function setOrderNumber(string $orderNumber): self { $this->orderNumber = $orderNumber; return $this; }
+    public function getOrderNumber(): string
+    {
+        return $this->orderNumber;
+    }
 
-    public function getCustomer(): Customer { return $this->customer; }
-    public function setCustomer(Customer $customer): self { $this->customer = $customer; return $this; }
+    public function setOrderNumber(string $orderNumber): self
+    {
+        $this->orderNumber = $orderNumber;
 
-    public function getStatus(): string { return $this->status; }
-    public function setStatus(string $status): self { $this->status = $status; return $this; }
+        return $this;
+    }
 
-    public function getSubtotal(): int { return $this->subtotal; }
-    public function setSubtotal(int $subtotal): self { $this->subtotal = $subtotal; return $this; }
+    public function getCustomer(): Customer
+    {
+        return $this->customer;
+    }
 
-    public function getDiscountAmount(): int { return $this->discountAmount; }
-    public function setDiscountAmount(int $discountAmount): self { $this->discountAmount = $discountAmount; return $this; }
+    public function setCustomer(Customer $customer): self
+    {
+        $this->customer = $customer;
 
-    public function getShippingAmount(): int { return $this->shippingAmount; }
-    public function setShippingAmount(int $shippingAmount): self { $this->shippingAmount = $shippingAmount; return $this; }
+        return $this;
+    }
 
-    public function getTotal(): int { return $this->total; }
-    public function setTotal(int $total): self { $this->total = $total; return $this; }
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getSubtotal(): int
+    {
+        return $this->subtotal;
+    }
+
+    public function setSubtotal(int $subtotal): self
+    {
+        $this->subtotal = $subtotal;
+
+        return $this;
+    }
+
+    public function getDiscountAmount(): int
+    {
+        return $this->discountAmount;
+    }
+
+    public function setDiscountAmount(int $discountAmount): self
+    {
+        $this->discountAmount = $discountAmount;
+
+        return $this;
+    }
+
+    public function getShippingAmount(): int
+    {
+        return $this->shippingAmount;
+    }
+
+    public function setShippingAmount(int $shippingAmount): self
+    {
+        $this->shippingAmount = $shippingAmount;
+
+        return $this;
+    }
+
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
+    public function setTotal(int $total): self
+    {
+        $this->total = $total;
+
+        return $this;
+    }
 
     /** @return array<string, string> */
-    public function getShippingAddress(): array { return $this->shippingAddress; }
+    public function getShippingAddress(): array
+    {
+        return $this->shippingAddress;
+    }
+
     /** @param array<string, string> $shippingAddress */
-    public function setShippingAddress(array $shippingAddress): self { $this->shippingAddress = $shippingAddress; return $this; }
+    public function setShippingAddress(array $shippingAddress): self
+    {
+        $this->shippingAddress = $shippingAddress;
+
+        return $this;
+    }
 
     /** @return array<string, string>|null */
-    public function getBillingAddress(): ?array { return $this->billingAddress; }
+    public function getBillingAddress(): ?array
+    {
+        return $this->billingAddress;
+    }
+
     /** @param array<string, string>|null $billingAddress */
-    public function setBillingAddress(?array $billingAddress): self { $this->billingAddress = $billingAddress; return $this; }
+    public function setBillingAddress(?array $billingAddress): self
+    {
+        $this->billingAddress = $billingAddress;
 
-    public function getPromoCode(): ?string { return $this->promoCode; }
-    public function setPromoCode(?string $promoCode): self { $this->promoCode = $promoCode; return $this; }
+        return $this;
+    }
 
-    public function getCustomerNote(): ?string { return $this->customerNote; }
-    public function setCustomerNote(?string $customerNote): self { $this->customerNote = $customerNote; return $this; }
+    public function getPromoCode(): ?string
+    {
+        return $this->promoCode;
+    }
 
-    public function getInternalNote(): ?string { return $this->internalNote; }
-    public function setInternalNote(?string $internalNote): self { $this->internalNote = $internalNote; return $this; }
+    public function setPromoCode(?string $promoCode): self
+    {
+        $this->promoCode = $promoCode;
 
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
+        return $this;
+    }
+
+    public function getCustomerNote(): ?string
+    {
+        return $this->customerNote;
+    }
+
+    public function setCustomerNote(?string $customerNote): self
+    {
+        $this->customerNote = $customerNote;
+
+        return $this;
+    }
+
+    public function getInternalNote(): ?string
+    {
+        return $this->internalNote;
+    }
+
+    public function setInternalNote(?string $internalNote): self
+    {
+        $this->internalNote = $internalNote;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
 
     /** @return Collection<int, OrderItem> */
-    public function getItems(): Collection { return $this->items; }
+    public function getItems(): Collection
+    {
+        return $this->items;
+    }
 
     /** @return Collection<int, OrderStatusHistory> */
-    public function getStatusHistory(): Collection { return $this->statusHistory; }
+    public function getStatusHistory(): Collection
+    {
+        return $this->statusHistory;
+    }
 
     /**
      * Recalcule subtotal et total à partir des lignes de commande.

@@ -52,25 +52,79 @@ class ProductCategory
         $this->products  = new ArrayCollection();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getName(): string { return $this->name; }
-    public function setName(string $name): self { $this->name = $name; return $this; }
+    public function getName(): string
+    {
+        return $this->name;
+    }
 
-    public function getSlug(): string { return $this->slug; }
-    public function setSlug(string $slug): self { $this->slug = $slug; return $this; }
+    public function setName(string $name): self
+    {
+        $this->name = $name;
 
-    public function getPosition(): int { return $this->position; }
-    public function setPosition(int $position): self { $this->position = $position; return $this; }
+        return $this;
+    }
 
-    public function isActive(): bool { return $this->isActive; }
-    public function setIsActive(bool $isActive): self { $this->isActive = $isActive; return $this; }
+    public function getSlug(): string
+    {
+        return $this->slug;
+    }
 
-    public function getTaxRate(): ?int { return $this->taxRate; }
-    public function setTaxRate(?int $taxRate): self { $this->taxRate = $taxRate; return $this; }
+    public function setSlug(string $slug): self
+    {
+        $this->slug = $slug;
 
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+        return $this;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
+
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): self
+    {
+        $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    public function getTaxRate(): ?int
+    {
+        return $this->taxRate;
+    }
+
+    public function setTaxRate(?int $taxRate): self
+    {
+        $this->taxRate = $taxRate;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 
     /** @return Collection<int, Product> */
-    public function getProducts(): Collection { return $this->products; }
+    public function getProducts(): Collection
+    {
+        return $this->products;
+    }
 }

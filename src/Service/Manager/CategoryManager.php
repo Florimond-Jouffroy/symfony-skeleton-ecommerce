@@ -15,8 +15,7 @@ class CategoryManager
         private readonly EntityManagerInterface $em,
         private readonly ApplicationLogManager $logManager,
         private readonly CategoryRepository $categoryRepository,
-    ) {
-    }
+    ) {}
 
     public function create(string $name): ?Category
     {

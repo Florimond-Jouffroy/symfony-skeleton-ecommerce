@@ -123,7 +123,7 @@ class FaqController extends AbstractController
         $all = $repo->findAllOrdered();
         $idx = array_search($id, array_column(array_map(fn ($i) => ['id' => $i->getId()], $all), 'id'));
 
-        if ($idx === false || $idx === 0) {
+        if (false === $idx || 0 === $idx) {
             return $this->json(['message' => 'Impossible de monter cet élément.'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -154,7 +154,7 @@ class FaqController extends AbstractController
         $last = count($all) - 1;
         $idx  = array_search($id, array_column(array_map(fn ($i) => ['id' => $i->getId()], $all), 'id'));
 
-        if ($idx === false || $idx === $last) {
+        if (false === $idx || $idx === $last) {
             return $this->json(['message' => 'Impossible de descendre cet élément.'], Response::HTTP_BAD_REQUEST);
         }
 

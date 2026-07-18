@@ -112,7 +112,7 @@ class SupportController extends AbstractController
             return $this->json(['message' => 'Ticket introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        if ($ticket->getStatus() === SupportTicket::STATUS_CLOSED) {
+        if (SupportTicket::STATUS_CLOSED === $ticket->getStatus()) {
             return $this->json(['message' => 'Ce ticket est fermé.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 

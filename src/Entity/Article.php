@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 class Article
 {
-    public const string STATUS_DRAFT = 'draft';
+    public const string STATUS_DRAFT     = 'draft';
     public const string STATUS_PUBLISHED = 'published';
 
     #[ORM\Id]

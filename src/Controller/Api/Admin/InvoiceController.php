@@ -9,6 +9,7 @@ use App\Entity\Order;
 use App\Repository\InvoiceRepository;
 use App\Security\Voter\InvoiceVoter;
 use App\Service\InvoiceService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,8 +23,7 @@ class InvoiceController extends AbstractController
     public function __construct(
         private readonly InvoiceService $invoiceService,
         private readonly InvoiceRepository $invoiceRepo,
-    ) {
-    }
+    ) {}
 
     #[Route('', name: 'api_admin_invoices_list', methods: ['GET'])]
     public function list(): JsonResponse
@@ -65,7 +65,7 @@ class InvoiceController extends AbstractController
         $this->denyAccessUnlessGranted(InvoiceVoter::DOWNLOAD);
 
         $pdfContent = $this->invoiceService->generatePdf($invoice);
-        $filename   = $invoice->getInvoiceNumber() . '.pdf';
+        $filename   = $invoice->getInvoiceNumber().'.pdf';
 
         return new StreamedResponse(
             static function () use ($pdfContent) { echo $pdfContent; },
@@ -79,7 +79,7 @@ class InvoiceController extends AbstractController
     }
 
     #[Route('/{id}/statut', name: 'api_admin_invoices_status', methods: ['PATCH'])]
-    public function updateStatus(Invoice $invoice, Request $request): JsonResponse
+    public function updateStatus(Invoice $invoice, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $this->denyAccessUnlessGranted(InvoiceVoter::EDIT);
 
@@ -91,7 +91,7 @@ class InvoiceController extends AbstractController
         }
 
         $invoice->setStatus($status);
-        $this->invoiceRepo->getEntityManager()->flush();
+        $em->flush();
 
         return $this->json($this->serialize($invoice));
     }

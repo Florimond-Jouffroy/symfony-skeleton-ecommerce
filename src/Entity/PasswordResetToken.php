@@ -30,8 +30,8 @@ class PasswordResetToken
 
     public function __construct(User $user, string $code, \DateTimeImmutable $expiresAt)
     {
-        $this->user = $user;
-        $this->code = $code;
+        $this->user      = $user;
+        $this->code      = $code;
         $this->expiresAt = $expiresAt;
     }
 

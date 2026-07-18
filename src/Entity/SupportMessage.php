@@ -39,19 +39,61 @@ class SupportMessage
         $this->createdAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getTicket(): ?SupportTicket { return $this->ticket; }
-    public function setTicket(?SupportTicket $ticket): static { $this->ticket = $ticket; return $this; }
+    public function getTicket(): ?SupportTicket
+    {
+        return $this->ticket;
+    }
 
-    public function getBody(): string { return $this->body; }
-    public function setBody(string $body): static { $this->body = $body; return $this; }
+    public function setTicket(?SupportTicket $ticket): static
+    {
+        $this->ticket = $ticket;
 
-    public function isFromAdmin(): bool { return $this->isFromAdmin; }
-    public function setIsFromAdmin(bool $isFromAdmin): static { $this->isFromAdmin = $isFromAdmin; return $this; }
+        return $this;
+    }
 
-    public function getAuthorName(): string { return $this->authorName; }
-    public function setAuthorName(string $authorName): static { $this->authorName = $authorName; return $this; }
+    public function getBody(): string
+    {
+        return $this->body;
+    }
 
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function setBody(string $body): static
+    {
+        $this->body = $body;
+
+        return $this;
+    }
+
+    public function isFromAdmin(): bool
+    {
+        return $this->isFromAdmin;
+    }
+
+    public function setIsFromAdmin(bool $isFromAdmin): static
+    {
+        $this->isFromAdmin = $isFromAdmin;
+
+        return $this;
+    }
+
+    public function getAuthorName(): string
+    {
+        return $this->authorName;
+    }
+
+    public function setAuthorName(string $authorName): static
+    {
+        $this->authorName = $authorName;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }

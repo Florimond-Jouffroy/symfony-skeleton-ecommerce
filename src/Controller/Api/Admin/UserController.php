@@ -26,24 +26,23 @@ class UserController extends AbstractController
         private readonly UserManager $userManager,
         private readonly PasswordResetManager $passwordResetManager,
         private readonly AuthMailer $authMailer,
-    ) {
-    }
+    ) {}
 
     #[Route('', name: 'api_admin_users_list', methods: ['GET'])]
     public function list(Request $request, UserRepository $userRepository): JsonResponse
     {
         $this->denyAccessUnlessGranted(UserVoter::VIEW);
 
-        $page = max(1, $request->query->getInt('page', 1));
+        $page     = max(1, $request->query->getInt('page', 1));
         $pageSize = min(100, max(1, $request->query->getInt('pageSize', 20)));
-        $query = $request->query->getString('q');
+        $query    = $request->query->getString('q');
 
         $result = $userRepository->searchPaginated($query, $page, $pageSize);
 
         return $this->json([
-            'items' => array_map($this->serializeUser(...), $result['items']),
-            'total' => $result['total'],
-            'page' => $page,
+            'items'    => array_map($this->serializeUser(...), $result['items']),
+            'total'    => $result['total'],
+            'page'     => $page,
             'pageSize' => $pageSize,
         ]);
     }
@@ -120,7 +119,7 @@ class UserController extends AbstractController
 
         /** @var array{roles?: mixed} $payload */
         $payload = $request->toArray();
-        $roles = $payload['roles'] ?? null;
+        $roles   = $payload['roles'] ?? null;
 
         if (!is_array($roles)) {
             return $this->json(
@@ -174,9 +173,9 @@ class UserController extends AbstractController
     private function serializeUser(User $user): array
     {
         return [
-            'id' => $user->getId(),
-            'email' => $user->getEmail(),
-            'roles' => $user->getRoles(),
+            'id'         => $user->getId(),
+            'email'      => $user->getEmail(),
+            'roles'      => $user->getRoles(),
             'isVerified' => $user->isVerified(),
         ];
     }

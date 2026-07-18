@@ -229,7 +229,7 @@ class UserManagementTest extends AbstractApiTestCase
     public function testDeleteUser(): void
     {
         $this->loginAs($this->createAdmin());
-        $user = $this->createUser('a-supprimer@example.com');
+        $user   = $this->createUser('a-supprimer@example.com');
         $userId = $user->getId();
 
         $this->client->request('DELETE', '/api/admin/utilisateurs/'.$userId);

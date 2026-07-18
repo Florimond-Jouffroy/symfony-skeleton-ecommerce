@@ -9,9 +9,9 @@ use App\Entity\Order;
 use App\Entity\OrderItem;
 use App\Repository\AppSettingRepository;
 use App\Repository\InvoiceRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Twig\Environment;
 
@@ -23,8 +23,7 @@ class InvoiceService
         private readonly AppSettingRepository $settingRepo,
         private readonly Environment $twig,
         #[Autowire('%app.company%')] private readonly array $company,
-    ) {
-    }
+    ) {}
 
     // ── Settings ──────────────────────────────────────────────────────────────
 
@@ -70,8 +69,8 @@ class InvoiceService
         // Sous-total HT des articles (avant remise, sans livraison)
         $subtotalHt = 0;
         foreach ($order->getItems() as $item) {
-            $rate        = $this->getRateForItem($item, $defaultRate);
-            $divisor     = 1 + $rate / 100;
+            $rate    = $this->getRateForItem($item, $defaultRate);
+            $divisor = 1 + $rate / 100;
             $subtotalHt += (int) round($item->getTotal() / $divisor);
         }
 
@@ -160,16 +159,19 @@ class InvoiceService
      */
     private function computeTaxBreakdown(Order $order, float $defaultRate): array
     {
-        // Regrouper les montants TTC par taux
-        $groups = []; // rate => ttcAmount
+        // Regrouper les montants TTC par taux (clé = taux stringifié : un float en clé
+        // de tableau serait silencieusement casté en int par PHP → collision de taux).
+        $groups = []; // (string) rate => ttcAmount
 
         foreach ($order->getItems() as $item) {
-            $rate              = $this->getRateForItem($item, $defaultRate);
-            $groups[$rate]     = ($groups[$rate] ?? 0) + $item->getTotal();
+            $rate         = $this->getRateForItem($item, $defaultRate);
+            $key          = (string) $rate;
+            $groups[$key] = ($groups[$key] ?? 0) + $item->getTotal();
         }
 
         if ($order->getShippingAmount() > 0) {
-            $groups[$defaultRate] = ($groups[$defaultRate] ?? 0) + $order->getShippingAmount();
+            $key          = (string) $defaultRate;
+            $groups[$key] = ($groups[$key] ?? 0) + $order->getShippingAmount();
         }
 
         // Répartir la remise proportionnellement sur chaque groupe de taux
@@ -177,17 +179,17 @@ class InvoiceService
         $totalBeforeDiscount = (int) array_sum($groups);
 
         if ($discount > 0 && $totalBeforeDiscount > 0) {
-            $applied    = 0;
-            $rates      = array_keys($groups);
-            $lastRate   = (float) end($rates);
+            $applied  = 0;
+            $rates    = array_keys($groups);
+            $lastRate = (float) end($rates);
 
             foreach ($groups as $rate => &$ttc) {
                 if ((float) $rate === $lastRate) {
                     // Le dernier groupe absorbe le reste pour éviter un arrondi
                     $ttc -= ($discount - $applied);
                 } else {
-                    $d        = (int) round($discount * ($ttc / $totalBeforeDiscount));
-                    $ttc     -= $d;
+                    $d = (int) round($discount * ($ttc / $totalBeforeDiscount));
+                    $ttc -= $d;
                     $applied += $d;
                 }
             }
@@ -225,7 +227,7 @@ class InvoiceService
         }
 
         foreach ($product->getCategories() as $category) {
-            if ($category->getTaxRate() !== null) {
+            if (null !== $category->getTaxRate()) {
                 return (float) $category->getTaxRate();
             }
         }

@@ -18,9 +18,27 @@ class AppSetting
     #[ORM\Column(type: Types::TEXT)]
     private string $value = '';
 
-    public function getSettingKey(): string { return $this->settingKey; }
-    public function setSettingKey(string $key): self { $this->settingKey = $key; return $this; }
+    public function getSettingKey(): string
+    {
+        return $this->settingKey;
+    }
 
-    public function getValue(): string { return $this->value; }
-    public function setValue(string $value): self { $this->value = $value; return $this; }
+    public function setSettingKey(string $key): self
+    {
+        $this->settingKey = $key;
+
+        return $this;
+    }
+
+    public function getValue(): string
+    {
+        return $this->value;
+    }
+
+    public function setValue(string $value): self
+    {
+        $this->value = $value;
+
+        return $this;
+    }
 }

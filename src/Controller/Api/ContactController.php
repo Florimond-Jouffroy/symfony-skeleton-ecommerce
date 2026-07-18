@@ -57,9 +57,15 @@ class ContactController extends AbstractController
         $body    = trim((string) ($data['body'] ?? ''));
 
         $errors = [];
-        if ('' === $name)    $errors[] = 'Le nom est requis.';
-        if ('' === $subject) $errors[] = 'Le sujet est requis.';
-        if ('' === $body)    $errors[] = 'Le message est requis.';
+        if ('' === $name) {
+            $errors[] = 'Le nom est requis.';
+        }
+        if ('' === $subject) {
+            $errors[] = 'Le sujet est requis.';
+        }
+        if ('' === $body) {
+            $errors[] = 'Le message est requis.';
+        }
 
         $emailViolations = $validator->validate($email, [new Assert\NotBlank(), new Assert\Email()]);
         if (count($emailViolations) > 0) {
@@ -118,7 +124,7 @@ class ContactController extends AbstractController
             return $this->json(['message' => 'Ticket introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        if ($ticket->getStatus() === SupportTicket::STATUS_CLOSED) {
+        if (SupportTicket::STATUS_CLOSED === $ticket->getStatus()) {
             return $this->json(['message' => 'Ce ticket est fermé.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 

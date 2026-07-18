@@ -28,7 +28,7 @@ class ProductCategoryRepository extends ServiceEntityRepository
     /** @return list<ProductCategory> */
     public function findAllOrdered(): array
     {
-        /** @var list<ProductCategory> */
+        /* @var list<ProductCategory> */
         return $this->createQueryBuilder('c')
             ->orderBy('c.position', 'ASC')
             ->addOrderBy('c.name', 'ASC')

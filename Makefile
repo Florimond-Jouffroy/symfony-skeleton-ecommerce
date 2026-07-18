@@ -27,7 +27,7 @@ HELP_COLOR = \033[36m
 NO_COLOR   = \033[0m
 
 .DEFAULT_GOAL := help
-.PHONY: help setup install up down stop restart build ps logs sh shell cmd cs vendor sf cc cc-hard db-main-create db-main-migration db-main-migrate db-main-drop db-main-reset db-log-create db-log-migrate db-log-drop db-log-reset db-setup db-test-setup stan perm composer composer-rm npm npm-rm npm-setup qa test
+.PHONY: help setup install up down stop restart build ps logs sh shell cmd cs vendor sf cc cc-hard db-main-create db-main-migration db-main-migrate db-main-drop db-main-reset db-log-create db-log-migrate db-log-drop db-log-reset db-setup db-test-setup stan perm composer composer-rm npm npm-rm npm-setup qa test create-admin fixtures fixtures-reset worker worker-failed worker-retry
 
 ## —— SYSTEM & CONFIGURATION ⚙️ ————————————————————————————————————————————————
 
@@ -180,13 +180,41 @@ npm-build: ## Compile les assets pour la production
 
 npm-setup: npm-rm npm-build ## Réinstallation propre de NPM et build complet du front
 
+## —— ADMINISTRATION 👤 ————————————————————————————————————————————————————————
+
+create-admin: ## Crée ou promeut un compte admin (usage: make create-admin [email=x] [password=x])
+	$(CONSOLE) app:create-admin $(email) $(password)
+
+fixtures: ## Charge les fixtures de développement (sans vider la base)
+	$(CONSOLE) doctrine:fixtures:load --no-interaction --append
+
+fixtures-reset: db-main-reset ## Réinitialise la base principale et recharge les fixtures
+	$(CONSOLE) doctrine:fixtures:load --no-interaction --append
+
+## —— MESSENGER & WORKERS 📨 ————————————————————————————————————————————————————
+
+worker: ## Lance le worker Messenger en premier plan (emails async, retry automatique)
+	$(CONSOLE) messenger:consume async --time-limit=3600 -vv
+
+worker-failed: ## Affiche les messages en échec dans la file failed
+	$(CONSOLE) messenger:failed:show -vv
+
+worker-retry: ## Réessaie les messages en échec (usage: make worker-retry ou make worker-retry id=42)
+	$(CONSOLE) messenger:failed:retry $(id) -vv
+
 ## —— QUALITÉ, TESTS & DROITS 🛠️ ————————————————————————————————————————————————
 
 cs: ## Corrige le style de code PHP selon la configuration d'entreprise (.php-cs-fixer.dist.php)
 	$(COMPOSER_CONT) vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php
 
 stan: ## Analyse statique du code avec PHPStan
-	$(COMPOSER_CONT) vendor/bin/phpstan analyse src --memory-limit=1G
+	$(COMPOSER_CONT) vendor/bin/phpstan analyse --memory-limit=1G
+
+rector: ## Prévisualise les modernisations Rector sans les appliquer (dry-run)
+	$(COMPOSER_CONT) vendor/bin/rector process --dry-run
+
+rector-fix: ## Applique les modernisations Rector au code
+	$(COMPOSER_CONT) vendor/bin/rector process
 
 db-test-setup: ## Crée et initialise les bases de données de test via le schéma Doctrine
 	$(CONSOLE) --env=test doctrine:database:drop --if-exists --force --connection=default

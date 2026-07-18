@@ -93,7 +93,7 @@ class ShippingMethodController extends AbstractController
             ? trim((string) $data['description'])
             : null);
         $method->setPrice(max(0, (int) ($data['price'] ?? 0)));
-        $method->setFreeAboveAmount(isset($data['freeAboveAmount']) && $data['freeAboveAmount'] !== null && $data['freeAboveAmount'] !== ''
+        $method->setFreeAboveAmount(isset($data['freeAboveAmount']) && '' !== $data['freeAboveAmount']
             ? max(0, (int) $data['freeAboveAmount'])
             : null);
         $method->setIsActive((bool) ($data['isActive'] ?? true));

@@ -19,8 +19,7 @@ class CategoryController extends AbstractController
 {
     public function __construct(
         private readonly CategoryManager $categoryManager,
-    ) {
-    }
+    ) {}
 
     #[Route('', name: 'api_admin_categories_list', methods: ['GET'])]
     public function list(CategoryRepository $categoryRepository): JsonResponse

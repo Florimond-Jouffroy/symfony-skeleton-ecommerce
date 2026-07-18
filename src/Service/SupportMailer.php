@@ -21,8 +21,7 @@ class SupportMailer
         private readonly string $from,
         #[Autowire(param: 'app.company')]
         private readonly array $company,
-    ) {
-    }
+    ) {}
 
     public function sendGuestConfirmation(SupportTicket $ticket): void
     {
@@ -36,7 +35,7 @@ class SupportMailer
             (new TemplatedEmail())
                 ->from(new Address($this->from, $this->company['name']))
                 ->to(new Address($ticket->getGuestEmail(), $ticket->getGuestName() ?? ''))
-                ->subject('Votre demande a bien été reçue — ' . $ticket->getSubject())
+                ->subject('Votre demande a bien été reçue — '.$ticket->getSubject())
                 ->htmlTemplate('emails/support_guest_confirmation.html.twig')
                 ->context([
                     'ticket'      => $ticket,
@@ -47,8 +46,8 @@ class SupportMailer
 
     public function sendReplyNotification(SupportTicket $ticket, SupportMessage $reply): void
     {
-        $subject     = 'Réponse à votre demande — ' . $ticket->getSubject();
-        $contactName = $ticket->getContactName();
+        $subject      = 'Réponse à votre demande — '.$ticket->getSubject();
+        $contactName  = $ticket->getContactName();
         $contactEmail = $ticket->getContactEmail();
 
         if ($ticket->isGuest()) {
@@ -60,7 +59,7 @@ class SupportMailer
         } else {
             $trackingUrl = $this->urlGenerator->generate(
                 'account_catchall',
-                ['path' => 'support/' . $ticket->getId()],
+                ['path' => 'support/'.$ticket->getId()],
                 UrlGeneratorInterface::ABSOLUTE_URL,
             );
         }

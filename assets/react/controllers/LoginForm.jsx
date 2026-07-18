@@ -7,6 +7,7 @@ import { resolveUrl } from '../utils/url';
 
 export default function LoginForm({
     loginUrl          = '/api/auth/connexion',
+    twoFactorUrl      = '/api/auth/2fa/verifier',
     redirectUrl       = '/',
     forgotPasswordUrl = '/mot-de-passe-oublie',
     registerUrl       = '/inscription',
@@ -15,6 +16,10 @@ export default function LoginForm({
 }) {
     const [email, setEmail]       = useState('');
     const [password, setPassword] = useState('');
+    const [totpCode, setTotpCode]         = useState('');
+    const [rememberDevice, setRemember]   = useState(false);
+    const [trustedDays, setTrustedDays]   = useState(0);
+    const [step, setStep]                 = useState('credentials'); // 'credentials' | '2fa'
     const [error, setError]       = useState('');
     const [loading, setLoading]   = useState(false);
 
@@ -23,10 +28,30 @@ export default function LoginForm({
         setError('');
         setLoading(true);
         try {
-            await api.post(resolveUrl(loginUrl), { email, password });
-            window.location.href = redirectUrl;
+            const data = await api.post(resolveUrl(loginUrl), { email, password });
+            if (data?.['2fa_required']) {
+                setTrustedDays(data?.['trusted_device_days'] ?? 0);
+                setStep('2fa');
+            } else {
+                window.location.href = redirectUrl;
+            }
         } catch (err) {
             setError(getErrorMessage(err, 'Identifiants incorrects.'));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleTwoFactor = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+        try {
+            await api.post(resolveUrl(twoFactorUrl), { code: totpCode, rememberDevice });
+            window.location.href = redirectUrl;
+        } catch (err) {
+            setError(getErrorMessage(err, 'Code invalide ou expiré.'));
+            setTotpCode('');
         } finally {
             setLoading(false);
         }
@@ -56,7 +81,55 @@ export default function LoginForm({
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                        {step === '2fa' && (
+                            <form onSubmit={handleTwoFactor} className="space-y-5">
+                                <div className="text-center space-y-1">
+                                    <p className="text-sm font-medium">Vérification en deux étapes</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Entrez le code à 6 chiffres affiché dans votre application d'authentification.
+                                    </p>
+                                </div>
+                                <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="\d{6}"
+                                    maxLength={6}
+                                    value={totpCode}
+                                    onChange={e => setTotpCode(e.target.value.replace(/\D/g, ''))}
+                                    placeholder="123456"
+                                    autoComplete="one-time-code"
+                                    autoFocus
+                                    className="text-center tracking-widest text-lg font-mono"
+                                    required
+                                />
+                                {error && <p className="text-sm text-destructive">{error}</p>}
+                                <Button type="submit" className="w-full" disabled={loading || totpCode.length !== 6}>
+                                    {loading ? 'Vérification…' : 'Confirmer'}
+                                </Button>
+                                {trustedDays > 0 && (
+                                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                                        <input
+                                            type="checkbox"
+                                            checked={rememberDevice}
+                                            onChange={e => setRemember(e.target.checked)}
+                                            className="h-4 w-4 rounded border-input accent-primary"
+                                        />
+                                        <span className="text-xs text-muted-foreground">
+                                            Se souvenir de cet appareil pendant {trustedDays} jour{trustedDays > 1 ? 's' : ''}
+                                        </span>
+                                    </label>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => { setStep('credentials'); setError(''); setTotpCode(''); setRemember(false); }}
+                                    className="w-full text-xs text-muted-foreground hover:text-foreground text-center"
+                                >
+                                    ← Retour à la connexion
+                                </button>
+                            </form>
+                        )}
+
+                        {step === 'credentials' && <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
                                 <Input
@@ -98,17 +171,19 @@ export default function LoginForm({
                             <Button type="submit" className="w-full" disabled={loading}>
                                 {loading ? 'Connexion…' : 'Se connecter'}
                             </Button>
-                        </form>
+                        </form>}
 
-                        <p className="text-center text-sm text-muted-foreground">
-                            Pas encore de compte ?{' '}
-                            <a
-                                href={resolveUrl(registerUrl)}
-                                className="font-medium text-foreground underline-offset-4 hover:underline"
-                            >
-                                S'inscrire
-                            </a>
-                        </p>
+                        {step === 'credentials' && (
+                            <p className="text-center text-sm text-muted-foreground">
+                                Pas encore de compte ?{' '}
+                                <a
+                                    href={resolveUrl(registerUrl)}
+                                    className="font-medium text-foreground underline-offset-4 hover:underline"
+                                >
+                                    S'inscrire
+                                </a>
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

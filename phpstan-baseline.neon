@@ -1,0 +1,367 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method App\\Controller\\Api\\Account\\OrderController\:\:serializeFull\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Account/OrderController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Account\\OrderController\:\:serializeList\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Account/OrderController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Account\\ProfileController\:\:serialize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Account/ProfileController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Account\\ReviewController\:\:serialize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Account/ReviewController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Account\\SupportController\:\:serializeDetail\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Account/SupportController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Account\\SupportController\:\:serializeList\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Account/SupportController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\FaqController\:\:serialize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/FaqController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\PromoCodeController\:\:hydrate\(\) has parameter \$p with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/PromoCodeController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\PromoCodeController\:\:serialize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/PromoCodeController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\ReviewController\:\:serialize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/ReviewController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\ShippingMethodController\:\:hydrate\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/ShippingMethodController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\ShippingMethodController\:\:serialize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/ShippingMethodController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\ShippingMethodController\:\:validate\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/ShippingMethodController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\StaticPageController\:\:serialize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/StaticPageController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\StaticPageController\:\:serializeFull\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/StaticPageController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\SupportController\:\:fetchOtherTickets\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/SupportController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\SupportController\:\:fetchRecentOrders\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/SupportController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\SupportController\:\:reply\(\) has parameter \$company with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/SupportController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\SupportController\:\:serializeDetail\(\) has parameter \$otherTickets with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/SupportController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\SupportController\:\:serializeDetail\(\) has parameter \$recentOrders with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/SupportController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\SupportController\:\:serializeDetail\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/SupportController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Admin\\SupportController\:\:serializeList\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Admin/SupportController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Blog\\ArticleController\:\:serialize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Blog/ArticleController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Blog\\ArticleController\:\:serializeFull\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Blog/ArticleController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\ContactController\:\:serializeTicket\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/ContactController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Shop\\CartController\:\:getCart\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Shop/CartController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Shop\\CartController\:\:saveCart\(\) has parameter \$cart with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Shop/CartController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Shop\\CartController\:\:serialize\(\) has parameter \$cart with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Shop/CartController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Shop\\CartController\:\:serialize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Shop/CartController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Shop\\ProductController\:\:serialize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Shop/ProductController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\Shop\\ProductController\:\:serializeFull\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/Shop/ProductController.php
+
+		-
+			message: '#^Method App\\DataFixtures\\AppFixtures\:\:fakeEditorJsDescription\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/DataFixtures/AppFixtures.php
+
+		-
+			message: '#^Method App\\Entity\\ActivityLog\:\:getContext\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/ActivityLog.php
+
+		-
+			message: '#^Method App\\Entity\\ActivityLog\:\:setContext\(\) has parameter \$context with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/ActivityLog.php
+
+		-
+			message: '#^Property App\\Entity\\ActivityLog\:\:\$context type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/ActivityLog.php
+
+		-
+			message: '#^Method App\\Entity\\Product\:\:getDescription\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Product.php
+
+		-
+			message: '#^Method App\\Entity\\Product\:\:setDescription\(\) has parameter \$description with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Product.php
+
+		-
+			message: '#^Method App\\Entity\\Product\:\:syncCategories\(\) has parameter \$categories with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Product.php
+
+		-
+			message: '#^Property App\\Entity\\Product\:\:\$description type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Product.php
+
+		-
+			message: '#^Method App\\Entity\\ProductVariant\:\:getAttributes\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/ProductVariant.php
+
+		-
+			message: '#^Method App\\Entity\\ProductVariant\:\:setAttributes\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/ProductVariant.php
+
+		-
+			message: '#^Property App\\Entity\\ProductVariant\:\:\$attributes type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/ProductVariant.php
+
+		-
+			message: '#^Method App\\Entity\\StaticPage\:\:getContent\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/StaticPage.php
+
+		-
+			message: '#^Method App\\Entity\\StaticPage\:\:setContent\(\) has parameter \$content with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/StaticPage.php
+
+		-
+			message: '#^Property App\\Entity\\StaticPage\:\:\$content type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/StaticPage.php
+
+		-
+			message: '#^Property App\\Entity\\SupportMessage\:\:\$ticket type mapping mismatch\: property can contain App\\Entity\\SupportTicket\|null but database expects App\\Entity\\SupportTicket\.$#'
+			identifier: doctrine.associationType
+			count: 1
+			path: src/Entity/SupportMessage.php
+
+		-
+			message: '#^Property App\\Entity\\User\:\:\$email type mapping mismatch\: property can contain string\|null but database expects string\.$#'
+			identifier: doctrine.columnType
+			count: 1
+			path: src/Entity/User.php
+
+		-
+			message: '#^Property App\\Entity\\User\:\:\$password type mapping mismatch\: property can contain string\|null but database expects string\.$#'
+			identifier: doctrine.columnType
+			count: 1
+			path: src/Entity/User.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>orderNumber" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Payment/Provider/MolliePaymentProvider.php
+
+		-
+			message: '#^Class App\\Repository\\ActivityLogRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/ActivityLogRepository.php
+
+		-
+			message: '#^Class App\\Repository\\FaqItemRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/FaqItemRepository.php
+
+		-
+			message: '#^Method App\\Repository\\OrderRepository\:\:findRecent\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Repository/OrderRepository.php
+
+		-
+			message: '#^Class App\\Repository\\ProductReviewRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/ProductReviewRepository.php
+
+		-
+			message: '#^Class App\\Repository\\StaticPageRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/StaticPageRepository.php
+
+		-
+			message: '#^Class App\\Repository\\SupportMessageRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/SupportMessageRepository.php
+
+		-
+			message: '#^Class App\\Repository\\SupportTicketRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/SupportTicketRepository.php
+
+		-
+			message: '#^Class App\\Repository\\TrustedDeviceRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/TrustedDeviceRepository.php
+
+		-
+			message: '#^Method App\\Service\\ActivityLogger\:\:log\(\) has parameter \$context with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/ActivityLogger.php
+
+		-
+			message: '#^Method App\\Service\\InvoiceService\:\:__construct\(\) has parameter \$company with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/InvoiceService.php
+
+		-
+			message: '#^Method App\\Service\\OrderMailer\:\:__construct\(\) has parameter \$company with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/OrderMailer.php
+
+		-
+			message: '#^Method App\\Service\\SupportMailer\:\:__construct\(\) has parameter \$company with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/SupportMailer.php

@@ -7,6 +7,7 @@ namespace App\Controller\Api\Shop;
 use App\Entity\Customer;
 use App\Entity\Order;
 use App\Entity\OrderItem;
+use App\Payment\PaymentProviderRegistry;
 use App\Repository\CustomerRepository;
 use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
@@ -14,6 +15,7 @@ use App\Repository\ProductVariantRepository;
 use App\Repository\PromoCodeRepository;
 use App\Repository\ShippingMethodRepository;
 use App\Service\InvoiceService;
+use App\Service\OrderMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -35,6 +37,8 @@ class CheckoutController extends AbstractController
         OrderRepository $orderRepo,
         PromoCodeRepository $promoRepo,
         InvoiceService $invoiceService,
+        OrderMailer $orderMailer,
+        PaymentProviderRegistry $paymentRegistry,
     ): JsonResponse {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -91,6 +95,7 @@ class CheckoutController extends AbstractController
                 $label = $variant
                     ? sprintf('%s – %s', $product->getName(), $variant->getName())
                     : $product->getName();
+
                 return $this->json(['message' => sprintf('Stock insuffisant pour "%s".', $label)], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
@@ -199,6 +204,27 @@ class CheckoutController extends AbstractController
             $invoiceService->generateForOrder($order);
         }
 
-        return $this->json(['orderNumber' => $order->getOrderNumber()], Response::HTTP_CREATED);
+        // ── 11. Payment ───────────────────────────────────────────────────────
+        $paymentProvider = $paymentRegistry->getActive();
+
+        if (null === $paymentProvider) {
+            // No payment provider: order is immediately ready, send confirmation
+            $orderMailer->sendOrderConfirmation($order);
+
+            return $this->json(['orderNumber' => $order->getOrderNumber()], Response::HTTP_CREATED);
+        }
+
+        $result = $paymentProvider->createIntent($order);
+
+        if (!$result->success) {
+            return $this->json(['message' => 'Impossible de créer l\'intention de paiement.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json([
+            'orderNumber' => $order->getOrderNumber(),
+            'provider'    => $paymentProvider->getName(),
+            'token'       => $result->clientSecret,
+            'publicKey'   => $paymentProvider->getPublicKey(),
+        ], Response::HTTP_CREATED);
     }
 }

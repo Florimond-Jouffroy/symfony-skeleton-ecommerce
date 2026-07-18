@@ -14,8 +14,8 @@ class RegistrationTest extends AbstractApiTestCase
     public function testSuccessfulRegistration(): void
     {
         $this->postJson(self::URL, [
-            'email' => 'nouveau@example.com',
-            'password' => 'password123',
+            'email'           => 'nouveau@example.com',
+            'password'        => 'password123',
             'passwordConfirm' => 'password123',
         ]);
 
@@ -26,8 +26,8 @@ class RegistrationTest extends AbstractApiTestCase
     public function testRegisteredUserIsNotVerifiedByDefault(): void
     {
         $this->postJson(self::URL, [
-            'email' => 'nonverifie@example.com',
-            'password' => 'password123',
+            'email'           => 'nonverifie@example.com',
+            'password'        => 'password123',
             'passwordConfirm' => 'password123',
         ]);
 
@@ -41,8 +41,8 @@ class RegistrationTest extends AbstractApiTestCase
     public function testRegistrationFailsWithMismatchedPasswords(): void
     {
         $this->postJson(self::URL, [
-            'email' => 'test@example.com',
-            'password' => 'password123',
+            'email'           => 'test@example.com',
+            'password'        => 'password123',
             'passwordConfirm' => 'different456',
         ]);
 
@@ -52,8 +52,8 @@ class RegistrationTest extends AbstractApiTestCase
     public function testRegistrationFailsWithShortPassword(): void
     {
         $this->postJson(self::URL, [
-            'email' => 'test@example.com',
-            'password' => 'court',
+            'email'           => 'test@example.com',
+            'password'        => 'court',
             'passwordConfirm' => 'court',
         ]);
 
@@ -63,8 +63,8 @@ class RegistrationTest extends AbstractApiTestCase
     public function testRegistrationFailsWithInvalidEmail(): void
     {
         $this->postJson(self::URL, [
-            'email' => 'pas-un-email',
-            'password' => 'password123',
+            'email'           => 'pas-un-email',
+            'password'        => 'password123',
             'passwordConfirm' => 'password123',
         ]);
 
@@ -76,8 +76,8 @@ class RegistrationTest extends AbstractApiTestCase
         $this->createUser('existant@example.com');
 
         $this->postJson(self::URL, [
-            'email' => 'existant@example.com',
-            'password' => 'password123',
+            'email'           => 'existant@example.com',
+            'password'        => 'password123',
             'passwordConfirm' => 'password123',
         ]);
 

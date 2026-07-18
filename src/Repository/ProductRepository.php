@@ -76,7 +76,7 @@ class ProductRepository extends ServiceEntityRepository
      */
     public function findLowStock(): array
     {
-        /** @var list<Product> */
+        /* @var list<Product> */
         return $this->createQueryBuilder('p')
             ->where('p.hasVariants = false')
             ->andWhere('p.status = :status')

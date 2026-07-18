@@ -30,7 +30,7 @@ class InvoiceRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('i')
             ->select('i.invoiceNumber')
             ->where('i.invoiceNumber LIKE :prefix')
-            ->setParameter('prefix', $prefix . '%')
+            ->setParameter('prefix', $prefix.'%')
             ->orderBy('i.invoiceNumber', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
@@ -41,6 +41,7 @@ class InvoiceRepository extends ServiceEntityRepository
         }
 
         $suffix = substr($result['invoiceNumber'], strlen($prefix));
+
         return (int) $suffix;
     }
 

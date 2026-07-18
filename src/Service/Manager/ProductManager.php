@@ -24,8 +24,7 @@ class ProductManager
         private readonly EntityManagerInterface $em,
         private readonly ApplicationLogManager $logManager,
         private readonly ProductRepository $repository,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<mixed> $categories ProductCategory[]
@@ -41,10 +40,10 @@ class ProductManager
     }
 
     /**
-     * @param array<mixed>      $categories ProductCategory[]
-     * @param array<mixed>|null $description Editor.js blocks
-     * @param list<array{url: string, alt?: string|null, position?: int}> $images
-     * @param list<array{id?: int|null, name: string, sku?: string|null, priceOverride?: int|null, stock: int, lowStockThreshold?: int, position?: int, attributes?: array<mixed>|null, isActive?: bool}> $variants
+     * @param array<mixed>                                                                                                                                                                     $categories  ProductCategory[]
+     * @param array<mixed>|null                                                                                                                                                                $description Editor.js blocks
+     * @param list<array{url: string, alt?: string|null, position?: int}>                                                                                                                      $images
+     * @param list<array{id?: int|null, name: string, sku?: string|null, priceOverride?: int|null, stock?: int, lowStockThreshold?: int, position?: int, attributes?: mixed, isActive?: bool}> $variants
      */
     public function update(
         Product $product,
@@ -135,7 +134,7 @@ class ProductManager
      * On construit d'abord un index des variantes existantes par id pour éviter
      * des requêtes SELECT en boucle.
      *
-     * @param list<array{id?: int|null, name: string, sku?: string|null, priceOverride?: int|null, stock: int, lowStockThreshold?: int, position?: int, attributes?: array<mixed>|null, isActive?: bool}> $variants
+     * @param list<array{id?: int|null, name: string, sku?: string|null, priceOverride?: int|null, stock?: int, lowStockThreshold?: int, position?: int, attributes?: mixed, isActive?: bool}> $variants
      */
     private function syncVariants(Product $product, array $variants): void
     {

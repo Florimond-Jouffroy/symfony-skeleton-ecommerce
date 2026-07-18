@@ -28,7 +28,7 @@ abstract class AbstractApiTestCase extends WebTestCase
     protected function setUp(): void
     {
         $this->client = static::createClient();
-        $this->em = static::getContainer()->get(EntityManagerInterface::class);
+        $this->em     = static::getContainer()->get(EntityManagerInterface::class);
     }
 
     protected function postJson(string $url, array $payload): void
@@ -229,7 +229,7 @@ abstract class AbstractApiTestCase extends WebTestCase
         $ticket->setStatus($status);
         $ticket->setUser($user);
         $ticket->setGuestName($guestName);
-        $ticket->setGuestEmail($guestEmail ?? ($user === null ? 'guest@example.com' : null));
+        $ticket->setGuestEmail($guestEmail ?? (null === $user ? 'guest@example.com' : null));
 
         $this->em->persist($ticket);
         $this->em->flush();

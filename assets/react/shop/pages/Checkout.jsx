@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, ChevronRight, Lock, Package, ShoppingBag, Tag, UserPlus, X } from 'lucide-react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { api, ApiError, getErrorMessage } from '../../utils/api';
 import { useCart } from '../context/CartContext';
 
@@ -33,6 +36,9 @@ export default function Checkout({ urls }) {
     const [submitting, setSubmitting]           = useState(false);
     const [error, setError]                     = useState('');
     const [orderNumber, setOrderNumber]         = useState('');
+    const [paymentProvider, setPaymentProvider] = useState(null); // 'stripe' | 'paypal' | null
+    const [paymentToken, setPaymentToken]       = useState(null);
+    const [paymentPublicKey, setPaymentPublicKey] = useState(null);
     const [promo, setPromo]                     = useState(null); // {code, type, value}
 
     // Check auth + pre-fill form from profile
@@ -81,6 +87,21 @@ export default function Checkout({ urls }) {
             .catch(() => {});
     }, []);
 
+    // Retour depuis Mollie : restaure la commande depuis sessionStorage
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('mollie_return') !== '1') return;
+        const saved = sessionStorage.getItem('mollie_order');
+        if (saved) {
+            setOrderNumber(saved);
+            sessionStorage.removeItem('mollie_order');
+        }
+        setStep(4);
+        window.scrollTo(0, 0);
+        // Nettoie le param de l'URL sans recharger
+        window.history.replaceState({}, '', window.location.pathname);
+    }, []);
+
     const addrField = (key, value) => setAddress((a) => ({ ...a, [key]: value }));
 
     const handleStep1Submit = (e) => {
@@ -111,9 +132,16 @@ export default function Checkout({ urls }) {
                 customerNote:     customerNote || null,
             });
             setOrderNumber(data.orderNumber);
-            // Refresh cart badge (cart cleared server-side)
             window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { count: 0 } }));
-            setStep(3);
+
+            if (data.provider && data.token) {
+                setPaymentProvider(data.provider);
+                setPaymentToken(data.token);
+                setPaymentPublicKey(data.publicKey);
+                setStep(3);
+            } else {
+                setStep(4);
+            }
             window.scrollTo(0, 0);
         } catch (err) {
             setError(getErrorMessage(err));
@@ -143,7 +171,7 @@ export default function Checkout({ urls }) {
     return (
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
             {/* Progress */}
-            {step < 3 && <StepBar step={step} />}
+            {step < 4 && <StepBar step={step} hasPayment={!!paymentToken || step <= 2} />}
 
             {step === 1 && (
                 <Step1
@@ -179,16 +207,28 @@ export default function Checkout({ urls }) {
                 />
             )}
 
-            {step === 3 && (
-                <Step3 orderNumber={orderNumber} navigate={navigate} />
+            {step === 3 && paymentToken && (
+                <Step3Payment
+                    provider={paymentProvider}
+                    token={paymentToken}
+                    publicKey={paymentPublicKey}
+                    orderNumber={orderNumber}
+                    onSuccess={() => { setStep(4); window.scrollTo(0, 0); }}
+                />
+            )}
+
+            {step === 4 && (
+                <StepConfirmation orderNumber={orderNumber} navigate={navigate} />
             )}
         </div>
     );
 }
 
 /* ── Step bar ── */
-function StepBar({ step }) {
-    const steps = ['Livraison', 'Récapitulatif', 'Confirmation'];
+function StepBar({ step, hasPayment }) {
+    const steps = hasPayment
+        ? ['Livraison', 'Récapitulatif', 'Paiement', 'Confirmation']
+        : ['Livraison', 'Récapitulatif', 'Confirmation'];
     return (
         <div className="mb-10 flex items-center justify-center gap-0">
             {steps.map((label, i) => {
@@ -503,8 +543,135 @@ function Step2({ address, selectedShipping, customerNote, cart, promo, error, su
     );
 }
 
-/* ── Step 3 : Confirmation ── */
-function Step3({ orderNumber, navigate }) {
+/* ── Step 3 : Paiement (Stripe ou PayPal) ── */
+function Step3Payment({ provider, token, publicKey, orderNumber, onSuccess }) {
+    return (
+        <div className="mx-auto max-w-lg">
+            <h2 className="text-lg font-semibold mb-6">Paiement sécurisé</h2>
+            <div className="rounded-xl border border-border bg-card p-6">
+                {provider === 'stripe' && (
+                    <StripePaymentForm clientSecret={token} stripePublicKey={publicKey} onSuccess={onSuccess} />
+                )}
+                {provider === 'paypal' && (
+                    <PayPalPaymentForm paypalOrderId={token} clientId={publicKey} onSuccess={onSuccess} />
+                )}
+                {provider === 'mollie' && (
+                    <MollieRedirectForm checkoutUrl={token} orderNumber={orderNumber} />
+                )}
+            </div>
+        </div>
+    );
+}
+
+function StripePaymentForm({ clientSecret, stripePublicKey, onSuccess }) {
+    const [stripePromise] = useState(() => loadStripe(stripePublicKey));
+
+    return (
+        <Elements stripe={stripePromise} options={{ clientSecret, locale: 'fr' }}>
+            <StripeForm onSuccess={onSuccess} />
+        </Elements>
+    );
+}
+
+function StripeForm({ onSuccess }) {
+    const stripe   = useStripe();
+    const elements = useElements();
+    const [error, setError]     = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!stripe || !elements) return;
+        setLoading(true);
+        setError('');
+
+        const { error: stripeError } = await stripe.confirmPayment({
+            elements,
+            confirmParams: { return_url: `${window.location.origin}/boutique/commander` },
+            redirect: 'if_required',
+        });
+
+        if (stripeError) {
+            setError(stripeError.message ?? 'Une erreur est survenue.');
+            setLoading(false);
+        } else {
+            onSuccess();
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-5">
+            <PaymentElement />
+            {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
+            <button
+                type="submit"
+                disabled={!stripe || loading}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+            >
+                <Lock className="h-4 w-4" />
+                {loading ? 'Traitement en cours…' : 'Payer maintenant'}
+            </button>
+        </form>
+    );
+}
+
+function PayPalPaymentForm({ paypalOrderId, clientId, onSuccess }) {
+    const [error, setError] = useState('');
+
+    return (
+        <PayPalScriptProvider options={{ clientId, currency: 'EUR', intent: 'capture' }}>
+            <div className="space-y-4">
+                <p className="text-sm text-muted-foreground text-center">
+                    Vous allez être redirigé vers PayPal pour finaliser votre paiement.
+                </p>
+                {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
+                <PayPalButtons
+                    style={{ layout: 'vertical', shape: 'rect', label: 'pay' }}
+                    createOrder={() => paypalOrderId}
+                    onApprove={async (data, actions) => {
+                        try {
+                            await actions.order.capture();
+                            onSuccess();
+                        } catch {
+                            setError('Le paiement PayPal a échoué. Veuillez réessayer.');
+                        }
+                    }}
+                    onError={() => setError('Une erreur PayPal est survenue. Veuillez réessayer.')}
+                    onCancel={() => setError('Paiement annulé.')}
+                />
+            </div>
+        </PayPalScriptProvider>
+    );
+}
+
+function MollieRedirectForm({ checkoutUrl, orderNumber }) {
+    const handleRedirect = () => {
+        if (orderNumber) {
+            sessionStorage.setItem('mollie_order', orderNumber);
+        }
+        window.location.href = checkoutUrl;
+    };
+
+    return (
+        <div className="space-y-5 text-center">
+            <p className="text-sm text-muted-foreground">
+                Vous allez être redirigé vers la page de paiement sécurisée Mollie.
+                Votre commande est enregistrée — vous recevrez une confirmation par e-mail après le paiement.
+            </p>
+            <button
+                type="button"
+                onClick={handleRedirect}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+                <Lock className="h-4 w-4" />
+                Payer avec Mollie
+            </button>
+        </div>
+    );
+}
+
+/* ── Step 4 : Confirmation ── */
+function StepConfirmation({ orderNumber, navigate }) {
     return (
         <div className="mx-auto max-w-lg text-center py-10 space-y-6">
             <div className="flex justify-center">

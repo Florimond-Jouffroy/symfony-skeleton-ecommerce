@@ -55,19 +55,58 @@ class ProductVariant
     #[ORM\Column(options: ['default' => true])]
     private bool $isActive = true;
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getProduct(): Product { return $this->product; }
-    public function setProduct(Product $product): self { $this->product = $product; return $this; }
+    public function getProduct(): Product
+    {
+        return $this->product;
+    }
 
-    public function getName(): string { return $this->name; }
-    public function setName(string $name): self { $this->name = $name; return $this; }
+    public function setProduct(Product $product): self
+    {
+        $this->product = $product;
 
-    public function getSku(): ?string { return $this->sku; }
-    public function setSku(?string $sku): self { $this->sku = $sku ?: null; return $this; }
+        return $this;
+    }
 
-    public function getPriceOverride(): ?int { return $this->priceOverride; }
-    public function setPriceOverride(?int $priceOverride): self { $this->priceOverride = $priceOverride; return $this; }
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getSku(): ?string
+    {
+        return $this->sku;
+    }
+
+    public function setSku(?string $sku): self
+    {
+        $this->sku = $sku ?: null;
+
+        return $this;
+    }
+
+    public function getPriceOverride(): ?int
+    {
+        return $this->priceOverride;
+    }
+
+    public function setPriceOverride(?int $priceOverride): self
+    {
+        $this->priceOverride = $priceOverride;
+
+        return $this;
+    }
 
     /**
      * Retourne le prix réel de la variante.
@@ -78,18 +117,63 @@ class ProductVariant
         return $this->priceOverride ?? $this->product->getPrice();
     }
 
-    public function getStock(): int { return $this->stock; }
-    public function setStock(int $stock): self { $this->stock = $stock; return $this; }
+    public function getStock(): int
+    {
+        return $this->stock;
+    }
 
-    public function getLowStockThreshold(): int { return $this->lowStockThreshold; }
-    public function setLowStockThreshold(int $lowStockThreshold): self { $this->lowStockThreshold = $lowStockThreshold; return $this; }
+    public function setStock(int $stock): self
+    {
+        $this->stock = $stock;
 
-    public function getPosition(): int { return $this->position; }
-    public function setPosition(int $position): self { $this->position = $position; return $this; }
+        return $this;
+    }
 
-    public function getAttributes(): ?array { return $this->attributes; }
-    public function setAttributes(?array $attributes): self { $this->attributes = $attributes; return $this; }
+    public function getLowStockThreshold(): int
+    {
+        return $this->lowStockThreshold;
+    }
 
-    public function isActive(): bool { return $this->isActive; }
-    public function setIsActive(bool $isActive): self { $this->isActive = $isActive; return $this; }
+    public function setLowStockThreshold(int $lowStockThreshold): self
+    {
+        $this->lowStockThreshold = $lowStockThreshold;
+
+        return $this;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
+
+        return $this;
+    }
+
+    public function getAttributes(): ?array
+    {
+        return $this->attributes;
+    }
+
+    public function setAttributes(?array $attributes): self
+    {
+        $this->attributes = $attributes;
+
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): self
+    {
+        $this->isActive = $isActive;
+
+        return $this;
+    }
 }
