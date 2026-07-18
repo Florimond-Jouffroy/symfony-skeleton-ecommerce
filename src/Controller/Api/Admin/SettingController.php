@@ -60,6 +60,10 @@ class SettingController extends AbstractController
             $this->settingRepo->setValue('site.maintenance', $payload['maintenanceMode'] ? 'true' : 'false');
         }
 
+        if (array_key_exists('returnsEnabled', $payload)) {
+            $this->settingRepo->setValue('returns.enabled', $payload['returnsEnabled'] ? 'true' : 'false');
+        }
+
         if (array_key_exists('stripeEnabled', $payload)) {
             $this->settingRepo->setValue('payment.stripe.enabled', $payload['stripeEnabled'] ? 'true' : 'false');
         }
@@ -145,6 +149,7 @@ class SettingController extends AbstractController
         return [
             'maintenanceMode'        => 'true' === $this->settingRepo->getValue('site.maintenance', 'false'),
             'shopEnabled'            => 'true' === $this->settingRepo->getValue('shop.enabled', 'true'),
+            'returnsEnabled'         => 'true' === $this->settingRepo->getValue('returns.enabled', 'false'),
             'invoiceTrigger'         => $this->invoiceService->getInvoiceTrigger(),
             'defaultTaxRate'         => $this->invoiceService->getDefaultTaxRate(),
             'stripeEnabled'          => 'true' === $this->settingRepo->getValue('payment.stripe.enabled', 'false'),

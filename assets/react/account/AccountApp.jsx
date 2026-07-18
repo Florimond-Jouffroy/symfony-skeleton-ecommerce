@@ -9,9 +9,10 @@ import Support from './pages/Support';
 import SupportDetail from './pages/SupportDetail';
 import Avis from './pages/Avis';
 
-const root      = document.getElementById('account-root');
-const urls      = JSON.parse(root?.dataset.urls      ?? '{}');
-const userEmail = root?.dataset.userEmail ?? '';
+const root           = document.getElementById('account-root');
+const urls           = JSON.parse(root?.dataset.urls ?? '{}');
+const userEmail      = root?.dataset.userEmail ?? '';
+const returnsEnabled = root?.dataset.returnsEnabled === '1';
 
 function SupportDetailWrapper() {
     const { id } = useParams();
@@ -26,7 +27,7 @@ export default function AccountApp() {
                     <Route index element={<Navigate to="/tableau-de-bord" replace />} />
                     <Route path="tableau-de-bord" element={<Dashboard urls={urls} userEmail={userEmail} />} />
                     <Route path="commandes"        element={<Commandes urls={urls} />} />
-                    <Route path="commandes/:number" element={<CommandeDetail urls={urls} />} />
+                    <Route path="commandes/:number" element={<CommandeDetail urls={urls} returnsEnabled={returnsEnabled} />} />
                     <Route path="profil"           element={<Profil urls={urls} />} />
                     <Route path="support"          element={<Support urls={urls} />} />
                     <Route path="support/:id"      element={<SupportDetailWrapper />} />

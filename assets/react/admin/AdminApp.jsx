@@ -13,6 +13,7 @@ import SupportManager from './pages/SupportManager';
 import PromoCodeManager from './pages/PromoCodeManager';
 import OrderDetail from './pages/OrderDetail';
 import OrdersList from './pages/OrdersList';
+import ReturnsManager from './pages/ReturnsManager';
 import Dashboard from './pages/Dashboard';
 import ProductCategoryManager from './pages/ProductCategoryManager';
 import ProductEditor from './pages/ProductEditor';
@@ -44,6 +45,7 @@ export default function AdminApp() {
                     <Route path="categories" element={<CategoryManager permissions={permissions} urls={urls} />} />
                     <Route path="commandes" element={<OrdersList permissions={permissions} urls={urls} />} />
                     <Route path="commandes/:id" element={<OrderDetail permissions={permissions} />} />
+                    <Route path="retours" element={<ReturnsManager permissions={permissions} urls={urls} />} />
                     <Route path="factures" element={<InvoicesList permissions={permissions} urls={urls} />} />
                     <Route path="codes-promo" element={<PromoCodeManager permissions={permissions} urls={urls} />} />
                     <Route path="produits" element={<ProductsList permissions={permissions} urls={urls} />} />

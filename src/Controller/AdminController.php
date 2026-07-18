@@ -15,6 +15,7 @@ use App\Security\Voter\OrderVoter;
 use App\Security\Voter\ProductCategoryVoter;
 use App\Security\Voter\ProductVoter;
 use App\Security\Voter\PromoCodeVoter;
+use App\Security\Voter\ReturnVoter;
 use App\Security\Voter\ReviewVoter;
 use App\Security\Voter\SettingVoter;
 use App\Security\Voter\ShippingVoter;
@@ -58,6 +59,7 @@ class AdminController extends AbstractController
                 'support'           => $this->generateUrl('api_admin_support_list'),
                 'pages'             => $this->generateUrl('api_admin_pages_list'),
                 'notifications'     => $this->generateUrl('api_admin_notifications'),
+                'returns'           => $this->generateUrl('api_admin_returns_list'),
                 'reviews'           => $this->generateUrl('api_admin_reviews_list'),
                 'activityLog'       => $this->generateUrl('api_admin_activity_log_list'),
                 'twoFactor'         => $this->generateUrl('api_admin_2fa_status'),
@@ -84,6 +86,8 @@ class AdminController extends AbstractController
                 'canViewOrders'            => $this->isGranted(OrderVoter::VIEW),
                 'canEditOrder'             => $this->isGranted(OrderVoter::EDIT),
                 'canDeleteOrder'           => $this->isGranted(OrderVoter::DELETE),
+                'canViewReturns'           => $this->isGranted(ReturnVoter::VIEW),
+                'canEditReturns'           => $this->isGranted(ReturnVoter::EDIT),
                 'canViewProducts'          => $this->isGranted(ProductVoter::VIEW),
                 'canCreateProduct'         => $this->isGranted(ProductVoter::CREATE),
                 'canEditProduct'           => $this->isGranted(ProductVoter::EDIT),

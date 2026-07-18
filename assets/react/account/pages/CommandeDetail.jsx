@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api, ApiError } from '../../utils/api';
+import { api, ApiError, getErrorMessage } from '../../utils/api';
 
 const STATUS_LABELS = {
     pending:   { label: 'En attente',  class: 'bg-amber-100 text-amber-700' },
@@ -11,6 +11,13 @@ const STATUS_LABELS = {
     refunded:  { label: 'Remboursée',  class: 'bg-gray-100 text-gray-600' },
 };
 
+const RETURN_STATUS = {
+    requested: { label: 'Demandé',    class: 'bg-amber-100 text-amber-700' },
+    approved:  { label: 'Approuvé',   class: 'bg-blue-100 text-blue-700' },
+    rejected:  { label: 'Refusé',     class: 'bg-red-100 text-red-700' },
+    refunded:  { label: 'Remboursé',  class: 'bg-green-100 text-green-700' },
+};
+
 function formatPrice(cents) {
     return (cents / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 }
@@ -19,12 +26,19 @@ function formatDate(iso) {
     return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-export default function CommandeDetail({ urls }) {
+export default function CommandeDetail({ urls, returnsEnabled = false }) {
     const { number } = useParams();
     const navigate   = useNavigate();
     const [order, setOrder]     = useState(null);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
+
+    const [returns, setReturns]             = useState([]);
+    const [showReturnForm, setShowReturnForm] = useState(false);
+    const [returnQty, setReturnQty]         = useState({});
+    const [returnReason, setReturnReason]   = useState('');
+    const [submitting, setSubmitting]       = useState(false);
+    const [returnFeedback, setReturnFeedback] = useState(null);
 
     useEffect(() => {
         setLoading(true);
@@ -33,6 +47,37 @@ export default function CommandeDetail({ urls }) {
             .catch((err) => { if (err instanceof ApiError && err.status === 404) setNotFound(true); })
             .finally(() => setLoading(false));
     }, [number]);
+
+    useEffect(() => {
+        if (!returnsEnabled || !urls.returns) return;
+        api.get(urls.returns)
+            .then((data) => setReturns((data?.items ?? []).filter((r) => r.orderNumber === number)))
+            .catch(() => {});
+    }, [number, returnsEnabled]);
+
+    const submitReturn = async () => {
+        const items = order.items
+            .map((it) => ({ orderItemId: it.id, quantity: parseInt(returnQty[it.id] || 0, 10) }))
+            .filter((line) => line.quantity > 0);
+
+        if (items.length === 0) { setReturnFeedback({ type: 'error', message: 'Sélectionnez au moins un article.' }); return; }
+        if (!returnReason.trim()) { setReturnFeedback({ type: 'error', message: 'Indiquez un motif.' }); return; }
+
+        setSubmitting(true);
+        setReturnFeedback(null);
+        try {
+            const created = await api.post(urls.returns, { orderNumber: order.orderNumber, reason: returnReason.trim(), items });
+            setReturns((rs) => [created, ...rs]);
+            setShowReturnForm(false);
+            setReturnQty({});
+            setReturnReason('');
+            setReturnFeedback({ type: 'success', message: 'Demande de retour envoyée.' });
+        } catch (err) {
+            setReturnFeedback({ type: 'error', message: getErrorMessage(err, 'Erreur lors de la demande de retour.') });
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     if (loading) return <Skeleton />;
 
@@ -137,6 +182,94 @@ export default function CommandeDetail({ urls }) {
                     </dl>
                 </div>
             </div>
+
+            {/* Returns */}
+            {returnsEnabled && (order.status === 'delivered' || returns.length > 0) && (
+                <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Retours</p>
+                        {order.status === 'delivered' && !showReturnForm && (
+                            <button
+                                type="button"
+                                onClick={() => { setShowReturnForm(true); setReturnFeedback(null); }}
+                                className="text-sm text-primary underline"
+                            >
+                                Demander un retour
+                            </button>
+                        )}
+                    </div>
+
+                    {returnFeedback && (
+                        <p className={`text-sm ${returnFeedback.type === 'success' ? 'text-green-600' : 'text-destructive'}`}>
+                            {returnFeedback.message}
+                        </p>
+                    )}
+
+                    {returns.length > 0 && (
+                        <ul className="space-y-2">
+                            {returns.map((r) => {
+                                const s = RETURN_STATUS[r.status] ?? { label: r.status, class: 'bg-muted text-muted-foreground' };
+                                return (
+                                    <li key={r.id} className="flex items-center justify-between gap-3 text-sm">
+                                        <span className="min-w-0 truncate text-muted-foreground">
+                                            {r.items.map((i) => `${i.quantity}× ${i.productName}`).join(', ')}
+                                        </span>
+                                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${s.class}`}>{s.label}</span>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
+
+                    {showReturnForm && (
+                        <div className="space-y-3 border-t border-border pt-4">
+                            {order.items.map((item) => (
+                                <div key={item.id} className="flex items-center justify-between gap-3">
+                                    <span className="min-w-0 text-sm">
+                                        {item.productName}{item.variantName ? ` — ${item.variantName}` : ''}
+                                        <span className="text-muted-foreground"> (commandé : {item.quantity})</span>
+                                    </span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max={item.quantity}
+                                        value={returnQty[item.id] ?? 0}
+                                        onChange={(e) => {
+                                            const v = Math.max(0, Math.min(item.quantity, parseInt(e.target.value || 0, 10)));
+                                            setReturnQty((q) => ({ ...q, [item.id]: v }));
+                                        }}
+                                        className="w-16 rounded border border-border px-2 py-1 text-sm"
+                                    />
+                                </div>
+                            ))}
+                            <textarea
+                                value={returnReason}
+                                onChange={(e) => setReturnReason(e.target.value)}
+                                rows={3}
+                                placeholder="Motif du retour"
+                                className="w-full rounded border border-border px-3 py-2 text-sm"
+                            />
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    disabled={submitting}
+                                    onClick={submitReturn}
+                                    className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-50"
+                                >
+                                    {submitting ? 'Envoi…' : 'Envoyer la demande'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowReturnForm(false)}
+                                    className="rounded border border-border px-3 py-1.5 text-sm"
+                                >
+                                    Annuler
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Customer note */}
             {order.customerNote && (

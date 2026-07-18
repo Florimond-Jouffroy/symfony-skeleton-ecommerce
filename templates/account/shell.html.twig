@@ -12,6 +12,7 @@
 {% block content %}
     <div id="account-root"
          data-urls="{{ urls|json_encode }}"
-         data-user-email="{{ userEmail }}">
+         data-user-email="{{ userEmail }}"
+         data-returns-enabled="{{ returnsEnabled ? '1' : '0' }}">
     </div>
 {% endblock %}

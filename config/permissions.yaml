@@ -38,6 +38,15 @@ permissions:
         roles: [ ROLE_ADMIN ]
         description: "Supprimer une commande"
 
+    # --- Retours ---
+    RETURN_VIEW:
+        roles: [ ROLE_ADMIN ]
+        description: "Voir les demandes de retour"
+
+    RETURN_EDIT:
+        roles: [ ROLE_ADMIN ]
+        description: "Traiter une demande de retour (approuver, refuser, rembourser)"
+
     # --- Produits ---
     PRODUCT_VIEW:
         roles: [ ROLE_ADMIN ]

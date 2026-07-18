@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { BookOpen, ChevronRight, ChevronsUpDown, ClipboardList, FileText, HelpCircle, Image, LayoutDashboard, LogOut, MessageCircle, Package, Receipt, Settings, ShieldCheck, ShoppingCart, Star, Tag, Ticket, Truck, Users } from 'lucide-react';
+import { BookOpen, ChevronRight, ChevronsUpDown, ClipboardList, FileText, HelpCircle, Image, LayoutDashboard, LogOut, MessageCircle, Package, Receipt, RotateCcw, Settings, ShieldCheck, ShoppingCart, Star, Tag, Ticket, Truck, Users } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -46,6 +46,7 @@ const BLOG_ITEMS = [
 
 const SHOP_ITEMS = [
     { to: '/commandes',           icon: ShoppingCart, label: 'Commandes',   permission: 'canViewOrders' },
+    { to: '/retours',             icon: RotateCcw,    label: 'Retours',     permission: 'canViewReturns' },
     { to: '/factures',            icon: Receipt,      label: 'Factures',    permission: 'canViewInvoices' },
     { to: '/codes-promo',         icon: Ticket,       label: 'Codes promo', permission: 'canViewPromoCodes' },
     { to: '/produits',            icon: Package,      label: 'Produits',    permission: 'canViewProducts' },
