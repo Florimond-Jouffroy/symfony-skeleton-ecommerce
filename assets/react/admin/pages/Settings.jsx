@@ -82,6 +82,13 @@ export default function Settings({ urls = {}, permissions = {} }) {
                     disabled={saving || permissions.canEditSettings === false}
                     onChange={() => updateSetting({ shopEnabled: !settings?.shopEnabled })}
                 />
+                <Toggle
+                    label="Retours autorisés"
+                    description="Les clients peuvent demander le retour d'une commande livrée depuis leur compte."
+                    checked={!!settings?.returnsEnabled}
+                    disabled={saving || permissions.canEditSettings === false}
+                    onChange={() => updateSetting({ returnsEnabled: !settings?.returnsEnabled })}
+                />
             </div>
 
             {/* ── Barre d'onglets ── */}

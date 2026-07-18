@@ -7,6 +7,7 @@ namespace App\Service\Manager;
 use App\Entity\Order;
 use App\Entity\Product;
 use App\Entity\ProductVariant;
+use App\Entity\ReturnRequest;
 use App\Exception\InsufficientStockException;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
@@ -60,6 +61,23 @@ class StockManager
             }
 
             $target->setStock($target->getStock() + $item->getQuantity());
+        }
+    }
+
+    /**
+     * Réincrémente le stock pour les articles d'une demande de retour, à la
+     * quantité retournée par ligne (retour partiel possible).
+     */
+    public function restoreForReturn(ReturnRequest $return): void
+    {
+        foreach ($return->getItems() as $returnItem) {
+            $orderItem = $returnItem->getOrderItem();
+            $target    = $orderItem->getVariant() ?? $orderItem->getProduct();
+            if (null === $target) {
+                continue;
+            }
+
+            $target->setStock($target->getStock() + $returnItem->getQuantity());
         }
     }
 
