@@ -173,6 +173,38 @@ class ProductTest extends AbstractApiTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
+    public function testUpdateWithStaleVersionReturnsConflict(): void
+    {
+        $this->loginAs($this->createAdmin());
+        $product = $this->createProduct('T-shirt', 't-shirt'); // version 1
+
+        // Le client renvoie une version périmée : le produit a changé entre-temps.
+        $this->putJson('/api/admin/produits/'.$product->getId(), [
+            'name'    => 'T-shirt',
+            'price'   => 1999,
+            'stock'   => 5,
+            'version' => 0,
+        ]);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+    }
+
+    public function testUpdateWithCurrentVersionSucceeds(): void
+    {
+        $this->loginAs($this->createAdmin());
+        $product = $this->createProduct('T-shirt', 't-shirt');
+
+        $this->putJson('/api/admin/produits/'.$product->getId(), [
+            'name'    => 'T-shirt v2',
+            'price'   => 2999,
+            'stock'   => 5,
+            'version' => $product->getVersion(),
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('T-shirt v2', $this->getJson()['name']);
+    }
+
     // ── Publication ───────────────────────────────────────────────────────────
 
     public function testPublishDraftProduct(): void

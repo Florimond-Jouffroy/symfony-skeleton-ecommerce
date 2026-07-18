@@ -65,6 +65,11 @@ class Product
     #[ORM\Column(options: ['default' => false])]
     private bool $hasVariants = false;
 
+    /** Numéro de version (verrou optimiste) : incrémenté automatiquement par Doctrine à chaque écriture. */
+    #[ORM\Version]
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 1])]
+    private int $version = 1;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -104,6 +109,11 @@ class Product
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getVersion(): int
+    {
+        return $this->version;
     }
 
     public function getName(): string
