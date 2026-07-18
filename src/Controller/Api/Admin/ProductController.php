@@ -10,6 +10,9 @@ use App\Repository\ProductRepository;
 use App\Security\Voter\ProductVoter;
 use App\Service\ActivityLogger;
 use App\Service\Manager\ProductManager;
+use Doctrine\DBAL\LockMode;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -87,7 +90,7 @@ class ProductController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_admin_products_update', methods: ['PUT'])]
-    public function update(Product $product, Request $request, ProductCategoryRepository $categoryRepository): JsonResponse
+    public function update(Product $product, Request $request, ProductCategoryRepository $categoryRepository, EntityManagerInterface $em): JsonResponse
     {
         $this->denyAccessUnlessGranted(ProductVoter::EDIT, $product);
 
@@ -96,6 +99,20 @@ class ProductController extends AbstractController
 
         if ('' === $name) {
             return $this->json(['message' => 'Le nom est obligatoire.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        // Verrou optimiste : si le client renvoie la version qu'il a chargée et
+        // que le produit a été modifié depuis (ex. une vente), on refuse pour ne
+        // pas écraser en aveugle une écriture concurrente.
+        if (isset($payload['version'])) {
+            try {
+                $em->lock($product, LockMode::OPTIMISTIC, (int) $payload['version']);
+            } catch (OptimisticLockException) {
+                return $this->json(
+                    ['message' => 'Ce produit a été modifié entre-temps. Rechargez la page avant d\'enregistrer.'],
+                    Response::HTTP_CONFLICT,
+                );
+            }
         }
 
         $categoryIds = array_filter(array_map('intval', (array) ($payload['categoryIds'] ?? [])));
@@ -240,6 +257,7 @@ class ProductController extends AbstractController
         );
 
         return array_merge($this->serializeList($product), [
+            'version'           => $product->getVersion(),
             'description'       => $product->getDescription(),
             'lowStockThreshold' => $product->getLowStockThreshold(),
             'images'            => array_values($images),

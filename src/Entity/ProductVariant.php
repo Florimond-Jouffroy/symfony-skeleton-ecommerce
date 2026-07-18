@@ -55,9 +55,19 @@ class ProductVariant
     #[ORM\Column(options: ['default' => true])]
     private bool $isActive = true;
 
+    /** Numéro de version (verrou optimiste) : incrémenté automatiquement par Doctrine à chaque écriture. */
+    #[ORM\Version]
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 1])]
+    private int $version = 1;
+
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getVersion(): int
+    {
+        return $this->version;
     }
 
     public function getProduct(): Product
