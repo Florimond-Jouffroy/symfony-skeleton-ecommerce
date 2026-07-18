@@ -45,6 +45,19 @@ class ReturnRequestRepository extends ServiceEntityRepository
     }
 
     /**
+     * Nombre de demandes de retour en attente de traitement (statut "requested").
+     */
+    public function countRequested(): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->andWhere('r.status = :status')
+            ->setParameter('status', ReturnRequest::STATUS_REQUESTED)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * Quantités déjà retournées par ligne de commande pour une commande donnée.
      * Les retours refusés ne comptent pas (la quantité redevient disponible).
      *
