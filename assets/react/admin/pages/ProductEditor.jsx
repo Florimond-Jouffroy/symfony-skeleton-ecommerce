@@ -115,6 +115,7 @@ export default function ProductEditor({ permissions = {}, urls = {} }) {
     const [publishing, setPublishing] = useState(false);
     const [feedback, setFeedback]     = useState(null);
     const [savedId, setSavedId]       = useState(id ? parseInt(id, 10) : null);
+    const [version, setVersion]       = useState(null); // verrou optimiste
     const [pickerOpen, setPickerOpen] = useState(false);
 
     const editorRef = useRef(null);
@@ -134,6 +135,7 @@ export default function ProductEditor({ permissions = {}, urls = {} }) {
                 setContent(data.description ? { blocks: data.description.blocks ?? [] } : { blocks: [] });
                 setStatus(data.status);
                 setCategoryIds((data.categories ?? []).map((c) => c.id));
+                setVersion(data.version ?? null);
                 setContentLoaded(true);
             })
             .catch(() => setFeedback({ type: 'error', message: 'Impossible de charger le produit.' }))
@@ -177,6 +179,7 @@ export default function ProductEditor({ permissions = {}, urls = {} }) {
         categoryIds,
         images: images.map((img, i) => ({ url: img.url, alt: img.alt ?? null, position: i })),
         variants: hasVariants ? variants.map((v, i) => ({ ...v, position: i })) : [],
+        version, // renvoyé pour le verrou optimiste (ignoré par le backend à la création)
     });
 
     const handleSave = async () => {
@@ -186,7 +189,8 @@ export default function ProductEditor({ permissions = {}, urls = {} }) {
         try {
             const payload = buildPayload();
             if (savedId) {
-                await api.put(`/api/admin/produits/${savedId}`, payload);
+                const updated = await api.put(`/api/admin/produits/${savedId}`, payload);
+                setVersion(updated?.version ?? null); // resynchronise pour le prochain save
                 setFeedback({ type: 'success', message: 'Produit enregistré.' });
             } else {
                 const created = await api.post(urls.products ?? '/api/admin/produits', payload);
