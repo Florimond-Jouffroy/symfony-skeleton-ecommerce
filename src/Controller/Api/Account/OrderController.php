@@ -7,6 +7,7 @@ namespace App\Controller\Api\Account;
 use App\Entity\Order;
 use App\Repository\CustomerRepository;
 use App\Repository\OrderRepository;
+use App\Repository\ReturnRequestRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -48,6 +49,7 @@ class OrderController extends AbstractController
         string $number,
         OrderRepository $orderRepository,
         CustomerRepository $customerRepository,
+        ReturnRequestRepository $returnRepository,
     ): JsonResponse {
         /** @var \App\Entity\User $user */
         $user     = $this->getUser();
@@ -63,7 +65,9 @@ class OrderController extends AbstractController
             return $this->json(['message' => 'Commande introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        return $this->json($this->serializeFull($order));
+        $returnedMap = $returnRepository->getReturnedQuantitiesForOrder((int) $order->getId());
+
+        return $this->json($this->serializeFull($order, $returnedMap));
     }
 
     private function serializeList(Order $order): array
@@ -78,17 +82,35 @@ class OrderController extends AbstractController
         ];
     }
 
-    private function serializeFull(Order $order): array
+    /**
+     * @param array<int, int> $returnedMap orderItemId => quantité déjà retournée
+     */
+    private function serializeFull(Order $order, array $returnedMap = []): array
     {
         $items = array_map(
-            static fn ($item) => [
-                'id'          => $item->getId(),
-                'productName' => $item->getProductName(),
-                'variantName' => $item->getVariantName(),
-                'unitPrice'   => $item->getUnitPrice(),
-                'quantity'    => $item->getQuantity(),
-                'total'       => $item->getTotal(),
-            ],
+            static function ($item) use ($returnedMap) {
+                $product  = $item->getProduct();
+                $imageUrl = null;
+                if (null !== $product) {
+                    foreach ($product->getImages() as $img) {
+                        $imageUrl = $img->getUrl();
+                        break;
+                    }
+                }
+
+                $returned = $returnedMap[$item->getId()] ?? 0;
+
+                return [
+                    'id'                 => $item->getId(),
+                    'productName'        => $item->getProductName(),
+                    'variantName'        => $item->getVariantName(),
+                    'imageUrl'           => $imageUrl,
+                    'unitPrice'          => $item->getUnitPrice(),
+                    'quantity'           => $item->getQuantity(),
+                    'returnableQuantity' => max(0, $item->getQuantity() - $returned),
+                    'total'              => $item->getTotal(),
+                ];
+            },
             $order->getItems()->toArray(),
         );
 

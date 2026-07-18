@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api\Account;
 
 use App\Entity\Order;
+use App\Entity\OrderItem;
+use App\Entity\ReturnItem;
 use App\Entity\ReturnRequest;
 use App\Repository\AppSettingRepository;
 use App\Tests\Functional\AbstractApiTestCase;
@@ -55,6 +57,40 @@ class ReturnTest extends AbstractApiTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
         self::assertSame('requested', $this->getJson()['status']);
         self::assertCount(1, $this->em->getRepository(ReturnRequest::class)->findAll());
+    }
+
+    public function testCannotReturnMoreThanRemaining(): void
+    {
+        $this->enableReturns();
+        $this->loginAs($this->createUser('rma@example.com'));
+        $customer = $this->createCustomer('rma@example.com');
+
+        // Commande livrée avec une ligne de quantité 2, déjà entièrement retournée.
+        $product   = $this->createProduct();
+        $order     = $this->createOrder($customer, 'ORD-RMA-4', Order::STATUS_DELIVERED);
+        $orderItem = new OrderItem();
+        $orderItem->setOrder($order)->setProduct($product)
+            ->setProductName($product->getName())->setUnitPrice($product->getPrice())->setQuantity(2);
+        $orderItem->recalculateTotal();
+        $this->em->persist($orderItem);
+
+        $return = new ReturnRequest();
+        $return->setOrder($order)->setCustomer($customer)->setReason('Premier retour');
+        $returnItem = new ReturnItem();
+        $returnItem->setOrderItem($orderItem)->setQuantity(2);
+        $return->addItem($returnItem);
+        $this->em->persist($returnItem);
+        $this->em->persist($return);
+        $this->em->flush();
+
+        // Une nouvelle demande pour ce même article doit être refusée (0 restant).
+        $this->postJson('/api/compte/retours', [
+            'orderNumber' => 'ORD-RMA-4',
+            'reason'      => 'Second retour',
+            'items'       => [['orderItemId' => $orderItem->getId(), 'quantity' => 1]],
+        ]);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     private function firstItemId(Order $order): int
