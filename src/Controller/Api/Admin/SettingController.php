@@ -19,8 +19,7 @@ class SettingController extends AbstractController
     public function __construct(
         private readonly InvoiceService $invoiceService,
         private readonly AppSettingRepository $settingRepo,
-    ) {
-    }
+    ) {}
 
     #[Route('', name: 'api_admin_settings_get', methods: ['GET'])]
     public function get(): JsonResponse
@@ -144,25 +143,25 @@ class SettingController extends AbstractController
         $mollieApiKey = $this->settingRepo->getValue('payment.mollie.api_key', '');
 
         return [
-            'maintenanceMode'        => $this->settingRepo->getValue('site.maintenance', 'false') === 'true',
-            'shopEnabled'            => $this->settingRepo->getValue('shop.enabled', 'true') === 'true',
+            'maintenanceMode'        => 'true' === $this->settingRepo->getValue('site.maintenance', 'false'),
+            'shopEnabled'            => 'true' === $this->settingRepo->getValue('shop.enabled', 'true'),
             'invoiceTrigger'         => $this->invoiceService->getInvoiceTrigger(),
             'defaultTaxRate'         => $this->invoiceService->getDefaultTaxRate(),
-            'stripeEnabled'          => $this->settingRepo->getValue('payment.stripe.enabled', 'false') === 'true',
+            'stripeEnabled'          => 'true' === $this->settingRepo->getValue('payment.stripe.enabled', 'false'),
             'stripePublicKey'        => $this->settingRepo->getValue('payment.stripe.public_key', ''),
             'stripeSecretKeySet'     => '' !== $stripeSecretKey,
             'stripeWebhookSecretSet' => '' !== $stripeWebhookKey,
-            'mollieEnabled'          => $this->settingRepo->getValue('payment.mollie.enabled', 'false') === 'true',
+            'mollieEnabled'          => 'true' === $this->settingRepo->getValue('payment.mollie.enabled', 'false'),
             'mollieApiKeySet'        => '' !== $mollieApiKey,
             'mollieApiKeyPrefix'     => '' !== $mollieApiKey ? substr($mollieApiKey, 0, 5) : '',
-            'paypalEnabled'          => $this->settingRepo->getValue('payment.paypal.enabled', 'false') === 'true',
-            'paypalSandbox'          => $this->settingRepo->getValue('payment.paypal.sandbox', 'true') === 'true',
+            'paypalEnabled'          => 'true' === $this->settingRepo->getValue('payment.paypal.enabled', 'false'),
+            'paypalSandbox'          => 'true' === $this->settingRepo->getValue('payment.paypal.sandbox', 'true'),
             'paypalClientId'         => $this->settingRepo->getValue('payment.paypal.client_id', ''),
             'paypalClientSecretSet'  => '' !== $paypalClientSecret,
             'paypalWebhookIdSet'     => '' !== $paypalWebhookId,
-            'twoFaRememberDays'        => (int) $this->settingRepo->getValue('security.2fa.trusted_device_days', '30'),
-            'rateLimitMaxAttempts'     => (int) $this->settingRepo->getValue('security.rate_limit.max_attempts', '5'),
-            'rateLimitWindowMinutes'   => (int) $this->settingRepo->getValue('security.rate_limit.window_minutes', '15'),
+            'twoFaRememberDays'      => (int) $this->settingRepo->getValue('security.2fa.trusted_device_days', '30'),
+            'rateLimitMaxAttempts'   => (int) $this->settingRepo->getValue('security.rate_limit.max_attempts', '5'),
+            'rateLimitWindowMinutes' => (int) $this->settingRepo->getValue('security.rate_limit.window_minutes', '15'),
         ];
     }
 }

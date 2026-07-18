@@ -26,8 +26,10 @@ class PromoCodeController extends AbstractController
         $promo = $repo->findByCode($code);
         if (!$promo || !$promo->isUsable()) {
             $request->getSession()->remove(self::SESSION_KEY);
+
             return $this->json(null);
         }
+
         return $this->json([
             'code'  => $promo->getCode(),
             'type'  => $promo->getType(),

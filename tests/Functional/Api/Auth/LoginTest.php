@@ -16,7 +16,7 @@ class LoginTest extends AbstractApiTestCase
         $this->createUser('valide@example.com', 'password123', verified: true);
 
         $this->postJson(self::URL, [
-            'email' => 'valide@example.com',
+            'email'    => 'valide@example.com',
             'password' => 'password123',
         ]);
 
@@ -33,7 +33,7 @@ class LoginTest extends AbstractApiTestCase
         $this->createUser('valide@example.com', 'password123', verified: true);
 
         $this->postJson(self::URL, [
-            'email' => 'valide@example.com',
+            'email'    => 'valide@example.com',
             'password' => 'mauvais_mot_de_passe',
         ]);
 
@@ -44,7 +44,7 @@ class LoginTest extends AbstractApiTestCase
     public function testLoginFailsWithUnknownEmail(): void
     {
         $this->postJson(self::URL, [
-            'email' => 'inconnu@example.com',
+            'email'    => 'inconnu@example.com',
             'password' => 'password123',
         ]);
 
@@ -57,7 +57,7 @@ class LoginTest extends AbstractApiTestCase
         $this->createUser('nonverifie@example.com', 'password123', verified: false);
 
         $this->postJson(self::URL, [
-            'email' => 'nonverifie@example.com',
+            'email'    => 'nonverifie@example.com',
             'password' => 'password123',
         ]);
 
@@ -70,7 +70,7 @@ class LoginTest extends AbstractApiTestCase
     public function testLoginFailsWithInvalidEmail(): void
     {
         $this->postJson(self::URL, [
-            'email' => 'pas-un-email',
+            'email'    => 'pas-un-email',
             'password' => 'password123',
         ]);
 

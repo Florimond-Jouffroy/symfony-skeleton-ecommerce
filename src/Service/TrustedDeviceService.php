@@ -19,8 +19,7 @@ class TrustedDeviceService
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly TrustedDeviceRepository $repository,
-    ) {
-    }
+    ) {}
 
     public function isTrusted(Request $request, User $user): bool
     {
@@ -50,7 +49,7 @@ class TrustedDeviceService
 
         $response->headers->setCookie(
             Cookie::create(self::COOKIE_NAME)
-                ->withValue($user->getId() . '|' . $rawToken)
+                ->withValue($user->getId().'|'.$rawToken)
                 ->withExpires($expiresAt)
                 ->withPath('/')
                 ->withHttpOnly(true)

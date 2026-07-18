@@ -27,13 +27,13 @@ class ActivityLogRepository extends ServiceEntityRepository
     ): array {
         $qb = $this->createQueryBuilder('a')->orderBy('a.createdAt', 'DESC');
 
-        if ($entityType !== null) {
+        if (null !== $entityType) {
             $qb->andWhere('a.entityType = :entityType')->setParameter('entityType', $entityType);
         }
-        if ($from !== null) {
+        if (null !== $from) {
             $qb->andWhere('a.createdAt >= :from')->setParameter('from', $from);
         }
-        if ($to !== null) {
+        if (null !== $to) {
             $qb->andWhere('a.createdAt <= :to')->setParameter('to', $to);
         }
 

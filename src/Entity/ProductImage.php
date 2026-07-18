@@ -35,17 +35,56 @@ class ProductImage
     #[ORM\Column(options: ['default' => 0])]
     private int $position = 0;
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getProduct(): Product { return $this->product; }
-    public function setProduct(Product $product): self { $this->product = $product; return $this; }
+    public function getProduct(): Product
+    {
+        return $this->product;
+    }
 
-    public function getUrl(): string { return $this->url; }
-    public function setUrl(string $url): self { $this->url = $url; return $this; }
+    public function setProduct(Product $product): self
+    {
+        $this->product = $product;
 
-    public function getAlt(): ?string { return $this->alt; }
-    public function setAlt(?string $alt): self { $this->alt = $alt; return $this; }
+        return $this;
+    }
 
-    public function getPosition(): int { return $this->position; }
-    public function setPosition(int $position): self { $this->position = $position; return $this; }
+    public function getUrl(): string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(string $url): self
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    public function getAlt(): ?string
+    {
+        return $this->alt;
+    }
+
+    public function setAlt(?string $alt): self
+    {
+        $this->alt = $alt;
+
+        return $this;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
+
+        return $this;
+    }
 }

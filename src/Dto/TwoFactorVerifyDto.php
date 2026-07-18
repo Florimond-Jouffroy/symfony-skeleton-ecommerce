@@ -14,6 +14,5 @@ final readonly class TwoFactorVerifyDto
         #[Assert\Regex(pattern: '/^\d{6}$/', message: 'Le code doit contenir uniquement des chiffres.')]
         public string $code = '',
         public bool $rememberDevice = false,
-    ) {
-    }
+    ) {}
 }

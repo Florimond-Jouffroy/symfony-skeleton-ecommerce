@@ -19,9 +19,9 @@ use App\Service\Manager\UserManager;
 use App\Service\RateLimiterService;
 use App\Service\TrustedDeviceService;
 use OTPHP\TOTP;
-use Symfony\Component\Clock\NativeClock;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,8 +39,7 @@ class AuthController extends AbstractController
         private readonly AppSettingRepository $settingRepo,
         private readonly TrustedDeviceService $trustedDeviceService,
         private readonly RateLimiterService $rateLimiter,
-    ) {
-    }
+    ) {}
 
     #[Route('/connexion', name: 'api_auth_login', methods: ['POST'])]
     public function login(

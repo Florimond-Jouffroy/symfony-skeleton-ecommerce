@@ -21,8 +21,7 @@ class LoginAuthenticator extends AbstractAuthenticator implements Authentication
 {
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
-    ) {
-    }
+    ) {}
 
     public function start(Request $request, ?AuthenticationException $authException = null): Response
     {

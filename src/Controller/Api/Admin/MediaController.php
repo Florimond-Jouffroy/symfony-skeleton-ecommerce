@@ -20,24 +20,23 @@ class MediaController extends AbstractController
 {
     public function __construct(
         private readonly MediaFileManager $mediaFileManager,
-    ) {
-    }
+    ) {}
 
     #[Route('', name: 'api_admin_media_list', methods: ['GET'])]
     public function list(Request $request, MediaFileRepository $mediaFileRepository): JsonResponse
     {
         $this->denyAccessUnlessGranted(MediaVoter::VIEW);
 
-        $page = max(1, $request->query->getInt('page', 1));
+        $page     = max(1, $request->query->getInt('page', 1));
         $pageSize = min(100, max(1, $request->query->getInt('pageSize', 24)));
-        $query = $request->query->getString('q');
+        $query    = $request->query->getString('q');
 
         $result = $mediaFileRepository->searchPaginated('' !== $query ? $query : null, $page, $pageSize);
 
         return $this->json([
-            'items' => array_map($this->serialize(...), $result['items']),
-            'total' => $result['total'],
-            'page' => $page,
+            'items'    => array_map($this->serialize(...), $result['items']),
+            'total'    => $result['total'],
+            'page'     => $page,
             'pageSize' => $pageSize,
         ]);
     }
@@ -54,7 +53,7 @@ class MediaController extends AbstractController
         }
 
         /** @var \App\Entity\User $user */
-        $user = $this->getUser();
+        $user      = $this->getUser();
         $uploadDir = $this->getParameter('kernel.project_dir').'/public/'.MediaFile::UPLOAD_SUBDIR;
 
         $result = $this->mediaFileManager->upload($file, $user, $uploadDir);
@@ -66,7 +65,7 @@ class MediaController extends AbstractController
             );
         }
 
-        $data = $this->serialize($result['media']);
+        $data                = $this->serialize($result['media']);
         $data['isDuplicate'] = $result['isDuplicate'];
 
         return $this->json($data, $result['isDuplicate'] ? Response::HTTP_OK : Response::HTTP_CREATED);
@@ -92,13 +91,13 @@ class MediaController extends AbstractController
     private function serialize(MediaFile $mediaFile): array
     {
         return [
-            'id' => $mediaFile->getId(),
-            'url' => $mediaFile->getUrl(),
-            'originalName' => $mediaFile->getOriginalName(),
-            'mimeType' => $mediaFile->getMimeType(),
-            'size' => $mediaFile->getSize(),
+            'id'              => $mediaFile->getId(),
+            'url'             => $mediaFile->getUrl(),
+            'originalName'    => $mediaFile->getOriginalName(),
+            'mimeType'        => $mediaFile->getMimeType(),
+            'size'            => $mediaFile->getSize(),
             'uploadedByEmail' => $mediaFile->getUploadedBy()->getEmail(),
-            'createdAt' => $mediaFile->getCreatedAt()->format(\DateTimeInterface::ATOM),
+            'createdAt'       => $mediaFile->getCreatedAt()->format(\DateTimeInterface::ATOM),
         ];
     }
 }

@@ -47,20 +47,66 @@ class StaticPage
         $this->updatedAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getTitle(): string { return $this->title; }
-    public function setTitle(string $title): static { $this->title = $title; return $this; }
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
 
-    public function getSlug(): string { return $this->slug; }
-    public function setSlug(string $slug): static { $this->slug = $slug; return $this; }
+    public function setTitle(string $title): static
+    {
+        $this->title = $title;
 
-    public function getContent(): array { return $this->content; }
-    public function setContent(array $content): static { $this->content = $content; return $this; }
+        return $this;
+    }
 
-    public function isActive(): bool { return $this->isActive; }
-    public function setIsActive(bool $isActive): static { $this->isActive = $isActive; return $this; }
+    public function getSlug(): string
+    {
+        return $this->slug;
+    }
 
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    public function getContent(): array
+    {
+        return $this->content;
+    }
+
+    public function setContent(array $content): static
+    {
+        $this->content = $content;
+
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
 }

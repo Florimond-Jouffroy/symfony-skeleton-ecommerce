@@ -32,8 +32,7 @@ class ProductController extends AbstractController
     public function __construct(
         private readonly ProductManager $manager,
         private readonly ActivityLogger $activityLogger,
-    ) {
-    }
+    ) {}
 
     #[Route('', name: 'api_admin_products_list', methods: ['GET'])]
     public function list(Request $request, ProductRepository $repository): JsonResponse
@@ -103,7 +102,7 @@ class ProductController extends AbstractController
         $categories  = $categoryIds ? $categoryRepository->findBy(['id' => $categoryIds]) : [];
 
         $price          = max(0, (int) ($payload['price'] ?? 0));
-        $compareAtPrice = isset($payload['compareAtPrice']) && $payload['compareAtPrice'] !== null
+        $compareAtPrice = isset($payload['compareAtPrice'])
             ? max(0, (int) $payload['compareAtPrice'])
             : null;
         $description       = is_array($payload['description'] ?? null) ? $payload['description'] : null;
@@ -200,20 +199,20 @@ class ProductController extends AbstractController
         }
 
         return [
-            'id'           => $product->getId(),
-            'name'         => $product->getName(),
-            'slug'         => $product->getSlug(),
-            'price'        => $product->getPrice(),
+            'id'             => $product->getId(),
+            'name'           => $product->getName(),
+            'slug'           => $product->getSlug(),
+            'price'          => $product->getPrice(),
             'compareAtPrice' => $product->getCompareAtPrice(),
-            'status'       => $product->getStatus(),
-            'stock'        => $product->hasVariants()
+            'status'         => $product->getStatus(),
+            'stock'          => $product->hasVariants()
                 ? $product->getVariants()->filter(fn ($v) => $v->isActive())->reduce(fn ($carry, $v) => $carry + $v->getStock(), 0)
                 : $product->getStock(),
-            'hasVariants'  => $product->hasVariants(),
-            'coverImage'   => $coverUrl,
-            'categories'   => array_values($categories),
-            'createdAt'    => $product->getCreatedAt()->format(\DateTimeInterface::ATOM),
-            'updatedAt'    => $product->getUpdatedAt()->format(\DateTimeInterface::ATOM),
+            'hasVariants' => $product->hasVariants(),
+            'coverImage'  => $coverUrl,
+            'categories'  => array_values($categories),
+            'createdAt'   => $product->getCreatedAt()->format(\DateTimeInterface::ATOM),
+            'updatedAt'   => $product->getUpdatedAt()->format(\DateTimeInterface::ATOM),
         ];
     }
 
@@ -227,24 +226,24 @@ class ProductController extends AbstractController
 
         $variants = array_map(
             static fn ($v) => [
-                'id'               => $v->getId(),
-                'name'             => $v->getName(),
-                'sku'              => $v->getSku(),
-                'priceOverride'    => $v->getPriceOverride(),
-                'stock'            => $v->getStock(),
+                'id'                => $v->getId(),
+                'name'              => $v->getName(),
+                'sku'               => $v->getSku(),
+                'priceOverride'     => $v->getPriceOverride(),
+                'stock'             => $v->getStock(),
                 'lowStockThreshold' => $v->getLowStockThreshold(),
-                'position'         => $v->getPosition(),
-                'attributes'       => $v->getAttributes(),
-                'isActive'         => $v->isActive(),
+                'position'          => $v->getPosition(),
+                'attributes'        => $v->getAttributes(),
+                'isActive'          => $v->isActive(),
             ],
             $product->getVariants()->toArray(),
         );
 
         return array_merge($this->serializeList($product), [
-            'description' => $product->getDescription(),
+            'description'       => $product->getDescription(),
             'lowStockThreshold' => $product->getLowStockThreshold(),
-            'images'      => array_values($images),
-            'variants'    => array_values($variants),
+            'images'            => array_values($images),
+            'variants'          => array_values($variants),
         ]);
     }
 }

@@ -34,7 +34,7 @@ class RateLimiterServiceTest extends TestCase
 
     public function testIsAllowedReturnsFalseAtLimit(): void
     {
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 5; ++$i) {
             $this->limiter->hit('login', '1.2.3.4', 900);
         }
 
@@ -43,7 +43,7 @@ class RateLimiterServiceTest extends TestCase
 
     public function testIsAllowedWhenDisabled(): void
     {
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 100; ++$i) {
             $this->limiter->hit('login', '1.2.3.4', 900);
         }
 
@@ -52,7 +52,7 @@ class RateLimiterServiceTest extends TestCase
 
     public function testDifferentTypesAreIsolated(): void
     {
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 5; ++$i) {
             $this->limiter->hit('login', '1.2.3.4', 900);
         }
 
@@ -62,7 +62,7 @@ class RateLimiterServiceTest extends TestCase
 
     public function testDifferentIpsAreIsolated(): void
     {
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 5; ++$i) {
             $this->limiter->hit('login', '1.2.3.4', 900);
         }
 
@@ -72,7 +72,7 @@ class RateLimiterServiceTest extends TestCase
 
     public function testResetClearsCounter(): void
     {
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 5; ++$i) {
             $this->limiter->hit('login', '1.2.3.4', 900);
         }
         self::assertFalse($this->limiter->isAllowed('login', '1.2.3.4', 5));

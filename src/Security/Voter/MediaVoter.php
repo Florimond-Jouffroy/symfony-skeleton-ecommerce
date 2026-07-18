@@ -14,7 +14,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 /** @extends Voter<string, MediaFile|null> */
 class MediaVoter extends Voter
 {
-    public const string VIEW = 'MEDIA_VIEW';
+    public const string VIEW   = 'MEDIA_VIEW';
     public const string UPLOAD = 'MEDIA_UPLOAD';
     public const string DELETE = 'MEDIA_DELETE';
 
@@ -26,8 +26,7 @@ class MediaVoter extends Voter
 
     public function __construct(
         private readonly PermissionService $permissionService,
-    ) {
-    }
+    ) {}
 
     protected function supports(string $attribute, mixed $subject): bool
     {

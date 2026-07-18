@@ -17,8 +17,7 @@ class InvoiceController extends AbstractController
     public function __construct(
         private readonly InvoiceService $invoiceService,
         private readonly OrderRepository $orderRepo,
-    ) {
-    }
+    ) {}
 
     #[Route('/{orderNumber}', name: 'api_shop_invoice_download', methods: ['GET'])]
     public function download(string $orderNumber): Response
@@ -45,7 +44,7 @@ class InvoiceController extends AbstractController
         }
 
         $pdfContent = $this->invoiceService->generatePdf($invoice);
-        $filename   = $invoice->getInvoiceNumber() . '.pdf';
+        $filename   = $invoice->getInvoiceNumber().'.pdf';
 
         return new StreamedResponse(
             static function () use ($pdfContent) { echo $pdfContent; },

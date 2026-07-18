@@ -38,19 +38,61 @@ class FaqItem
         $this->createdAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getQuestion(): string { return $this->question; }
-    public function setQuestion(string $question): static { $this->question = $question; return $this; }
+    public function getQuestion(): string
+    {
+        return $this->question;
+    }
 
-    public function getAnswer(): string { return $this->answer; }
-    public function setAnswer(string $answer): static { $this->answer = $answer; return $this; }
+    public function setQuestion(string $question): static
+    {
+        $this->question = $question;
 
-    public function getPosition(): int { return $this->position; }
-    public function setPosition(int $position): static { $this->position = $position; return $this; }
+        return $this;
+    }
 
-    public function isActive(): bool { return $this->isActive; }
-    public function setIsActive(bool $isActive): static { $this->isActive = $isActive; return $this; }
+    public function getAnswer(): string
+    {
+        return $this->answer;
+    }
 
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function setAnswer(string $answer): static
+    {
+        $this->answer = $answer;
+
+        return $this;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): static
+    {
+        $this->position = $position;
+
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }

@@ -14,12 +14,12 @@ use Symfony\Component\Security\Core\User\UserInterface;
 /** @extends Voter<string, User|null> */
 class UserVoter extends Voter
 {
-    public const string VIEW = 'USER_VIEW';
-    public const string RESET_PASSWORD = 'USER_RESET_PASSWORD';
-    public const string VERIFY = 'USER_VERIFY';
+    public const string VIEW                = 'USER_VIEW';
+    public const string RESET_PASSWORD      = 'USER_RESET_PASSWORD';
+    public const string VERIFY              = 'USER_VERIFY';
     public const string RESEND_VERIFICATION = 'USER_RESEND_VERIFICATION';
-    public const string EDIT_ROLES = 'USER_EDIT_ROLES';
-    public const string DELETE = 'USER_DELETE';
+    public const string EDIT_ROLES          = 'USER_EDIT_ROLES';
+    public const string DELETE              = 'USER_DELETE';
 
     private const array ATTRIBUTES = [
         self::VIEW,
@@ -32,8 +32,7 @@ class UserVoter extends Voter
 
     public function __construct(
         private readonly PermissionService $permissionService,
-    ) {
-    }
+    ) {}
 
     protected function supports(string $attribute, mixed $subject): bool
     {

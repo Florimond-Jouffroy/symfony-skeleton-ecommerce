@@ -7,13 +7,13 @@ namespace App\Controller\Api\Shop;
 use App\Entity\Customer;
 use App\Entity\Order;
 use App\Entity\OrderItem;
+use App\Payment\PaymentProviderRegistry;
 use App\Repository\CustomerRepository;
 use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
 use App\Repository\ProductVariantRepository;
 use App\Repository\PromoCodeRepository;
 use App\Repository\ShippingMethodRepository;
-use App\Payment\PaymentProviderRegistry;
 use App\Service\InvoiceService;
 use App\Service\OrderMailer;
 use Doctrine\ORM\EntityManagerInterface;
@@ -95,6 +95,7 @@ class CheckoutController extends AbstractController
                 $label = $variant
                     ? sprintf('%s – %s', $product->getName(), $variant->getName())
                     : $product->getName();
+
                 return $this->json(['message' => sprintf('Stock insuffisant pour "%s".', $label)], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 

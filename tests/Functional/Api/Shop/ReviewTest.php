@@ -15,7 +15,7 @@ class ReviewTest extends AbstractApiTestCase
         $userA   = $this->createUser('a@example.com');
         $userB   = $this->createUser('b@example.com');
         $product = $this->createProduct('Chemise', 'chemise', Product::STATUS_PUBLISHED);
-        $this->createProductReview($product, $userA, 5, true,  'Super produit');
+        $this->createProductReview($product, $userA, 5, true, 'Super produit');
         $this->createProductReview($product, $userB, 2, false, 'Bof');
 
         $this->client->request('GET', '/api/boutique/produits/chemise/avis');
@@ -72,8 +72,8 @@ class ReviewTest extends AbstractApiTestCase
         $this->client->request('GET', '/api/boutique/produits/chapeau/avis');
 
         self::assertResponseIsSuccessful();
-        $data    = $this->getJson();
-        $author  = $data['reviews'][0]['authorName'];
+        $data   = $this->getJson();
+        $author = $data['reviews'][0]['authorName'];
         // Le nom est issu de l'email mais ne doit pas exposer le domaine complet dans l'affichage côté React.
         // On vérifie juste que la clé est présente et non vide.
         self::assertNotEmpty($author);

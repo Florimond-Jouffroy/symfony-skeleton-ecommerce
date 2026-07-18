@@ -76,35 +76,97 @@ class SupportTicket
         $this->updatedAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getSubject(): string { return $this->subject; }
-    public function setSubject(string $subject): static { $this->subject = $subject; return $this; }
+    public function getSubject(): string
+    {
+        return $this->subject;
+    }
 
-    public function getStatus(): string { return $this->status; }
-    public function setStatus(string $status): static { $this->status = $status; return $this; }
+    public function setSubject(string $subject): static
+    {
+        $this->subject = $subject;
 
-    public function getUser(): ?User { return $this->user; }
-    public function setUser(?User $user): static { $this->user = $user; return $this; }
+        return $this;
+    }
 
-    public function getGuestName(): ?string { return $this->guestName; }
-    public function setGuestName(?string $guestName): static { $this->guestName = $guestName; return $this; }
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
 
-    public function getGuestEmail(): ?string { return $this->guestEmail; }
-    public function setGuestEmail(?string $guestEmail): static { $this->guestEmail = $guestEmail; return $this; }
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
 
-    public function getToken(): string { return $this->token; }
+        return $this;
+    }
 
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
 
-    public function isGuest(): bool { return $this->user === null; }
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getGuestName(): ?string
+    {
+        return $this->guestName;
+    }
+
+    public function setGuestName(?string $guestName): static
+    {
+        $this->guestName = $guestName;
+
+        return $this;
+    }
+
+    public function getGuestEmail(): ?string
+    {
+        return $this->guestEmail;
+    }
+
+    public function setGuestEmail(?string $guestEmail): static
+    {
+        $this->guestEmail = $guestEmail;
+
+        return $this;
+    }
+
+    public function getToken(): string
+    {
+        return $this->token;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function isGuest(): bool
+    {
+        return null === $this->user;
+    }
 
     public function getContactName(): string
     {
         if ($this->user) {
             return $this->user->getEmail();
         }
+
         return $this->guestName ?? 'Invité';
     }
 
@@ -113,11 +175,15 @@ class SupportTicket
         if ($this->user) {
             return $this->user->getEmail();
         }
+
         return $this->guestEmail ?? '';
     }
 
     /** @return Collection<int, SupportMessage> */
-    public function getMessages(): Collection { return $this->messages; }
+    public function getMessages(): Collection
+    {
+        return $this->messages;
+    }
 
     public function addMessage(SupportMessage $message): static
     {
@@ -125,6 +191,7 @@ class SupportTicket
             $this->messages->add($message);
             $message->setTicket($this);
         }
+
         return $this;
     }
 }

@@ -8,7 +8,6 @@ use App\Entity\Order;
 use App\Payment\PaymentProviderInterface;
 use App\Payment\PaymentResult;
 use App\Repository\AppSettingRepository;
-use Stripe\Exception\SignatureVerificationException;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
 use Stripe\Webhook;
@@ -17,8 +16,7 @@ class StripePaymentProvider implements PaymentProviderInterface
 {
     public function __construct(
         private readonly AppSettingRepository $settingRepo,
-    ) {
-    }
+    ) {}
 
     public function getName(): string
     {
@@ -27,7 +25,7 @@ class StripePaymentProvider implements PaymentProviderInterface
 
     public function isEnabled(): bool
     {
-        return $this->settingRepo->getValue('payment.stripe.enabled', 'false') === 'true'
+        return 'true' === $this->settingRepo->getValue('payment.stripe.enabled', 'false')
             && '' !== $this->settingRepo->getValue('payment.stripe.secret_key', '');
     }
 
@@ -76,11 +74,11 @@ class StripePaymentProvider implements PaymentProviderInterface
 
     public function isPaymentSucceeded(object $event): bool
     {
-        return $event->type === 'payment_intent.succeeded';
+        return 'payment_intent.succeeded' === $event->type;
     }
 
     public function isPaymentFailed(object $event): bool
     {
-        return $event->type === 'payment_intent.payment_failed';
+        return 'payment_intent.payment_failed' === $event->type;
     }
 }

@@ -64,12 +64,12 @@ class ArticleController extends AbstractController
     private function serialize(Article $article): array
     {
         return [
-            'id'          => $article->getId(),
-            'title'       => $article->getTitle(),
-            'slug'        => $article->getSlug(),
-            'excerpt'     => $article->getExcerpt(),
-            'coverImage'  => $article->getCoverImage(),
-            'categories'  => array_values(array_map(
+            'id'         => $article->getId(),
+            'title'      => $article->getTitle(),
+            'slug'       => $article->getSlug(),
+            'excerpt'    => $article->getExcerpt(),
+            'coverImage' => $article->getCoverImage(),
+            'categories' => array_values(array_map(
                 static fn ($c) => ['id' => $c->getId(), 'name' => $c->getName(), 'slug' => $c->getSlug()],
                 $article->getCategories()->toArray(),
             )),

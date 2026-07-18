@@ -32,8 +32,7 @@ class OrderController extends AbstractController
     public function __construct(
         private readonly OrderManager $manager,
         private readonly ActivityLogger $activityLogger,
-    ) {
-    }
+    ) {}
 
     #[Route('', name: 'api_admin_orders_list', methods: ['GET'])]
     public function list(Request $request, OrderRepository $repository): JsonResponse
@@ -68,7 +67,7 @@ class OrderController extends AbstractController
      * Change le statut d'une commande.
      * Deux validations sont effectuées avant d'appeler le manager :
      * 1. Le statut envoyé doit exister dans Order::STATUSES
-     * 2. La transition doit être autorisée depuis l'état actuel (Order::TRANSITIONS)
+     * 2. La transition doit être autorisée depuis l'état actuel (Order::TRANSITIONS).
      */
     #[Route('/{id}/transition', name: 'api_admin_orders_transition', methods: ['POST'])]
     public function transition(Order $order, Request $request): JsonResponse
@@ -156,8 +155,8 @@ class OrderController extends AbstractController
                 'fullName' => $customer->getFullName(),
                 'email'    => $customer->getEmail(),
             ],
-            'createdAt'   => $order->getCreatedAt()->format(\DateTimeInterface::ATOM),
-            'updatedAt'   => $order->getUpdatedAt()->format(\DateTimeInterface::ATOM),
+            'createdAt' => $order->getCreatedAt()->format(\DateTimeInterface::ATOM),
+            'updatedAt' => $order->getUpdatedAt()->format(\DateTimeInterface::ATOM),
         ];
     }
 
@@ -190,23 +189,23 @@ class OrderController extends AbstractController
         $customer = $order->getCustomer();
 
         return array_merge($this->serializeList($order), [
-            'subtotal'        => $order->getSubtotal(),
-            'discountAmount'  => $order->getDiscountAmount(),
-            'shippingAmount'  => $order->getShippingAmount(),
-            'promoCode'       => $order->getPromoCode(),
-            'shippingAddress' => $order->getShippingAddress(),
-            'billingAddress'  => $order->getBillingAddress(),
-            'customerNote'    => $order->getCustomerNote(),
-            'internalNote'    => $order->getInternalNote(),
+            'subtotal'           => $order->getSubtotal(),
+            'discountAmount'     => $order->getDiscountAmount(),
+            'shippingAmount'     => $order->getShippingAmount(),
+            'promoCode'          => $order->getPromoCode(),
+            'shippingAddress'    => $order->getShippingAddress(),
+            'billingAddress'     => $order->getBillingAddress(),
+            'customerNote'       => $order->getCustomerNote(),
+            'internalNote'       => $order->getInternalNote(),
             'allowedTransitions' => Order::TRANSITIONS[$order->getStatus()] ?? [],
-            'customer'        => [
-                'id'        => $customer->getId(),
-                'fullName'  => $customer->getFullName(),
-                'email'     => $customer->getEmail(),
-                'phone'     => $customer->getPhone(),
+            'customer'           => [
+                'id'       => $customer->getId(),
+                'fullName' => $customer->getFullName(),
+                'email'    => $customer->getEmail(),
+                'phone'    => $customer->getPhone(),
             ],
-            'items'           => array_values($items),
-            'statusHistory'   => array_values($history),
+            'items'         => array_values($items),
+            'statusHistory' => array_values($history),
         ]);
     }
 }

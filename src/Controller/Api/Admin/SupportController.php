@@ -26,6 +26,7 @@ class SupportController extends AbstractController
     private function serializeList(SupportTicket $t): array
     {
         $messages = $t->getMessages();
+
         return [
             'id'           => $t->getId(),
             'subject'      => $t->getSubject(),
@@ -84,6 +85,7 @@ class SupportController extends AbstractController
         if (!$customer) {
             return [];
         }
+
         return $orderRepo->findRecentByCustomer($customer->getId());
     }
 
@@ -92,6 +94,7 @@ class SupportController extends AbstractController
         if ($ticket->isGuest()) {
             return $repo->findOtherByGuestEmail($ticket->getGuestEmail() ?? '', $ticket->getId());
         }
+
         return $repo->findOtherByUser($ticket->getUser(), $ticket->getId());
     }
 
@@ -174,7 +177,7 @@ class SupportController extends AbstractController
             return $this->json(['message' => 'Ticket introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        $status = (string) ($request->toArray()['status'] ?? '');
+        $status  = (string) ($request->toArray()['status'] ?? '');
         $allowed = [SupportTicket::STATUS_OPEN, SupportTicket::STATUS_IN_PROGRESS, SupportTicket::STATUS_CLOSED];
 
         if (!in_array($status, $allowed, true)) {

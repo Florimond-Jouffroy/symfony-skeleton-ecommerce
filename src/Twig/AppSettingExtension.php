@@ -14,15 +14,13 @@ use Twig\Extension\GlobalsInterface;
  */
 class AppSettingExtension extends AbstractExtension implements GlobalsInterface
 {
-    public function __construct(private readonly AppSettingRepository $settingRepo)
-    {
-    }
+    public function __construct(private readonly AppSettingRepository $settingRepo) {}
 
     public function getGlobals(): array
     {
         return [
-            'shopEnabled'     => $this->settingRepo->getValue('shop.enabled', 'true') === 'true',
-            'maintenanceMode' => $this->settingRepo->getValue('site.maintenance', 'false') === 'true',
+            'shopEnabled'     => 'true' === $this->settingRepo->getValue('shop.enabled', 'true'),
+            'maintenanceMode' => 'true' === $this->settingRepo->getValue('site.maintenance', 'false'),
         ];
     }
 }

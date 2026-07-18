@@ -21,6 +21,7 @@ class AppSettingRepository extends ServiceEntityRepository
     public function getValue(string $key, string $default = ''): string
     {
         $setting = $this->find($key);
+
         return $setting?->getValue() ?? $default;
     }
 

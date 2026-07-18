@@ -32,7 +32,7 @@ class CreateAdminCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('email',    InputArgument::OPTIONAL, 'Email address', 'florimond.jouffroy@gmail.com')
+            ->addArgument('email', InputArgument::OPTIONAL, 'Email address', 'florimond.jouffroy@gmail.com')
             ->addArgument('password', InputArgument::OPTIONAL, 'Plain password', '7@changer')
         ;
     }

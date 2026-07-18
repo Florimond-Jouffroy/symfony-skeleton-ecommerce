@@ -14,14 +14,13 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class MediaFileManager
 {
     private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    private const MAX_SIZE = 5 * 1024 * 1024; // 5 Mo
+    private const MAX_SIZE           = 5 * 1024 * 1024; // 5 Mo
 
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly ApplicationLogManager $logManager,
         private readonly MediaFileRepository $mediaFileRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{media: MediaFile, isDuplicate: bool}|null null si validation échoue
@@ -34,7 +33,7 @@ class MediaFileManager
         }
 
         $mimeType = (string) $file->getMimeType();
-        $size = (int) $file->getSize();
+        $size     = (int) $file->getSize();
 
         if (!in_array($mimeType, self::ALLOWED_MIME_TYPES, true)) {
             return null;
@@ -52,7 +51,7 @@ class MediaFileManager
         }
 
         $extension = $file->guessExtension() ?? 'jpg';
-        $filename = bin2hex(random_bytes(16)).'.'.$extension;
+        $filename  = bin2hex(random_bytes(16)).'.'.$extension;
 
         $file->move($uploadDir, $filename);
 

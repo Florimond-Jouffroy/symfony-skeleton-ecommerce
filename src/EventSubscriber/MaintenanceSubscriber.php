@@ -30,8 +30,7 @@ class MaintenanceSubscriber implements EventSubscriberInterface
         private readonly AppSettingRepository $settingRepo,
         private readonly AuthorizationCheckerInterface $authChecker,
         private readonly Environment $twig,
-    ) {
-    }
+    ) {}
 
     public static function getSubscribedEvents(): array
     {
@@ -75,14 +74,14 @@ class MaintenanceSubscriber implements EventSubscriberInterface
         return str_starts_with($path, '/admin')
             || str_starts_with($path, '/api/admin/')
             || str_starts_with($path, '/connexion')
-            || $path === '/deconnexion'
+            || '/deconnexion' === $path
             || str_starts_with($path, '/api/auth/');
     }
 
     private function isMaintenanceMode(): bool
     {
         if (null === $this->maintenanceMode) {
-            $this->maintenanceMode = $this->settingRepo->getValue('site.maintenance', 'false') === 'true';
+            $this->maintenanceMode = 'true' === $this->settingRepo->getValue('site.maintenance', 'false');
         }
 
         return $this->maintenanceMode;

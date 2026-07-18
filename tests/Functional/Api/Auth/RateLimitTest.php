@@ -48,7 +48,7 @@ class RateLimitTest extends AbstractApiTestCase
         $this->createUser('limite@example.com', 'password123', verified: true);
 
         // 3 failed attempts (bad password)
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $this->postJson(self::LOGIN_URL, [
                 'email'    => 'limite@example.com',
                 'password' => 'mauvais',
@@ -77,7 +77,7 @@ class RateLimitTest extends AbstractApiTestCase
         $this->createUser('reset@example.com', 'password123', verified: true);
 
         // 2 failed attempts
-        for ($i = 0; $i < 2; $i++) {
+        for ($i = 0; $i < 2; ++$i) {
             $this->postJson(self::LOGIN_URL, [
                 'email'    => 'reset@example.com',
                 'password' => 'mauvais',
@@ -103,7 +103,7 @@ class RateLimitTest extends AbstractApiTestCase
     public function testRegistrationIsRateLimited(): void
     {
         // 3 registration attempts
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $this->postJson(self::REGISTER_URL, [
                 'email'           => "user{$i}@example.com",
                 'password'        => 'password123',
@@ -123,7 +123,7 @@ class RateLimitTest extends AbstractApiTestCase
 
     public function testPasswordResetIsRateLimited(): void
     {
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $this->postJson(self::RESET_URL, ['email' => 'anyone@example.com']);
         }
 
@@ -139,7 +139,7 @@ class RateLimitTest extends AbstractApiTestCase
         $this->createUser('nodisable@example.com', 'password123', verified: true);
 
         // Many failed attempts — should never be blocked
-        for ($i = 0; $i < 20; $i++) {
+        for ($i = 0; $i < 20; ++$i) {
             $this->postJson(self::LOGIN_URL, [
                 'email'    => 'nodisable@example.com',
                 'password' => 'mauvais',

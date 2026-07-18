@@ -23,9 +23,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/admin/categories-produits')]
 class ProductCategoryController extends AbstractController
 {
-    public function __construct(private readonly ProductCategoryManager $manager)
-    {
-    }
+    public function __construct(private readonly ProductCategoryManager $manager) {}
 
     #[Route('', name: 'api_admin_product_categories_list', methods: ['GET'])]
     public function list(ProductCategoryRepository $repository): JsonResponse

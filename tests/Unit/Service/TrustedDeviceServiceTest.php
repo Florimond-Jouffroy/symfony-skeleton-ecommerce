@@ -74,7 +74,7 @@ class TrustedDeviceServiceTest extends TestCase
         $user     = $this->makeUser(1);
         $rawToken = 'validrawtoken';
         $request  = Request::create('/');
-        $request->cookies->set(TrustedDeviceService::COOKIE_NAME, '1|' . $rawToken);
+        $request->cookies->set(TrustedDeviceService::COOKIE_NAME, '1|'.$rawToken);
 
         $this->repo->expects(self::once())->method('deleteExpiredForUser')->with($user);
         $this->repo->expects(self::once())
@@ -90,7 +90,7 @@ class TrustedDeviceServiceTest extends TestCase
         $user     = $this->makeUser(1);
         $rawToken = 'unknowntoken';
         $request  = Request::create('/');
-        $request->cookies->set(TrustedDeviceService::COOKIE_NAME, '1|' . $rawToken);
+        $request->cookies->set(TrustedDeviceService::COOKIE_NAME, '1|'.$rawToken);
 
         $this->repo->expects(self::once())->method('deleteExpiredForUser')->with($user);
         $this->repo->expects(self::once())

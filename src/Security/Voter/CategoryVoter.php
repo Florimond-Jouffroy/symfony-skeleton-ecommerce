@@ -26,8 +26,7 @@ class CategoryVoter extends Voter
 
     public function __construct(
         private readonly PermissionService $permissionService,
-    ) {
-    }
+    ) {}
 
     protected function supports(string $attribute, mixed $subject): bool
     {

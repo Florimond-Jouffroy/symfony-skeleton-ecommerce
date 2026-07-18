@@ -17,7 +17,7 @@ class TwoFactorTest extends AbstractApiTestCase
     private const TOTP_SECRET = 'JBSWY3DPEHPK3PXP';
 
     private function createUserWithTotp(
-        string $email    = 'user2fa@example.com',
+        string $email = 'user2fa@example.com',
         string $password = 'password123',
     ): User {
         $user = $this->createUser($email, $password, verified: true);
@@ -61,7 +61,7 @@ class TwoFactorTest extends AbstractApiTestCase
 
         // Step 2 : verify TOTP
         $this->postJson(self::VERIFY_URL, [
-            'code'         => $this->validTotpCode(),
+            'code'           => $this->validTotpCode(),
             'rememberDevice' => false,
         ]);
 
@@ -82,7 +82,7 @@ class TwoFactorTest extends AbstractApiTestCase
         ]);
 
         $this->postJson(self::VERIFY_URL, [
-            'code'          => '000000',
+            'code'           => '000000',
             'rememberDevice' => false,
         ]);
 
@@ -93,7 +93,7 @@ class TwoFactorTest extends AbstractApiTestCase
     public function testVerifyWithoutPendingSessionReturns401(): void
     {
         $this->postJson(self::VERIFY_URL, [
-            'code'          => '123456',
+            'code'           => '123456',
             'rememberDevice' => false,
         ]);
 
@@ -118,7 +118,7 @@ class TwoFactorTest extends AbstractApiTestCase
         }
 
         $this->postJson(self::VERIFY_URL, [
-            'code'          => $this->validTotpCode(),
+            'code'           => $this->validTotpCode(),
             'rememberDevice' => true,
         ]);
 
@@ -145,7 +145,7 @@ class TwoFactorTest extends AbstractApiTestCase
         }
 
         $this->postJson(self::VERIFY_URL, [
-            'code'          => $this->validTotpCode(),
+            'code'           => $this->validTotpCode(),
             'rememberDevice' => true,
         ]);
         self::assertResponseIsSuccessful();

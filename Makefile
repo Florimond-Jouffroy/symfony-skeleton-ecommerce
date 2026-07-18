@@ -208,7 +208,13 @@ cs: ## Corrige le style de code PHP selon la configuration d'entreprise (.php-cs
 	$(COMPOSER_CONT) vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php
 
 stan: ## Analyse statique du code avec PHPStan
-	$(COMPOSER_CONT) vendor/bin/phpstan analyse src --memory-limit=1G
+	$(COMPOSER_CONT) vendor/bin/phpstan analyse --memory-limit=1G
+
+rector: ## Prévisualise les modernisations Rector sans les appliquer (dry-run)
+	$(COMPOSER_CONT) vendor/bin/rector process --dry-run
+
+rector-fix: ## Applique les modernisations Rector au code
+	$(COMPOSER_CONT) vendor/bin/rector process
 
 db-test-setup: ## Crée et initialise les bases de données de test via le schéma Doctrine
 	$(CONSOLE) --env=test doctrine:database:drop --if-exists --force --connection=default

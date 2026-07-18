@@ -18,8 +18,7 @@ class PayPalPaymentProvider implements PaymentProviderInterface
     public function __construct(
         private readonly AppSettingRepository $settingRepo,
         private readonly HttpClientInterface $httpClient,
-    ) {
-    }
+    ) {}
 
     public function getName(): string
     {
@@ -28,7 +27,7 @@ class PayPalPaymentProvider implements PaymentProviderInterface
 
     public function isEnabled(): bool
     {
-        return $this->settingRepo->getValue('payment.paypal.enabled', 'false') === 'true'
+        return 'true' === $this->settingRepo->getValue('payment.paypal.enabled', 'false')
             && '' !== $this->settingRepo->getValue('payment.paypal.client_id', '')
             && '' !== $this->settingRepo->getValue('payment.paypal.client_secret', '');
     }
@@ -65,7 +64,7 @@ class PayPalPaymentProvider implements PaymentProviderInterface
             $data = $response->toArray();
 
             return new PaymentResult(
-                success:      true,
+                success: true,
                 clientSecret: $data['id'], // PayPal Order ID used as token
             );
         } catch (\Throwable $e) {
@@ -148,7 +147,7 @@ class PayPalPaymentProvider implements PaymentProviderInterface
 
     private function baseUrl(): string
     {
-        return $this->settingRepo->getValue('payment.paypal.sandbox', 'true') === 'true'
+        return 'true' === $this->settingRepo->getValue('payment.paypal.sandbox', 'true')
             ? self::SANDBOX_URL
             : self::LIVE_URL;
     }

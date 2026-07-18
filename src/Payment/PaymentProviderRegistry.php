@@ -9,8 +9,7 @@ class PaymentProviderRegistry
     /** @param iterable<PaymentProviderInterface> $providers */
     public function __construct(
         private readonly iterable $providers,
-    ) {
-    }
+    ) {}
 
     public function getActive(): ?PaymentProviderInterface
     {

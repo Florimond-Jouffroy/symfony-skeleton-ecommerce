@@ -18,8 +18,7 @@ class OrderMailer
         private readonly string $from,
         #[Autowire(param: 'app.company')]
         private readonly array $company,
-    ) {
-    }
+    ) {}
 
     public function sendOrderConfirmation(Order $order): void
     {

@@ -6,7 +6,6 @@ namespace App\Repository;
 
 use App\Entity\Order;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -166,7 +165,7 @@ class OrderRepository extends ServiceEntityRepository
             'since'     => $since->format('Y-m-d H:i:s'),
         ])->fetchAllAssociative();
 
-        return array_map(fn(array $r) => [
+        return array_map(fn (array $r) => [
             'year'    => (int) $r['y'],
             'month'   => (int) $r['m'],
             'revenue' => (int) ($r['revenue'] ?? 0),
@@ -185,7 +184,7 @@ class OrderRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /** @return \App\Entity\Order[] */
+    /** @return Order[] */
     public function findRecentByCustomer(int $customerId, int $limit = 5): array
     {
         return $this->createQueryBuilder('o')
@@ -211,9 +210,9 @@ class OrderRepository extends ServiceEntityRepository
             ->setParameter('email', $email)
             ->setParameter('pid', $productId)
             ->setParameter('statuses', [
-                \App\Entity\Order::STATUS_CONFIRMED,
-                \App\Entity\Order::STATUS_SHIPPED,
-                \App\Entity\Order::STATUS_DELIVERED,
+                Order::STATUS_CONFIRMED,
+                Order::STATUS_SHIPPED,
+                Order::STATUS_DELIVERED,
             ])
             ->getQuery()
             ->getSingleScalarResult();

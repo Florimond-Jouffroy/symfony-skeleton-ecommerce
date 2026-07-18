@@ -31,7 +31,7 @@ class CartController extends AbstractController
     ): JsonResponse {
         $data      = json_decode($request->getContent(), true) ?? [];
         $productId = (int) ($data['productId'] ?? 0);
-        $variantId = isset($data['variantId']) && $data['variantId'] !== null ? (int) $data['variantId'] : null;
+        $variantId = isset($data['variantId']) ? (int) $data['variantId'] : null;
         $quantity  = max(1, (int) ($data['quantity'] ?? 1));
 
         if ($productId <= 0) {
@@ -66,8 +66,8 @@ class CartController extends AbstractController
         $key  = $this->buildKey($productId, $variantId);
         $cart = $this->getCart($request);
 
-        $currentQty    = $cart[$key]['quantity'] ?? 0;
-        $quantity      = min($quantity, max(0, $availableStock - $currentQty));
+        $currentQty = $cart[$key]['quantity'] ?? 0;
+        $quantity   = min($quantity, max(0, $availableStock - $currentQty));
 
         if ($quantity <= 0) {
             return $this->json(['message' => 'Stock insuffisant pour ajouter cette quantité.'], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -156,7 +156,7 @@ class CartController extends AbstractController
         $subtotal  = (int) array_reduce($items, fn ($c, $i) => $c + $i['unitPrice'] * $i['quantity'], 0);
 
         return [
-            'items'     => array_map(
+            'items' => array_map(
                 fn ($item) => array_merge($item, ['lineTotal' => $item['unitPrice'] * $item['quantity']]),
                 $items,
             ),

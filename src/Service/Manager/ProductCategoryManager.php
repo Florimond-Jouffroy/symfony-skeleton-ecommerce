@@ -19,8 +19,7 @@ class ProductCategoryManager
         private readonly EntityManagerInterface $em,
         private readonly ApplicationLogManager $logManager,
         private readonly ProductCategoryRepository $repository,
-    ) {
-    }
+    ) {}
 
     public function create(string $name): ?ProductCategory
     {

@@ -30,8 +30,7 @@ class OrderManager
         private readonly OrderRepository $orderRepository,
         private readonly InvoiceService $invoiceService,
         private readonly OrderMailer $orderMailer,
-    ) {
-    }
+    ) {}
 
     /**
      * Crée une commande complète avec ses lignes et son premier historique.
@@ -39,8 +38,8 @@ class OrderManager
      * Le statut initial est toujours "pending".
      *
      * @param array<array{productName: string, variantName?: string|null, unitPrice: int, quantity: int, productId?: int|null, variantId?: int|null}> $items
-     * @param array<string, string> $shippingAddress
-     * @param array<string, string>|null $billingAddress
+     * @param array<string, string>                                                                                                                   $shippingAddress
+     * @param array<string, string>|null                                                                                                              $billingAddress
      */
     public function create(
         Customer $customer,

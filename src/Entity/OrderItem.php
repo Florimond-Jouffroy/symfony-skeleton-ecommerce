@@ -56,30 +56,99 @@ class OrderItem
     #[ORM\Column]
     private int $total = 0;
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getOrder(): Order { return $this->order; }
-    public function setOrder(Order $order): self { $this->order = $order; return $this; }
+    public function getOrder(): Order
+    {
+        return $this->order;
+    }
 
-    public function getProduct(): ?Product { return $this->product; }
-    public function setProduct(?Product $product): self { $this->product = $product; return $this; }
+    public function setOrder(Order $order): self
+    {
+        $this->order = $order;
 
-    public function getVariant(): ?ProductVariant { return $this->variant; }
-    public function setVariant(?ProductVariant $variant): self { $this->variant = $variant; return $this; }
+        return $this;
+    }
 
-    public function getProductName(): string { return $this->productName; }
-    public function setProductName(string $productName): self { $this->productName = $productName; return $this; }
+    public function getProduct(): ?Product
+    {
+        return $this->product;
+    }
 
-    public function getVariantName(): ?string { return $this->variantName; }
-    public function setVariantName(?string $variantName): self { $this->variantName = $variantName; return $this; }
+    public function setProduct(?Product $product): self
+    {
+        $this->product = $product;
 
-    public function getUnitPrice(): int { return $this->unitPrice; }
-    public function setUnitPrice(int $unitPrice): self { $this->unitPrice = $unitPrice; return $this; }
+        return $this;
+    }
 
-    public function getQuantity(): int { return $this->quantity; }
-    public function setQuantity(int $quantity): self { $this->quantity = $quantity; return $this; }
+    public function getVariant(): ?ProductVariant
+    {
+        return $this->variant;
+    }
 
-    public function getTotal(): int { return $this->total; }
+    public function setVariant(?ProductVariant $variant): self
+    {
+        $this->variant = $variant;
+
+        return $this;
+    }
+
+    public function getProductName(): string
+    {
+        return $this->productName;
+    }
+
+    public function setProductName(string $productName): self
+    {
+        $this->productName = $productName;
+
+        return $this;
+    }
+
+    public function getVariantName(): ?string
+    {
+        return $this->variantName;
+    }
+
+    public function setVariantName(?string $variantName): self
+    {
+        $this->variantName = $variantName;
+
+        return $this;
+    }
+
+    public function getUnitPrice(): int
+    {
+        return $this->unitPrice;
+    }
+
+    public function setUnitPrice(int $unitPrice): self
+    {
+        $this->unitPrice = $unitPrice;
+
+        return $this;
+    }
+
+    public function getQuantity(): int
+    {
+        return $this->quantity;
+    }
+
+    public function setQuantity(int $quantity): self
+    {
+        $this->quantity = $quantity;
+
+        return $this;
+    }
+
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
 
     public function recalculateTotal(): void
     {

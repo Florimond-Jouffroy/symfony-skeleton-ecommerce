@@ -42,25 +42,82 @@ class ShippingMethod
     #[ORM\Column(options: ['default' => 0])]
     private int $position = 0;
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getName(): string { return $this->name; }
-    public function setName(string $name): self { $this->name = $name; return $this; }
+    public function getName(): string
+    {
+        return $this->name;
+    }
 
-    public function getDescription(): ?string { return $this->description; }
-    public function setDescription(?string $description): self { $this->description = $description; return $this; }
+    public function setName(string $name): self
+    {
+        $this->name = $name;
 
-    public function getPrice(): int { return $this->price; }
-    public function setPrice(int $price): self { $this->price = $price; return $this; }
+        return $this;
+    }
 
-    public function getFreeAboveAmount(): ?int { return $this->freeAboveAmount; }
-    public function setFreeAboveAmount(?int $amount): self { $this->freeAboveAmount = $amount; return $this; }
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
 
-    public function isActive(): bool { return $this->isActive; }
-    public function setIsActive(bool $isActive): self { $this->isActive = $isActive; return $this; }
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
 
-    public function getPosition(): int { return $this->position; }
-    public function setPosition(int $position): self { $this->position = $position; return $this; }
+        return $this;
+    }
+
+    public function getPrice(): int
+    {
+        return $this->price;
+    }
+
+    public function setPrice(int $price): self
+    {
+        $this->price = $price;
+
+        return $this;
+    }
+
+    public function getFreeAboveAmount(): ?int
+    {
+        return $this->freeAboveAmount;
+    }
+
+    public function setFreeAboveAmount(?int $amount): self
+    {
+        $this->freeAboveAmount = $amount;
+
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): self
+    {
+        $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
+
+        return $this;
+    }
 
     /**
      * Returns the effective price for a given cart subtotal.
@@ -68,7 +125,7 @@ class ShippingMethod
      */
     public function getEffectivePrice(int $subtotal = 0): int
     {
-        if ($this->freeAboveAmount !== null && $subtotal >= $this->freeAboveAmount) {
+        if (null !== $this->freeAboveAmount && $subtotal >= $this->freeAboveAmount) {
             return 0;
         }
 

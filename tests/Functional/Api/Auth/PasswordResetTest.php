@@ -64,9 +64,9 @@ class PasswordResetTest extends AbstractApiTestCase
         $this->createPasswordResetToken($user, '654321');
 
         $this->postJson(self::URL_CONFIRM, [
-            'email' => 'utilisateur@example.com',
-            'code' => '654321',
-            'newPassword' => 'nouveau_password123',
+            'email'              => 'utilisateur@example.com',
+            'code'               => '654321',
+            'newPassword'        => 'nouveau_password123',
             'newPasswordConfirm' => 'nouveau_password123',
         ]);
 
@@ -79,13 +79,13 @@ class PasswordResetTest extends AbstractApiTestCase
 
     public function testConfirmResetMarksTokenAsUsed(): void
     {
-        $user = $this->createUser('utilisateur@example.com', 'password123', verified: true);
+        $user  = $this->createUser('utilisateur@example.com', 'password123', verified: true);
         $token = $this->createPasswordResetToken($user, '111222');
 
         $this->postJson(self::URL_CONFIRM, [
-            'email' => 'utilisateur@example.com',
-            'code' => '111222',
-            'newPassword' => 'nouveau_password123',
+            'email'              => 'utilisateur@example.com',
+            'code'               => '111222',
+            'newPassword'        => 'nouveau_password123',
             'newPasswordConfirm' => 'nouveau_password123',
         ]);
 
@@ -99,9 +99,9 @@ class PasswordResetTest extends AbstractApiTestCase
         $this->createPasswordResetToken($user, '999999');
 
         $this->postJson(self::URL_CONFIRM, [
-            'email' => 'utilisateur@example.com',
-            'code' => '000000',
-            'newPassword' => 'nouveau_password123',
+            'email'              => 'utilisateur@example.com',
+            'code'               => '000000',
+            'newPassword'        => 'nouveau_password123',
             'newPasswordConfirm' => 'nouveau_password123',
         ]);
 
@@ -111,15 +111,15 @@ class PasswordResetTest extends AbstractApiTestCase
 
     public function testConfirmResetFailsWithExpiredToken(): void
     {
-        $user = $this->createUser('utilisateur@example.com', 'password123', verified: true);
+        $user  = $this->createUser('utilisateur@example.com', 'password123', verified: true);
         $token = new PasswordResetToken($user, '777777', new \DateTimeImmutable('-1 minute'));
         $this->em->persist($token);
         $this->em->flush();
 
         $this->postJson(self::URL_CONFIRM, [
-            'email' => 'utilisateur@example.com',
-            'code' => '777777',
-            'newPassword' => 'nouveau_password123',
+            'email'              => 'utilisateur@example.com',
+            'code'               => '777777',
+            'newPassword'        => 'nouveau_password123',
             'newPasswordConfirm' => 'nouveau_password123',
         ]);
 
@@ -128,15 +128,15 @@ class PasswordResetTest extends AbstractApiTestCase
 
     public function testConfirmResetFailsWithUsedToken(): void
     {
-        $user = $this->createUser('utilisateur@example.com', 'password123', verified: true);
+        $user  = $this->createUser('utilisateur@example.com', 'password123', verified: true);
         $token = $this->createPasswordResetToken($user, '333444');
         $token->markAsUsed();
         $this->em->flush();
 
         $this->postJson(self::URL_CONFIRM, [
-            'email' => 'utilisateur@example.com',
-            'code' => '333444',
-            'newPassword' => 'nouveau_password123',
+            'email'              => 'utilisateur@example.com',
+            'code'               => '333444',
+            'newPassword'        => 'nouveau_password123',
             'newPasswordConfirm' => 'nouveau_password123',
         ]);
 
@@ -149,9 +149,9 @@ class PasswordResetTest extends AbstractApiTestCase
         $this->createPasswordResetToken($user, '555666');
 
         $this->postJson(self::URL_CONFIRM, [
-            'email' => 'utilisateur@example.com',
-            'code' => '555666',
-            'newPassword' => 'nouveau_password123',
+            'email'              => 'utilisateur@example.com',
+            'code'               => '555666',
+            'newPassword'        => 'nouveau_password123',
             'newPasswordConfirm' => 'different_password',
         ]);
 
@@ -161,9 +161,9 @@ class PasswordResetTest extends AbstractApiTestCase
     public function testConfirmResetFailsWithUnknownEmail(): void
     {
         $this->postJson(self::URL_CONFIRM, [
-            'email' => 'inconnu@example.com',
-            'code' => '123456',
-            'newPassword' => 'nouveau_password123',
+            'email'              => 'inconnu@example.com',
+            'code'               => '123456',
+            'newPassword'        => 'nouveau_password123',
             'newPasswordConfirm' => 'nouveau_password123',
         ]);
 

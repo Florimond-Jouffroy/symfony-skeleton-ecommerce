@@ -18,8 +18,7 @@ class AuthMailer
         private readonly UrlGeneratorInterface $urlGenerator,
         #[Autowire(env: 'MAILER_FROM')]
         private readonly string $from,
-    ) {
-    }
+    ) {}
 
     public function sendVerificationEmail(User $user): void
     {

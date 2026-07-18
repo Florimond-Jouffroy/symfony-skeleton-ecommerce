@@ -35,9 +35,9 @@ class AppFixtures extends Fixture
         $this->faker->seed(42); // reproductible
 
         $this->loadSettings($em);
-        $shippingMethods  = $this->loadShippingMethods($em);
+        $shippingMethods   = $this->loadShippingMethods($em);
         $productCategories = $this->loadProductCategories($em);
-        $products         = $this->loadProducts($em, $productCategories);
+        $products          = $this->loadProducts($em, $productCategories);
         $this->loadPromoCodes($em);
         $this->loadUsers($em);
         $customers = $this->loadCustomers($em);
@@ -51,13 +51,13 @@ class AppFixtures extends Fixture
     private function loadSettings(ObjectManager $em): void
     {
         $defaults = [
-            'site.maintenance'               => 'false',
-            'shop.enabled'                   => 'true',
-            'invoice.trigger'                => 'on_confirm',
-            'invoice.default_tax_rate'       => '20',
-            'security.2fa.trusted_device_days'    => '30',
-            'security.rate_limit.max_attempts'    => '5',
-            'security.rate_limit.window_minutes'  => '15',
+            'site.maintenance'                   => 'false',
+            'shop.enabled'                       => 'true',
+            'invoice.trigger'                    => 'on_confirm',
+            'invoice.default_tax_rate'           => '20',
+            'security.2fa.trusted_device_days'   => '30',
+            'security.rate_limit.max_attempts'   => '5',
+            'security.rate_limit.window_minutes' => '15',
         ];
 
         $repo = $em->getRepository(AppSetting::class);
@@ -125,7 +125,7 @@ class AppFixtures extends Fixture
             ['name' => 'Vêtements',   'slug' => 'vetements',   'taxRate' => 20,  'position' => 1],
             ['name' => 'Chaussures',  'slug' => 'chaussures',  'taxRate' => 20,  'position' => 2],
             ['name' => 'Accessoires', 'slug' => 'accessoires', 'taxRate' => 20,  'position' => 3],
-            ['name' => 'Alimentation','slug' => 'alimentation','taxRate' => 5,   'position' => 4],
+            ['name' => 'Alimentation', 'slug' => 'alimentation', 'taxRate' => 5,   'position' => 4],
             ['name' => 'Livres',      'slug' => 'livres',      'taxRate' => 5,   'position' => 5],
         ];
 
@@ -153,7 +153,8 @@ class AppFixtures extends Fixture
     // ── Produits ─────────────────────────────────────────────────────────────────
 
     /**
-     * @param  ProductCategory[] $categories
+     * @param ProductCategory[] $categories
+     *
      * @return Product[]
      */
     private function loadProducts(ObjectManager $em, array $categories): array
@@ -381,7 +382,7 @@ class AppFixtures extends Fixture
             $em->persist($admin);
         }
 
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 5; ++$i) {
             $email = "user{$i}@example.com";
             if (!$repo->findOneBy(['email' => $email])) {
                 $user = new User();
@@ -401,7 +402,7 @@ class AppFixtures extends Fixture
     {
         $customers = [];
 
-        for ($i = 0; $i < 12; $i++) {
+        for ($i = 0; $i < 12; ++$i) {
             $customer = new Customer();
             $customer->setFirstName($this->faker->firstName())
                      ->setLastName($this->faker->lastName())
@@ -417,8 +418,8 @@ class AppFixtures extends Fixture
     // ── Commandes ────────────────────────────────────────────────────────────────
 
     /**
-     * @param Customer[]      $customers
-     * @param Product[]       $products
+     * @param Customer[]       $customers
+     * @param Product[]        $products
      * @param ShippingMethod[] $shippingMethods
      */
     private function loadOrders(
@@ -440,7 +441,7 @@ class AppFixtures extends Fixture
         ];
 
         $seq = 1;
-        for ($i = 0; $i < 20; $i++) {
+        for ($i = 0; $i < 20; ++$i) {
             $customer = $customers[array_rand($customers)];
             $shipping = $shippingMethods[array_rand($shippingMethods)];
             $status   = $statuses[array_rand($statuses)];
@@ -459,8 +460,8 @@ class AppFixtures extends Fixture
                   ]);
 
             // 2 à 4 lignes par commande
-            $subtotal = 0;
-            $itemCount = $this->faker->numberBetween(2, 4);
+            $subtotal       = 0;
+            $itemCount      = $this->faker->numberBetween(2, 4);
             $pickedProducts = $this->faker->randomElements($products, $itemCount);
 
             foreach ($pickedProducts as $product) {

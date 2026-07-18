@@ -37,8 +37,23 @@ class TrustedDevice
         $this->expiresAt = $expiresAt;
     }
 
-    public function getId(): ?int { return $this->id; }
-    public function getUser(): User { return $this->user; }
-    public function getTokenHash(): string { return $this->tokenHash; }
-    public function getExpiresAt(): \DateTimeImmutable { return $this->expiresAt; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function getTokenHash(): string
+    {
+        return $this->tokenHash;
+    }
+
+    public function getExpiresAt(): \DateTimeImmutable
+    {
+        return $this->expiresAt;
+    }
 }

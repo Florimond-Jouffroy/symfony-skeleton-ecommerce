@@ -11,6 +11,5 @@ final readonly class PaymentResult
         public ?string $clientSecret = null,
         public ?string $intentId = null,
         public ?string $error = null,
-    ) {
-    }
+    ) {}
 }

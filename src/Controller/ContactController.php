@@ -15,16 +15,16 @@ class ContactController extends AbstractController
     {
         /** @var \App\Entity\User|null $user */
         $user        = $this->getUser();
-        $isConnected = $user !== null;
+        $isConnected = null !== $user;
 
         return $this->render('contact/shell.html.twig', [
             'isConnected'  => $isConnected,
             'prefillEmail' => $isConnected ? $user->getEmail() : '',
-            'urls' => [
-                'createTicket'   => $this->generateUrl('api_contact_create'),
+            'urls'         => [
+                'createTicket'     => $this->generateUrl('api_contact_create'),
                 'createTicketAuth' => $this->generateUrl('api_account_support_create'),
-                'suivi'          => $this->generateUrl('api_contact_suivi'),
-                'suiviReply'     => $this->generateUrl('api_contact_suivi_reply'),
+                'suivi'            => $this->generateUrl('api_contact_suivi'),
+                'suiviReply'       => $this->generateUrl('api_contact_suivi_reply'),
             ],
         ]);
     }
@@ -35,7 +35,7 @@ class ContactController extends AbstractController
         return $this->render('contact/shell.html.twig', [
             'isConnected'  => false,
             'prefillEmail' => '',
-            'urls' => [
+            'urls'         => [
                 'createTicket'     => $this->generateUrl('api_contact_create'),
                 'createTicketAuth' => $this->generateUrl('api_account_support_create'),
                 'suivi'            => $this->generateUrl('api_contact_suivi'),

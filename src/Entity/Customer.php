@@ -48,24 +48,72 @@ class Customer
         $this->orders    = new ArrayCollection();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getEmail(): string { return $this->email; }
-    public function setEmail(string $email): self { $this->email = $email; return $this; }
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
 
-    public function getFirstName(): string { return $this->firstName; }
-    public function setFirstName(string $firstName): self { $this->firstName = $firstName; return $this; }
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
 
-    public function getLastName(): string { return $this->lastName; }
-    public function setLastName(string $lastName): self { $this->lastName = $lastName; return $this; }
+        return $this;
+    }
 
-    public function getFullName(): string { return trim($this->firstName.' '.$this->lastName); }
+    public function getFirstName(): string
+    {
+        return $this->firstName;
+    }
 
-    public function getPhone(): ?string { return $this->phone; }
-    public function setPhone(?string $phone): self { $this->phone = $phone; return $this; }
+    public function setFirstName(string $firstName): self
+    {
+        $this->firstName = $firstName;
 
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+        return $this;
+    }
+
+    public function getLastName(): string
+    {
+        return $this->lastName;
+    }
+
+    public function setLastName(string $lastName): self
+    {
+        $this->lastName = $lastName;
+
+        return $this;
+    }
+
+    public function getFullName(): string
+    {
+        return trim($this->firstName.' '.$this->lastName);
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(?string $phone): self
+    {
+        $this->phone = $phone;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 
     /** @return Collection<int, Order> */
-    public function getOrders(): Collection { return $this->orders; }
+    public function getOrders(): Collection
+    {
+        return $this->orders;
+    }
 }

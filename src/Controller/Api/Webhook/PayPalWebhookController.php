@@ -21,8 +21,7 @@ class PayPalWebhookController extends AbstractController
         private readonly OrderRepository $orderRepository,
         private readonly OrderManager $orderManager,
         private readonly OrderMailer $orderMailer,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): Response
     {

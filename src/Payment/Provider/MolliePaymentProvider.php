@@ -19,8 +19,7 @@ class MolliePaymentProvider implements PaymentProviderInterface
         private readonly AppSettingRepository $settingRepo,
         private readonly HttpClientInterface $httpClient,
         private readonly UrlGeneratorInterface $urlGenerator,
-    ) {
-    }
+    ) {}
 
     public function getName(): string
     {
@@ -29,7 +28,7 @@ class MolliePaymentProvider implements PaymentProviderInterface
 
     public function isEnabled(): bool
     {
-        return $this->settingRepo->getValue('payment.mollie.enabled', 'false') === 'true'
+        return 'true' === $this->settingRepo->getValue('payment.mollie.enabled', 'false')
             && '' !== $this->settingRepo->getValue('payment.mollie.api_key', '');
     }
 
@@ -73,9 +72,9 @@ class MolliePaymentProvider implements PaymentProviderInterface
             $data = $response->toArray();
 
             return new PaymentResult(
-                success:      true,
+                success: true,
                 clientSecret: $data['_links']['checkout']['href'],
-                intentId:     $data['id'],
+                intentId: $data['id'],
             );
         } catch (\Throwable $e) {
             return new PaymentResult(success: false, error: $e->getMessage());

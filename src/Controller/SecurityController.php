@@ -29,7 +29,7 @@ class SecurityController extends AbstractController
                 'redirect'       => $redirectUrl,
                 'forgotPassword' => $this->generateUrl('app_security_forgot_password'),
                 'register'       => $this->generateUrl('app_security_register')
-                    . ($redirectUrl !== $this->generateUrl('app_home') ? '?redirect=' . urlencode($redirectUrl) : ''),
+                    .($redirectUrl !== $this->generateUrl('app_home') ? '?redirect='.urlencode($redirectUrl) : ''),
             ],
         ]);
     }
@@ -41,15 +41,15 @@ class SecurityController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
-        $redirectUrl = $this->sanitizeRedirect($request->query->getString('redirect'), $this->generateUrl('app_home'));
+        $redirectUrl       = $this->sanitizeRedirect($request->query->getString('redirect'), $this->generateUrl('app_home'));
         $loginWithRedirect = $this->generateUrl('app_security_login')
-            . ($redirectUrl !== $this->generateUrl('app_home') ? '?redirect=' . urlencode($redirectUrl) : '');
+            .($redirectUrl !== $this->generateUrl('app_home') ? '?redirect='.urlencode($redirectUrl) : '');
 
         return $this->render('security/register.html.twig', [
             'urls' => [
-                'register'     => $this->generateUrl('api_auth_register'),
-                'resend'       => $this->generateUrl('api_auth_verify_email_resend'),
-                'login'        => $loginWithRedirect,
+                'register'      => $this->generateUrl('api_auth_register'),
+                'resend'        => $this->generateUrl('api_auth_verify_email_resend'),
+                'login'         => $loginWithRedirect,
                 'afterLoginUrl' => $redirectUrl,
             ],
         ]);
@@ -80,12 +80,12 @@ class SecurityController extends AbstractController
         UserManager $userManager,
     ): Response {
         $token = $request->query->getString('token');
-        $user = $token ? $userRepository->findOneBy(['verificationToken' => $token]) : null;
+        $user  = $token ? $userRepository->findOneBy(['verificationToken' => $token]) : null;
 
         $success = $user && !$user->isVerified() && $userManager->verifyEmail($user);
 
         return $this->render('security/verify-email.html.twig', [
-            'success' => $success,
+            'success'  => $success,
             'loginUrl' => $this->generateUrl('app_security_login'),
         ]);
     }
@@ -107,7 +107,7 @@ class SecurityController extends AbstractController
             'urls' => [
                 'request' => $this->generateUrl('api_auth_reset_password_request'),
                 'confirm' => $this->generateUrl('api_auth_reset_password_confirm'),
-                'login' => $this->generateUrl('app_security_login'),
+                'login'   => $this->generateUrl('app_security_login'),
             ],
         ]);
     }

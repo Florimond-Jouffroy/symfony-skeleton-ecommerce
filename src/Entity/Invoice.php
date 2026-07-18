@@ -64,7 +64,7 @@ class Invoice
 
     /**
      * Détail TVA par taux.
-     * Format : [{'rate': 20.0, 'baseHt': 5000, 'taxAmount': 1000}, ...]
+     * Format : [{'rate': 20.0, 'baseHt': 5000, 'taxAmount': 1000}, ...].
      *
      * @var array<array{rate: float, baseHt: int, taxAmount: int}>
      */
@@ -106,48 +106,166 @@ class Invoice
         $this->updatedAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getInvoiceNumber(): string { return $this->invoiceNumber; }
-    public function setInvoiceNumber(string $n): self { $this->invoiceNumber = $n; return $this; }
+    public function getInvoiceNumber(): string
+    {
+        return $this->invoiceNumber;
+    }
 
-    public function getOrder(): Order { return $this->order; }
-    public function setOrder(Order $order): self { $this->order = $order; return $this; }
+    public function setInvoiceNumber(string $n): self
+    {
+        $this->invoiceNumber = $n;
 
-    public function getStatus(): string { return $this->status; }
-    public function setStatus(string $status): self { $this->status = $status; return $this; }
+        return $this;
+    }
 
-    public function getIssuedAt(): \DateTimeImmutable { return $this->issuedAt; }
-    public function setIssuedAt(\DateTimeImmutable $d): self { $this->issuedAt = $d; return $this; }
+    public function getOrder(): Order
+    {
+        return $this->order;
+    }
 
-    public function getSubtotalHt(): int { return $this->subtotalHt; }
-    public function setSubtotalHt(int $v): self { $this->subtotalHt = $v; return $this; }
+    public function setOrder(Order $order): self
+    {
+        $this->order = $order;
 
-    public function getShippingHt(): int { return $this->shippingHt; }
-    public function setShippingHt(int $v): self { $this->shippingHt = $v; return $this; }
+        return $this;
+    }
 
-    public function getDiscountAmount(): int { return $this->discountAmount; }
-    public function setDiscountAmount(int $v): self { $this->discountAmount = $v; return $this; }
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
 
-    public function getTotalHt(): int { return $this->totalHt; }
-    public function setTotalHt(int $v): self { $this->totalHt = $v; return $this; }
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getIssuedAt(): \DateTimeImmutable
+    {
+        return $this->issuedAt;
+    }
+
+    public function setIssuedAt(\DateTimeImmutable $d): self
+    {
+        $this->issuedAt = $d;
+
+        return $this;
+    }
+
+    public function getSubtotalHt(): int
+    {
+        return $this->subtotalHt;
+    }
+
+    public function setSubtotalHt(int $v): self
+    {
+        $this->subtotalHt = $v;
+
+        return $this;
+    }
+
+    public function getShippingHt(): int
+    {
+        return $this->shippingHt;
+    }
+
+    public function setShippingHt(int $v): self
+    {
+        $this->shippingHt = $v;
+
+        return $this;
+    }
+
+    public function getDiscountAmount(): int
+    {
+        return $this->discountAmount;
+    }
+
+    public function setDiscountAmount(int $v): self
+    {
+        $this->discountAmount = $v;
+
+        return $this;
+    }
+
+    public function getTotalHt(): int
+    {
+        return $this->totalHt;
+    }
+
+    public function setTotalHt(int $v): self
+    {
+        $this->totalHt = $v;
+
+        return $this;
+    }
 
     /** @return array<array{rate: float, baseHt: int, taxAmount: int}> */
-    public function getTaxBreakdown(): array { return $this->taxBreakdown; }
+    public function getTaxBreakdown(): array
+    {
+        return $this->taxBreakdown;
+    }
+
     /** @param array<array{rate: float, baseHt: int, taxAmount: int}> $v */
-    public function setTaxBreakdown(array $v): self { $this->taxBreakdown = $v; return $this; }
+    public function setTaxBreakdown(array $v): self
+    {
+        $this->taxBreakdown = $v;
 
-    public function getTaxAmount(): int { return $this->taxAmount; }
-    public function setTaxAmount(int $v): self { $this->taxAmount = $v; return $this; }
+        return $this;
+    }
 
-    public function getTotalTtc(): int { return $this->totalTtc; }
-    public function setTotalTtc(int $v): self { $this->totalTtc = $v; return $this; }
+    public function getTaxAmount(): int
+    {
+        return $this->taxAmount;
+    }
+
+    public function setTaxAmount(int $v): self
+    {
+        $this->taxAmount = $v;
+
+        return $this;
+    }
+
+    public function getTotalTtc(): int
+    {
+        return $this->totalTtc;
+    }
+
+    public function setTotalTtc(int $v): self
+    {
+        $this->totalTtc = $v;
+
+        return $this;
+    }
 
     /** @return array<string, string> */
-    public function getBillingAddress(): array { return $this->billingAddress; }
-    /** @param array<string, string> $addr */
-    public function setBillingAddress(array $addr): self { $this->billingAddress = $addr; return $this; }
+    public function getBillingAddress(): array
+    {
+        return $this->billingAddress;
+    }
 
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
+    /** @param array<string, string> $addr */
+    public function setBillingAddress(array $addr): self
+    {
+        $this->billingAddress = $addr;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
 }

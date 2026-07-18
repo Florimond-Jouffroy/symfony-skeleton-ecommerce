@@ -23,8 +23,7 @@ class ShopGuardSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly AppSettingRepository $settingRepo,
         private readonly Environment $twig,
-    ) {
-    }
+    ) {}
 
     public static function getSubscribedEvents(): array
     {
@@ -40,7 +39,7 @@ class ShopGuardSubscriber implements EventSubscriberInterface
         $path = $event->getRequest()->getPathInfo();
 
         // Seules les routes boutique (front) et API boutique sont concernées
-        if ($path !== '/boutique' && !str_starts_with($path, '/boutique/') && !str_starts_with($path, '/api/boutique/')) {
+        if ('/boutique' !== $path && !str_starts_with($path, '/boutique/') && !str_starts_with($path, '/api/boutique/')) {
             return;
         }
 
@@ -65,7 +64,7 @@ class ShopGuardSubscriber implements EventSubscriberInterface
     {
         // Mis en cache pour la durée de la requête (static inutile en PHP-FPM)
         if (null === $this->shopEnabled) {
-            $this->shopEnabled = $this->settingRepo->getValue('shop.enabled', 'true') === 'true';
+            $this->shopEnabled = 'true' === $this->settingRepo->getValue('shop.enabled', 'true');
         }
 
         return $this->shopEnabled;

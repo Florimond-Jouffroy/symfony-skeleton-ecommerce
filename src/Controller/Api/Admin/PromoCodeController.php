@@ -18,10 +18,9 @@ use Symfony\Component\Routing\Attribute\Route;
 class PromoCodeController extends AbstractController
 {
     public function __construct(
-        private readonly PromoCodeRepository  $repo,
+        private readonly PromoCodeRepository $repo,
         private readonly EntityManagerInterface $em,
-    ) {
-    }
+    ) {}
 
     #[Route('', name: 'api_admin_promo_list', methods: ['GET'])]
     public function list(): JsonResponse
@@ -123,7 +122,7 @@ class PromoCodeController extends AbstractController
         }
 
         if (array_key_exists('maxUses', $p)) {
-            $code->setMaxUses($p['maxUses'] !== null ? max(1, (int) $p['maxUses']) : null);
+            $code->setMaxUses(null !== $p['maxUses'] ? max(1, (int) $p['maxUses']) : null);
         }
 
         if (array_key_exists('isActive', $p)) {
@@ -136,16 +135,16 @@ class PromoCodeController extends AbstractController
     private function serialize(PromoCode $code): array
     {
         return [
-            'id'         => $code->getId(),
-            'code'       => $code->getCode(),
-            'type'       => $code->getType(),
-            'value'      => $code->getValue(),
-            'expiresAt'  => $code->getExpiresAt()?->format('Y-m-d'),
-            'maxUses'    => $code->getMaxUses(),
-            'usedCount'  => $code->getUsedCount(),
-            'isActive'   => $code->isActive(),
-            'isUsable'   => $code->isUsable(),
-            'createdAt'  => $code->getCreatedAt()->format('c'),
+            'id'        => $code->getId(),
+            'code'      => $code->getCode(),
+            'type'      => $code->getType(),
+            'value'     => $code->getValue(),
+            'expiresAt' => $code->getExpiresAt()?->format('Y-m-d'),
+            'maxUses'   => $code->getMaxUses(),
+            'usedCount' => $code->getUsedCount(),
+            'isActive'  => $code->isActive(),
+            'isUsable'  => $code->isUsable(),
+            'createdAt' => $code->getCreatedAt()->format('c'),
         ];
     }
 }

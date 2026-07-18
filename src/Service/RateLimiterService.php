@@ -10,8 +10,7 @@ class RateLimiterService
 {
     public function __construct(
         private readonly CacheItemPoolInterface $cache,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns true if the IP is still allowed to attempt (below the limit).
@@ -76,6 +75,6 @@ class RateLimiterService
 
     private function key(string $type, string $ip): string
     {
-        return 'rate_limit_' . $type . '_' . md5($ip);
+        return 'rate_limit_'.$type.'_'.md5($ip);
     }
 }

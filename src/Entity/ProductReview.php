@@ -49,25 +49,85 @@ class ProductReview
         $this->createdAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getProduct(): Product { return $this->product; }
-    public function setProduct(Product $product): static { $this->product = $product; return $this; }
+    public function getProduct(): Product
+    {
+        return $this->product;
+    }
 
-    public function getUser(): ?User { return $this->user; }
-    public function setUser(?User $user): static { $this->user = $user; return $this; }
+    public function setProduct(Product $product): static
+    {
+        $this->product = $product;
 
-    public function getAuthorName(): string { return $this->authorName; }
-    public function setAuthorName(string $authorName): static { $this->authorName = $authorName; return $this; }
+        return $this;
+    }
 
-    public function getRating(): int { return $this->rating; }
-    public function setRating(int $rating): static { $this->rating = max(1, min(5, $rating)); return $this; }
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
 
-    public function getComment(): ?string { return $this->comment; }
-    public function setComment(?string $comment): static { $this->comment = $comment; return $this; }
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
-    public function isApproved(): bool { return $this->isApproved; }
-    public function setIsApproved(bool $isApproved): static { $this->isApproved = $isApproved; return $this; }
+        return $this;
+    }
 
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function getAuthorName(): string
+    {
+        return $this->authorName;
+    }
+
+    public function setAuthorName(string $authorName): static
+    {
+        $this->authorName = $authorName;
+
+        return $this;
+    }
+
+    public function getRating(): int
+    {
+        return $this->rating;
+    }
+
+    public function setRating(int $rating): static
+    {
+        $this->rating = max(1, min(5, $rating));
+
+        return $this;
+    }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function setComment(?string $comment): static
+    {
+        $this->comment = $comment;
+
+        return $this;
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->isApproved;
+    }
+
+    public function setIsApproved(bool $isApproved): static
+    {
+        $this->isApproved = $isApproved;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }

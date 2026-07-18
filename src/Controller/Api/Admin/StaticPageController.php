@@ -59,6 +59,7 @@ class StaticPageController extends AbstractController
         if (!$page) {
             return $this->json(['message' => 'Page introuvable.'], Response::HTTP_NOT_FOUND);
         }
+
         return $this->json($this->serializeFull($page));
     }
 

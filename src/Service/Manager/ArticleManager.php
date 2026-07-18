@@ -16,11 +16,10 @@ class ArticleManager
         private readonly EntityManagerInterface $em,
         private readonly ApplicationLogManager $logManager,
         private readonly ArticleRepository $articleRepository,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<mixed>     $content
+     * @param array<mixed>           $content
      * @param \App\Entity\Category[] $categories
      */
     public function create(string $title, array $content, User $author, ?string $excerpt = null, ?string $coverImage = null, array $categories = []): ?Article
@@ -38,7 +37,7 @@ class ArticleManager
     }
 
     /**
-     * @param array<mixed>     $content
+     * @param array<mixed>           $content
      * @param \App\Entity\Category[] $categories
      */
     public function update(Article $article, string $title, array $content, ?string $excerpt, ?string $coverImage = null, array $categories = []): bool
@@ -126,8 +125,8 @@ class ArticleManager
 
     private function generateUniqueSlug(string $title, ?int $excludeId = null): string
     {
-        $base = $this->slugify($title);
-        $slug = $base;
+        $base    = $this->slugify($title);
+        $slug    = $base;
         $counter = 2;
 
         while (true) {

@@ -13,7 +13,7 @@ class EmailVerificationTest extends AbstractApiTestCase
 
     public function testVerifyEmailWithValidToken(): void
     {
-        $user = $this->createUser('nonverifie@example.com', 'password123', verified: false);
+        $user  = $this->createUser('nonverifie@example.com', 'password123', verified: false);
         $token = $user->getVerificationToken();
 
         $this->client->request('GET', '/verification-email', ['token' => $token]);
