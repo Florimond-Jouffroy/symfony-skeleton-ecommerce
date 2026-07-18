@@ -43,10 +43,13 @@ jobs:
           tools: composer:v2
 
       # Les bundles florimond/* sont des dépôts GitHub privés : un token avec accès
-      # en lecture à ces repos est requis. Créer un secret de dépôt `CI_GITHUB_TOKEN`
-      # (PAT classic scope `repo`, ou fine-grained avec accès aux 3 repos florimond).
+      # en lecture à ces repos est requis. Réutilise la VALEUR du token de
+      # .env.docker.local (GITHUB_COMPOSER_TOKEN), mais le secret DOIT porter un
+      # autre nom : GitHub interdit les secrets préfixés par GITHUB_.
+      # Crée donc un secret de dépôt `COMPOSER_GITHUB_TOKEN` avec cette valeur
+      # (Settings → Secrets and variables → Actions).
       - name: Configure Composer auth for private bundles
-        run: composer config --global github-oauth.github.com "${{ secrets.CI_GITHUB_TOKEN }}"
+        run: composer config --global github-oauth.github.com "${{ secrets.COMPOSER_GITHUB_TOKEN }}"
 
       - name: Get Composer cache directory
         id: composer-cache
