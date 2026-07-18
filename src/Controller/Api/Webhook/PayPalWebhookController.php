@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api\Webhook;
 
 use App\Payment\Provider\PayPalPaymentProvider;
-use App\Repository\OrderRepository;
-use App\Service\Manager\OrderManager;
-use App\Service\OrderMailer;
+use App\Service\WebhookHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,9 +16,7 @@ class PayPalWebhookController extends AbstractController
 {
     public function __construct(
         private readonly PayPalPaymentProvider $paypal,
-        private readonly OrderRepository $orderRepository,
-        private readonly OrderManager $orderManager,
-        private readonly OrderMailer $orderMailer,
+        private readonly WebhookHandler $handler,
     ) {}
 
     public function __invoke(Request $request): Response
@@ -40,23 +36,6 @@ class PayPalWebhookController extends AbstractController
             return new Response('Invalid signature', Response::HTTP_BAD_REQUEST);
         }
 
-        $orderNumber = $this->paypal->extractOrderNumber($event);
-        if (null === $orderNumber) {
-            return new Response('ok');
-        }
-
-        $order = $this->orderRepository->findOneBy(['orderNumber' => $orderNumber]);
-        if (null === $order) {
-            return new Response('Order not found', Response::HTTP_NOT_FOUND);
-        }
-
-        if ($this->paypal->isPaymentSucceeded($event)) {
-            $this->orderManager->transition($order, 'confirmed', 'Paiement PayPal confirmé.');
-            $this->orderMailer->sendOrderConfirmation($order);
-        } elseif ($this->paypal->isPaymentFailed($event)) {
-            $this->orderManager->transition($order, 'cancelled', 'Paiement PayPal échoué.');
-        }
-
-        return new Response('ok');
+        return $this->handler->handle($this->paypal, $event);
     }
 }
