@@ -11,6 +11,7 @@
  * [🐘 2. Architecture Backend & DDD](./doc/2-backend-architecture.md)
  * [🎨 3. Workflow Frontend (React/Tailwind v4/Shadcn)](./doc/3-frontend-workflow.md)
  * [🧪 4. Qualité de Code & Tests (PHPUnit 10)](./doc/4-qa-and-tests.md)
+ * [🗄️ 5. Double base de données & migrations](./doc/5-multi-database-and-migrations.md)
  
  ---
  
