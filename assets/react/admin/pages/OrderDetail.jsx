@@ -298,14 +298,16 @@ export default function OrderDetail({ permissions = {} }) {
                             <p className="text-muted-foreground">{order.customer.email}</p>
                             {order.customer.phone && <p className="text-muted-foreground">{order.customer.phone}</p>}
                         </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full"
-                            onClick={() => navigate(`/customers/${order.customer.id}`)}
-                        >
-                            Voir la fiche client
-                        </Button>
+                        {order.customer.userId && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                                onClick={() => navigate(`/utilisateurs/${order.customer.userId}`)}
+                            >
+                                Voir la fiche client
+                            </Button>
+                        )}
                     </div>
 
                     {/* Adresses */}

@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     BadgeCheck,
+    IdCard,
     KeyRound,
     MailPlus,
     MoreHorizontal,
@@ -84,6 +86,7 @@ const CONFIRM_ACTIONS = {
 };
 
 export default function UsersList({ permissions = {}, urls = {} }) {
+    const navigate                    = useNavigate();
     const [users, setUsers]           = useState([]);
     const [total, setTotal]           = useState(0);
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: PAGE_SIZE });
@@ -179,12 +182,16 @@ export default function UsersList({ permissions = {}, urls = {} }) {
             accessorKey: 'email',
             header: 'Email',
             cell: ({ row }) => (
-                <span className="font-medium">
+                <button
+                    type="button"
+                    onClick={() => navigate(`/utilisateurs/${row.original.id}`)}
+                    className="font-medium hover:underline"
+                >
                     {row.original.email}
                     {row.original.email === currentUserEmail && (
                         <span className="ml-2 text-xs font-normal text-muted-foreground">(vous)</span>
                     )}
-                </span>
+                </button>
             ),
         },
         {
@@ -231,6 +238,12 @@ export default function UsersList({ permissions = {}, urls = {} }) {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-64">
+                            <DropdownMenuItem onClick={() => navigate(`/utilisateurs/${user.id}`)}>
+                                <IdCard className="size-4" />
+                                Voir la fiche
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+
                             {permissions.canResetUserPassword && (
                                 <DropdownMenuItem onClick={() => setConfirm({ action: 'resetPassword', user })}>
                                     <KeyRound className="size-4" />
@@ -297,7 +310,7 @@ export default function UsersList({ permissions = {}, urls = {} }) {
                 );
             },
         },
-    ], [runDirect]);
+    ], [runDirect, navigate]);
 
     const confirmConfig = confirm ? CONFIRM_ACTIONS[confirm.action] : null;
 

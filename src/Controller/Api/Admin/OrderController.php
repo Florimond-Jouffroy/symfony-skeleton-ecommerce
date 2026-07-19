@@ -6,6 +6,7 @@ namespace App\Controller\Api\Admin;
 
 use App\Entity\Order;
 use App\Repository\OrderRepository;
+use App\Repository\UserRepository;
 use App\Security\Voter\OrderVoter;
 use App\Service\ActivityLogger;
 use App\Service\Manager\OrderManager;
@@ -32,6 +33,7 @@ class OrderController extends AbstractController
     public function __construct(
         private readonly OrderManager $manager,
         private readonly ActivityLogger $activityLogger,
+        private readonly UserRepository $userRepository,
     ) {}
 
     #[Route('', name: 'api_admin_orders_list', methods: ['GET'])]
@@ -203,6 +205,8 @@ class OrderController extends AbstractController
                 'fullName' => $customer->getFullName(),
                 'email'    => $customer->getEmail(),
                 'phone'    => $customer->getPhone(),
+                // Fiche utilisateur liée ; null si la commande a été passée sans compte.
+                'userId' => $this->userRepository->findOneBy(['email' => $customer->getEmail()])?->getId(),
             ],
             'items'         => array_values($items),
             'statusHistory' => array_values($history),

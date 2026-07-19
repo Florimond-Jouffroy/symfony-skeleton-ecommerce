@@ -21,6 +21,7 @@ import ProductsList from './pages/ProductsList';
 import MediaLibrary from './pages/MediaLibrary';
 import Settings from './pages/Settings';
 import TwoFactorSecurity from './pages/TwoFactorSecurity';
+import UserDetail from './pages/UserDetail';
 import UsersList from './pages/UsersList';
 import ShippingMethods from './pages/ShippingMethods';
 
@@ -39,6 +40,7 @@ export default function AdminApp() {
                     <Route index element={<Navigate to="/dashboard" replace />} />
                     <Route path="dashboard" element={<Dashboard permissions={permissions} urls={urls} />} />
                     <Route path="utilisateurs" element={<UsersList permissions={permissions} urls={urls} />} />
+                    <Route path="utilisateurs/:id" element={<UserDetail />} />
                     <Route path="articles" element={<ArticlesList permissions={permissions} urls={urls} />} />
                     <Route path="articles/nouveau" element={<ArticleEditor permissions={permissions} urls={urls} />} />
                     <Route path="articles/:id/modifier" element={<ArticleEditor permissions={permissions} urls={urls} />} />
