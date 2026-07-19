@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { MessageSquare, Package } from 'lucide-react';
 import { api, ApiError, getErrorMessage } from '../../utils/api';
 
 const STATUS_LABELS = {
@@ -29,16 +30,16 @@ function formatDate(iso) {
 export default function CommandeDetail({ urls, returnsEnabled = false }) {
     const { number } = useParams();
     const navigate   = useNavigate();
-    const [order, setOrder]     = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [order, setOrder]       = useState(null);
+    const [loading, setLoading]   = useState(true);
     const [notFound, setNotFound] = useState(false);
 
-    const [returns, setReturns]             = useState([]);
-    const [showReturnForm, setShowReturnForm] = useState(false);
-    const [returnQty, setReturnQty]         = useState({});
-    const [returnReason, setReturnReason]   = useState('');
-    const [submitting, setSubmitting]       = useState(false);
-    const [returnFeedback, setReturnFeedback] = useState(null);
+    const [returns, setReturns]           = useState([]);
+    const [returnMode, setReturnMode]     = useState(false);
+    const [returnQty, setReturnQty]       = useState({});
+    const [returnReason, setReturnReason] = useState('');
+    const [submitting, setSubmitting]     = useState(false);
+    const [feedback, setFeedback]         = useState(null);
 
     useEffect(() => {
         setLoading(true);
@@ -60,20 +61,22 @@ export default function CommandeDetail({ urls, returnsEnabled = false }) {
             .map((it) => ({ orderItemId: it.id, quantity: parseInt(returnQty[it.id] || 0, 10) }))
             .filter((line) => line.quantity > 0);
 
-        if (items.length === 0) { setReturnFeedback({ type: 'error', message: 'Sélectionnez au moins un article.' }); return; }
-        if (!returnReason.trim()) { setReturnFeedback({ type: 'error', message: 'Indiquez un motif.' }); return; }
+        if (items.length === 0) { setFeedback({ type: 'error', message: 'Sélectionnez au moins un article à retourner.' }); return; }
+        if (!returnReason.trim()) { setFeedback({ type: 'error', message: 'Indiquez le motif du retour.' }); return; }
 
         setSubmitting(true);
-        setReturnFeedback(null);
+        setFeedback(null);
         try {
-            const created = await api.post(urls.returns, { orderNumber: order.orderNumber, reason: returnReason.trim(), items });
-            setReturns((rs) => [created, ...rs]);
-            setShowReturnForm(false);
+            await api.post(urls.returns, { orderNumber: order.orderNumber, reason: returnReason.trim(), items });
+            setReturnMode(false);
             setReturnQty({});
             setReturnReason('');
-            setReturnFeedback({ type: 'success', message: 'Demande de retour envoyée.' });
+            setFeedback({ type: 'success', message: 'Demande de retour envoyée.' });
+            // Recharge la commande (quantités retournables) et la liste des retours.
+            api.get(`${urls.orders}/${number}`).then(setOrder).catch(() => {});
+            api.get(urls.returns).then((data) => setReturns((data?.items ?? []).filter((r) => r.orderNumber === number))).catch(() => {});
         } catch (err) {
-            setReturnFeedback({ type: 'error', message: getErrorMessage(err, 'Erreur lors de la demande de retour.') });
+            setFeedback({ type: 'error', message: getErrorMessage(err, 'Erreur lors de la demande de retour.') });
         } finally {
             setSubmitting(false);
         }
@@ -94,6 +97,9 @@ export default function CommandeDetail({ urls, returnsEnabled = false }) {
 
     const status  = STATUS_LABELS[order.status] ?? { label: order.status, class: 'bg-muted text-muted-foreground' };
     const address = order.shippingAddress ?? {};
+    const canRequestReturn = returnsEnabled
+        && order.status === 'delivered'
+        && (order.items ?? []).some((i) => (i.returnableQuantity ?? 0) > 0);
 
     return (
         <div className="space-y-6">
@@ -119,28 +125,131 @@ export default function CommandeDetail({ urls, returnsEnabled = false }) {
 
             {/* Items */}
             <div className="rounded-xl border border-border bg-card overflow-hidden">
-                <div className="px-5 py-3 border-b border-border bg-muted/30">
+                <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-muted/30">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Articles</p>
+                    {canRequestReturn && !returnMode && (
+                        <button
+                            type="button"
+                            onClick={() => { setReturnMode(true); setFeedback(null); }}
+                            className="text-sm font-medium text-primary hover:underline"
+                        >
+                            Demander un retour
+                        </button>
+                    )}
+                    {returnMode && (
+                        <span className="text-xs text-muted-foreground">Sélectionnez les articles à retourner</span>
+                    )}
                 </div>
                 <ul className="divide-y divide-border">
                     {order.items.map((item) => (
-                        <li key={item.id} className="flex items-center justify-between gap-4 px-5 py-4">
-                            <div className="min-w-0">
-                                <p className="text-sm font-medium text-foreground">{item.productName}</p>
-                                {item.variantName && (
-                                    <p className="text-xs text-muted-foreground">{item.variantName}</p>
+                        <li key={item.id} className="flex items-center gap-4 px-5 py-4">
+                            <div className="size-14 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
+                                {item.imageUrl ? (
+                                    <img src={item.imageUrl} alt="" className="size-full object-cover" />
+                                ) : (
+                                    <div className="flex size-full items-center justify-center text-muted-foreground">
+                                        <Package className="size-5" />
+                                    </div>
                                 )}
                             </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-foreground">{item.productName}</p>
+                                {item.variantName && <p className="text-xs text-muted-foreground">{item.variantName}</p>}
+                                <p className="text-xs text-muted-foreground">{item.quantity} × {formatPrice(item.unitPrice)}</p>
+                            </div>
                             <div className="shrink-0 text-right">
-                                <p className="text-sm font-medium">{formatPrice(item.total)}</p>
-                                <p className="text-xs text-muted-foreground">
-                                    {item.quantity} × {formatPrice(item.unitPrice)}
-                                </p>
+                                {returnMode ? (
+                                    (item.returnableQuantity ?? 0) > 0 ? (
+                                        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                                            Retour
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max={item.returnableQuantity}
+                                                value={returnQty[item.id] ?? 0}
+                                                onChange={(e) => {
+                                                    const v = Math.max(0, Math.min(item.returnableQuantity, parseInt(e.target.value || 0, 10)));
+                                                    setReturnQty((q) => ({ ...q, [item.id]: v }));
+                                                }}
+                                                className="w-16 rounded border border-border px-2 py-1 text-sm text-foreground"
+                                            />
+                                        </label>
+                                    ) : (
+                                        <span className="text-xs text-muted-foreground">Déjà retourné</span>
+                                    )
+                                ) : (
+                                    <p className="text-sm font-medium">{formatPrice(item.total)}</p>
+                                )}
                             </div>
                         </li>
                     ))}
                 </ul>
+                {returnMode && (
+                    <div className="space-y-3 border-t border-border px-5 py-4">
+                        <textarea
+                            value={returnReason}
+                            onChange={(e) => setReturnReason(e.target.value)}
+                            rows={3}
+                            placeholder="Motif du retour (obligatoire) — il ouvre un échange avec notre service client"
+                            className="w-full rounded border border-border px-3 py-2 text-sm"
+                        />
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                disabled={submitting}
+                                onClick={submitReturn}
+                                className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-50"
+                            >
+                                {submitting ? 'Envoi…' : 'Envoyer la demande'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { setReturnMode(false); setReturnQty({}); }}
+                                className="rounded border border-border px-3 py-1.5 text-sm"
+                            >
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
+
+            {feedback && (
+                <p className={`text-sm ${feedback.type === 'success' ? 'text-green-600' : 'text-destructive'}`}>
+                    {feedback.message}
+                </p>
+            )}
+
+            {/* Existing returns */}
+            {returns.length > 0 && (
+                <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vos demandes de retour</p>
+                    <ul className="space-y-2">
+                        {returns.map((r) => {
+                            const s = RETURN_STATUS[r.status] ?? { label: r.status, class: 'bg-muted text-muted-foreground' };
+                            return (
+                                <li key={r.id} className="flex items-center justify-between gap-3 text-sm">
+                                    <span className="min-w-0 truncate text-muted-foreground">
+                                        {r.items.map((i) => `${i.quantity}× ${i.productName}`).join(', ')}
+                                    </span>
+                                    <span className="flex shrink-0 items-center gap-2">
+                                        {r.supportTicketId && (
+                                            <button
+                                                type="button"
+                                                onClick={() => navigate(`/support/${r.supportTicketId}`)}
+                                                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground hover:underline"
+                                            >
+                                                <MessageSquare className="size-3.5" /> Suivre l'échange
+                                            </button>
+                                        )}
+                                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.class}`}>{s.label}</span>
+                                    </span>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            )}
 
             <div className="grid gap-6 sm:grid-cols-2">
                 {/* Address */}
@@ -182,94 +291,6 @@ export default function CommandeDetail({ urls, returnsEnabled = false }) {
                     </dl>
                 </div>
             </div>
-
-            {/* Returns */}
-            {returnsEnabled && (order.status === 'delivered' || returns.length > 0) && (
-                <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-                    <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Retours</p>
-                        {order.status === 'delivered' && !showReturnForm && (
-                            <button
-                                type="button"
-                                onClick={() => { setShowReturnForm(true); setReturnFeedback(null); }}
-                                className="text-sm text-primary underline"
-                            >
-                                Demander un retour
-                            </button>
-                        )}
-                    </div>
-
-                    {returnFeedback && (
-                        <p className={`text-sm ${returnFeedback.type === 'success' ? 'text-green-600' : 'text-destructive'}`}>
-                            {returnFeedback.message}
-                        </p>
-                    )}
-
-                    {returns.length > 0 && (
-                        <ul className="space-y-2">
-                            {returns.map((r) => {
-                                const s = RETURN_STATUS[r.status] ?? { label: r.status, class: 'bg-muted text-muted-foreground' };
-                                return (
-                                    <li key={r.id} className="flex items-center justify-between gap-3 text-sm">
-                                        <span className="min-w-0 truncate text-muted-foreground">
-                                            {r.items.map((i) => `${i.quantity}× ${i.productName}`).join(', ')}
-                                        </span>
-                                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${s.class}`}>{s.label}</span>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    )}
-
-                    {showReturnForm && (
-                        <div className="space-y-3 border-t border-border pt-4">
-                            {order.items.map((item) => (
-                                <div key={item.id} className="flex items-center justify-between gap-3">
-                                    <span className="min-w-0 text-sm">
-                                        {item.productName}{item.variantName ? ` — ${item.variantName}` : ''}
-                                        <span className="text-muted-foreground"> (commandé : {item.quantity})</span>
-                                    </span>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        max={item.quantity}
-                                        value={returnQty[item.id] ?? 0}
-                                        onChange={(e) => {
-                                            const v = Math.max(0, Math.min(item.quantity, parseInt(e.target.value || 0, 10)));
-                                            setReturnQty((q) => ({ ...q, [item.id]: v }));
-                                        }}
-                                        className="w-16 rounded border border-border px-2 py-1 text-sm"
-                                    />
-                                </div>
-                            ))}
-                            <textarea
-                                value={returnReason}
-                                onChange={(e) => setReturnReason(e.target.value)}
-                                rows={3}
-                                placeholder="Motif du retour"
-                                className="w-full rounded border border-border px-3 py-2 text-sm"
-                            />
-                            <div className="flex gap-2">
-                                <button
-                                    type="button"
-                                    disabled={submitting}
-                                    onClick={submitReturn}
-                                    className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-50"
-                                >
-                                    {submitting ? 'Envoi…' : 'Envoyer la demande'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowReturnForm(false)}
-                                    className="rounded border border-border px-3 py-1.5 text-sm"
-                                >
-                                    Annuler
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
 
             {/* Customer note */}
             {order.customerNote && (

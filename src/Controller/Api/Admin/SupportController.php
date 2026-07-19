@@ -11,10 +11,9 @@ use App\Repository\OrderRepository;
 use App\Repository\SupportTicketRepository;
 use App\Security\Voter\SupportVoter;
 use App\Service\ActivityLogger;
-use App\Service\SupportMailer;
+use App\Service\Manager\SupportTicketManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,6 +22,10 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/admin/support')]
 class SupportController extends AbstractController
 {
+    public function __construct(
+        private readonly SupportTicketManager $ticketManager,
+    ) {}
+
     private function serializeList(SupportTicket $t): array
     {
         $messages = $t->getMessages();
@@ -129,11 +132,8 @@ class SupportController extends AbstractController
         int $id,
         Request $request,
         SupportTicketRepository $repo,
-        EntityManagerInterface $em,
-        SupportMailer $mailer,
         CustomerRepository $customerRepo,
         OrderRepository $orderRepo,
-        #[Autowire(param: 'app.company')] array $company = [],
     ): JsonResponse {
         $this->denyAccessUnlessGranted(SupportVoter::REPLY);
 
@@ -147,22 +147,7 @@ class SupportController extends AbstractController
             return $this->json(['message' => 'Le message ne peut pas être vide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $message = new SupportMessage();
-        $message->setBody($body);
-        $message->setIsFromAdmin(true);
-        $message->setAuthorName($company['name'] ?? 'Admin');
-
-        $ticket->addMessage($message);
-        $ticket->setStatus(SupportTicket::STATUS_IN_PROGRESS);
-        $ticket->touch();
-
-        $em->flush();
-
-        try {
-            $mailer->sendReplyNotification($ticket, $message);
-        } catch (\Throwable) {
-            // Ne pas bloquer si l'envoi échoue
-        }
+        $this->ticketManager->addAdminMessage($ticket, $body);
 
         return $this->json($this->serializeDetail($ticket, $this->fetchRecentOrders($ticket, $customerRepo, $orderRepo), $this->fetchOtherTickets($ticket, $repo)));
     }

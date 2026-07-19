@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Entity\Order;
+use App\Entity\ReturnRequest;
 use App\Entity\User;
+use App\Repository\CustomerRepository;
+use App\Repository\OrderRepository;
+use App\Repository\ReturnRequestRepository;
 use App\Repository\UserRepository;
 use App\Security\Voter\UserVoter;
 use App\Service\AuthMailer;
@@ -44,6 +49,65 @@ class UserController extends AbstractController
             'total'    => $result['total'],
             'page'     => $page,
             'pageSize' => $pageSize,
+        ]);
+    }
+
+    /**
+     * Fiche d'un utilisateur, enrichie de son profil client s'il en a un.
+     *
+     * Customer et User sont deux entités distinctes reliées par l'email : tout
+     * utilisateur est un client potentiel, les sections boutique restent donc
+     * vides tant qu'aucune commande n'a été passée avec cette adresse.
+     */
+    #[Route('/{id}', name: 'api_admin_users_get', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function get(
+        User $user,
+        CustomerRepository $customerRepository,
+        OrderRepository $orderRepository,
+        ReturnRequestRepository $returnRepository,
+    ): JsonResponse {
+        $this->denyAccessUnlessGranted(UserVoter::VIEW);
+
+        $customer = $customerRepository->findByEmail((string) $user->getEmail());
+
+        if (null === $customer) {
+            return $this->json([
+                'user'     => $this->serializeUser($user),
+                'customer' => null,
+                'stats'    => ['orderCount' => 0, 'totalSpent' => 0, 'returnCount' => 0],
+                'orders'   => [],
+                'returns'  => [],
+            ]);
+        }
+
+        $orders  = $orderRepository->findBy(['customer' => $customer->getId()], ['createdAt' => 'DESC']);
+        $returns = $returnRepository->findByCustomer((int) $customer->getId());
+
+        // Le chiffre d'affaires réel exclut ce qui n'a jamais été encaissé.
+        $totalSpent = 0;
+        foreach ($orders as $order) {
+            if (!in_array($order->getStatus(), [Order::STATUS_CANCELLED, Order::STATUS_REFUNDED], true)) {
+                $totalSpent += $order->getTotal();
+            }
+        }
+
+        return $this->json([
+            'user'     => $this->serializeUser($user),
+            'customer' => [
+                'id'        => $customer->getId(),
+                'firstName' => $customer->getFirstName(),
+                'lastName'  => $customer->getLastName(),
+                'fullName'  => trim($customer->getFirstName().' '.$customer->getLastName()),
+                'phone'     => $customer->getPhone(),
+                'createdAt' => $customer->getCreatedAt()->format(\DateTimeInterface::ATOM),
+            ],
+            'stats' => [
+                'orderCount'  => count($orders),
+                'totalSpent'  => $totalSpent,
+                'returnCount' => count($returns),
+            ],
+            'orders'  => array_map($this->serializeOrder(...), $orders),
+            'returns' => array_map($this->serializeReturn(...), $returns),
         ]);
     }
 
@@ -165,6 +229,32 @@ class UserController extends AbstractController
     private function isCurrentUser(User $user): bool
     {
         return $this->getUser()?->getUserIdentifier() === $user->getUserIdentifier();
+    }
+
+    /** @return array<string, mixed> */
+    private function serializeOrder(Order $order): array
+    {
+        return [
+            'id'          => $order->getId(),
+            'orderNumber' => $order->getOrderNumber(),
+            'status'      => $order->getStatus(),
+            'total'       => $order->getTotal(),
+            'itemCount'   => $order->getItems()->count(),
+            'createdAt'   => $order->getCreatedAt()->format(\DateTimeInterface::ATOM),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function serializeReturn(ReturnRequest $return): array
+    {
+        return [
+            'id'          => $return->getId(),
+            'orderId'     => $return->getOrder()->getId(),
+            'orderNumber' => $return->getOrder()->getOrderNumber(),
+            'status'      => $return->getStatus(),
+            'itemCount'   => $return->getItems()->count(),
+            'createdAt'   => $return->getCreatedAt()->format(\DateTimeInterface::ATOM),
+        ];
     }
 
     /**

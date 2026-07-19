@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api\Admin;
 
 use App\Entity\Order;
+use App\Entity\OrderItem;
 use App\Entity\Product;
+use App\Entity\ReturnItem;
+use App\Entity\ReturnRequest;
 use App\Entity\SupportTicket;
 use App\Tests\Functional\AbstractApiTestCase;
 use Symfony\Component\HttpFoundation\Response;
@@ -68,6 +71,39 @@ class NotificationsTest extends AbstractApiTestCase
         self::assertResponseIsSuccessful();
         $data = $this->getJson();
         self::assertSame(2, $data['openTickets']);
+    }
+
+    public function testCountsPendingReturns(): void
+    {
+        $this->loginAs($this->createAdmin());
+        $customer = $this->createCustomer();
+        $order    = $this->createOrder($customer, 'ORD-RET-1', Order::STATUS_DELIVERED);
+
+        $orderItem = new OrderItem();
+        $orderItem->setOrder($order)->setProduct($this->createProduct())
+            ->setProductName('P')->setUnitPrice(1000)->setQuantity(1);
+        $orderItem->recalculateTotal();
+        $this->em->persist($orderItem);
+
+        // Un retour "demandé" compte ; un retour "refusé" ne compte pas.
+        $requested = new ReturnRequest();
+        $requested->setOrder($order)->setCustomer($customer)->setReason('x');
+        $ri = new ReturnItem();
+        $ri->setOrderItem($orderItem)->setQuantity(1);
+        $requested->addItem($ri);
+        $this->em->persist($ri);
+        $this->em->persist($requested);
+
+        $rejected = new ReturnRequest();
+        $rejected->setOrder($order)->setCustomer($customer)->setReason('y')->setStatus(ReturnRequest::STATUS_REJECTED);
+        $this->em->persist($rejected);
+
+        $this->em->flush();
+
+        $this->client->request('GET', '/api/admin/notifications');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(1, $this->getJson()['pendingReturns']);
     }
 
     public function testCountsPendingReviews(): void

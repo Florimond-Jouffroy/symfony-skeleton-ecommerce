@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, Globe, ShoppingCart, MessageCircle, Star } from 'lucide-react';
+import { Bell, Globe, ShoppingCart, MessageCircle, RotateCcw, Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -36,10 +36,10 @@ function getTitle(pathname) {
 
 function NotificationBell({ notificationsUrl, permissions = {} }) {
     const navigate = useNavigate();
-    const [counts, setCounts]       = useState({ pendingOrders: 0, openTickets: 0, pendingReviews: 0 });
+    const [counts, setCounts]       = useState({ pendingOrders: 0, pendingReturns: 0, openTickets: 0, pendingReviews: 0 });
     const [open, setOpen]           = useState(false);
     const ref                       = useRef(null);
-    const total = counts.pendingOrders + counts.openTickets + counts.pendingReviews;
+    const total = counts.pendingOrders + counts.pendingReturns + counts.openTickets + counts.pendingReviews;
 
     const fetchCounts = () => {
         if (!notificationsUrl) return;
@@ -92,6 +92,19 @@ function NotificationBell({ notificationsUrl, permissions = {} }) {
                             <span className="flex-1 text-left">Commandes en attente</span>
                             <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${counts.pendingOrders > 0 ? 'bg-orange-100 text-orange-700' : 'bg-muted text-muted-foreground'}`}>
                                 {counts.pendingOrders}
+                            </span>
+                        </button>
+                    )}
+                    {permissions.canViewReturns !== false && (
+                        <button
+                            type="button"
+                            onClick={() => go('/retours')}
+                            className="flex w-full items-center gap-3 px-4 py-3 text-sm hover:bg-accent transition-colors"
+                        >
+                            <RotateCcw className="size-4 shrink-0 text-muted-foreground" />
+                            <span className="flex-1 text-left">Retours à traiter</span>
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${counts.pendingReturns > 0 ? 'bg-orange-100 text-orange-700' : 'bg-muted text-muted-foreground'}`}>
+                                {counts.pendingReturns}
                             </span>
                         </button>
                     )}

@@ -7,6 +7,7 @@ namespace App\Controller\Api\Admin;
 use App\Entity\Order;
 use App\Repository\OrderRepository;
 use App\Repository\ProductReviewRepository;
+use App\Repository\ReturnRequestRepository;
 use App\Repository\SupportTicketRepository;
 use App\Security\Voter\NotificationVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,6 +21,7 @@ class NotificationsController extends AbstractController
         OrderRepository $orderRepo,
         SupportTicketRepository $ticketRepo,
         ProductReviewRepository $reviewRepo,
+        ReturnRequestRepository $returnRepo,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(NotificationVoter::VIEW);
 
@@ -27,6 +29,7 @@ class NotificationsController extends AbstractController
 
         return $this->json([
             'pendingOrders'  => $byStatus[Order::STATUS_PENDING] ?? 0,
+            'pendingReturns' => $returnRepo->countRequested(),
             'openTickets'    => $ticketRepo->countOpen(),
             'pendingReviews' => $reviewRepo->countPendingApproval(),
         ]);

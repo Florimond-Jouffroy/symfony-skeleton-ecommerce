@@ -82,6 +82,10 @@ class ReturnController extends AbstractController
             $orderItemsById[$orderItem->getId()] = $orderItem;
         }
 
+        // Quantités déjà retournées (retours non-refusés) : on ne peut pas retourner
+        // plus que le restant, même en cumulant plusieurs demandes.
+        $returnedMap = $this->returnRepository->getReturnedQuantitiesForOrder((int) $order->getId());
+
         $lines    = [];
         $rawItems = is_array($payload['items'] ?? null) ? $payload['items'] : [];
         foreach ($rawItems as $raw) {
@@ -92,8 +96,10 @@ class ReturnController extends AbstractController
             if (!$orderItem instanceof OrderItem || $quantity < 1) {
                 continue;
             }
-            if ($quantity > $orderItem->getQuantity()) {
-                return $this->json(['message' => 'Quantité de retour supérieure à la quantité commandée.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+
+            $remaining = $orderItem->getQuantity() - ($returnedMap[$itemId] ?? 0);
+            if ($quantity > $remaining) {
+                return $this->json(['message' => 'Quantité de retour supérieure à la quantité retournable.'], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
             $lines[] = ['orderItem' => $orderItem, 'quantity' => $quantity];
@@ -129,7 +135,9 @@ class ReturnController extends AbstractController
             'status'      => $return->getStatus(),
             'reason'      => $return->getReason(),
             'items'       => array_values($items),
-            'createdAt'   => $return->getCreatedAt()->format(\DateTimeInterface::ATOM),
+            // Fil de discussion, à suivre depuis l'espace « Support » du compte.
+            'supportTicketId' => $return->getSupportTicket()?->getId(),
+            'createdAt'       => $return->getCreatedAt()->format(\DateTimeInterface::ATOM),
         ];
     }
 }
