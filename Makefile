@@ -27,7 +27,7 @@ HELP_COLOR = \033[36m
 NO_COLOR   = \033[0m
 
 .DEFAULT_GOAL := help
-.PHONY: help setup install up down stop restart build ps logs sh shell cmd cs vendor sf cc cc-hard db-main-create db-main-migration db-main-migrate db-main-drop db-main-reset db-log-create db-log-migrate db-log-drop db-log-reset db-setup db-test-setup stan perm composer composer-rm npm npm-rm npm-setup qa test create-admin fixtures fixtures-reset worker worker-failed worker-retry
+.PHONY: help setup install up down stop restart build ps logs sh shell cmd cs vendor sf cc cc-hard db-main-create db-main-migration db-main-migrate db-main-drop db-main-reset db-log-create db-log-migration db-log-migrate db-log-drop db-log-reset db-setup db-test-setup stan perm composer composer-rm npm npm-rm npm-setup qa test create-admin fixtures fixtures-reset worker worker-failed worker-retry
 
 ## —— SYSTEM & CONFIGURATION ⚙️ ————————————————————————————————————————————————
 
@@ -129,11 +129,11 @@ composer-rm: ## Supprime brutalement le dossier vendor (pour reset)
 db-main-create: ## Crée la base de données principale
 	$(CONSOLE) doctrine:database:create --if-not-exists --connection=default
 
-db-main-migration: ## Génère le fichier de migration pour la base principale
-	$(CONSOLE) make:migration
+db-main-migration: ## Génère le fichier de migration pour la base principale (patché en CustomMigration)
+	$(CONSOLE) florimond:migrations:diff main
 
 db-main-migrate: ## Applique les migrations sur la base principale
-	$(CONSOLE) doctrine:migrations:migrate --no-interaction --em=default
+	$(CONSOLE) florimond:migrations:migrate main
 
 db-main-drop: ## Supprime brutalement la base principale (attention !)
 	$(CONSOLE) doctrine:database:drop --if-exists --force --connection=default
@@ -146,8 +146,11 @@ db-main-reset: db-main-drop db-main-create db-main-migrate ## Réinitialise à b
 db-log-create: ## Crée la base de données des logs
 	$(CONSOLE) doctrine:database:create --if-not-exists --connection=log
 
+db-log-migration: ## Génère le fichier de migration pour la base de logs (patché en CustomMigration)
+	$(CONSOLE) florimond:migrations:diff log
+
 db-log-migrate: ## Applique les migrations spécifiques à la base de logs
-	$(CONSOLE) doctrine:migrations:migrate --no-interaction --em=log
+	$(CONSOLE) florimond:migrations:migrate log
 
 db-log-drop: ## Supprime brutalement la base de logs
 	$(CONSOLE) doctrine:database:drop --if-exists --force --connection=log

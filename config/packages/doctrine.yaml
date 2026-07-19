@@ -16,7 +16,9 @@ doctrine:
         entity_managers:
             default:
                 connection: default
-                auto_mapping: true
+                # 🌟 auto_mapping ramasserait aussi les entités du LogBundle (base log) :
+                # les mappings du manager principal sont donc déclarés explicitement.
+                auto_mapping: false
                 validate_xml_mapping: true
                 naming_strategy: doctrine.orm.naming_strategy.underscore
                 # 🌟 Déplacé ici pour le manager principal
@@ -29,6 +31,12 @@ doctrine:
                         dir: '%kernel.project_dir%/src/Entity'
                         prefix: 'App\Entity'
                         alias: App
+                    FlorimondCoreBundle:
+                        type: attribute
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/vendor/florimond/core-bundle/src/Entity'
+                        prefix: 'Florimond\CoreBundle\Entity'
+                        alias: FlorimondCore
 
             log:
                 connection: log
