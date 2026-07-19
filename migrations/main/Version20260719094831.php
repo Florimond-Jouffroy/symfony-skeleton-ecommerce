@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace DoctrineMigrations\Main;
 
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\Migrations\AbstractMigration;
+use Florimond\MultiDbMigrationsBundle\Migrations\CustomMigration;
 
 /**
  * Lie une demande de retour à son fil de discussion support.
  */
-final class Version20260719094831 extends AbstractMigration
+final class Version20260719094831 extends CustomMigration
 {
+    protected ?string $targetDatabase = 'main';
+
     public function getDescription(): string
     {
         return 'Ajoute return_request.support_ticket_id (fil de discussion du retour).';

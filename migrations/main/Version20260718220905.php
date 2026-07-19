@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace DoctrineMigrations\Main;
 
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\Migrations\AbstractMigration;
+use Florimond\MultiDbMigrationsBundle\Migrations\CustomMigration;
 
 /**
  * Crée les tables return_request et return_item (retours / RMA).
  */
-final class Version20260718220905 extends AbstractMigration
+final class Version20260718220905 extends CustomMigration
 {
+    protected ?string $targetDatabase = 'main';
+
     public function getDescription(): string
     {
         return 'Add return_request and return_item tables (RMA)';

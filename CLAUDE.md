@@ -48,6 +48,7 @@ make create-admin email=x password=x
 - **Tous les prix sont en centimes EUR** (`1999` = 19,99 €). Ne jamais manipuler de floats pour l'argent.
 - **Panier = session PHP** (`shop_cart`), pas de persistance DB.
 - **Deux DB** : une migration touchant les logs va dans `migrations/log/`, le reste dans `migrations/main/`.
+- **Toute migration doit étendre `CustomMigration`** (bundle `multi-db-migrations`) et déclarer `protected ?string $targetDatabase = 'main';` (ou `'log'`). Les deux namespaces sont visibles par les deux connexions : sans ce garde-fou, une migration s'exécute aussi sur l'autre base. `make db-main-migration` génère un `AbstractMigration` — **convertir systématiquement le fichier généré** avant de l'appliquer.
 - **Config dynamique** : `AppSetting` (key-value) exposé aux templates via `app_setting('key')` ; `ShopGuardSubscriber` bloque `/boutique/*` si `shop.enabled` ≠ `true`.
 - **ActivityLogger** trace toutes les actions admin — le conserver lors d'ajouts de features admin.
 - Prix, statuts de commande (`pending|confirmed|shipped|delivered|cancelled|refunded`) et de facture sont des machines à états — passer par `OrderManager::transition()`, pas de mutation directe.

@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace DoctrineMigrations\Log;
 
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\Migrations\AbstractMigration;
+use Florimond\MultiDbMigrationsBundle\Migrations\CustomMigration;
 
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260716161136 extends AbstractMigration
+final class Version20260716161136 extends CustomMigration
 {
+    protected ?string $targetDatabase = 'log';
+
     public function getDescription(): string
     {
         return '';

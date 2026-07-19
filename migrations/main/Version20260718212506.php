@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace DoctrineMigrations\Main;
 
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\Migrations\AbstractMigration;
+use Florimond\MultiDbMigrationsBundle\Migrations\CustomMigration;
 
 /**
  * Crée la table processed_webhook_event (idempotence des webhooks de paiement).
  */
-final class Version20260718212506 extends AbstractMigration
+final class Version20260718212506 extends CustomMigration
 {
+    protected ?string $targetDatabase = 'main';
+
     public function getDescription(): string
     {
         return 'Add processed_webhook_event table for payment webhook idempotency';

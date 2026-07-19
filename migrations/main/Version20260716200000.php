@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace DoctrineMigrations\Main;
 
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\Migrations\AbstractMigration;
+use Florimond\MultiDbMigrationsBundle\Migrations\CustomMigration;
 
-final class Version20260716200000 extends AbstractMigration
+final class Version20260716200000 extends CustomMigration
 {
+    protected ?string $targetDatabase = 'main';
+
     public function getDescription(): string
     {
         return 'Add trusted_device table for 2FA remember-device feature';
