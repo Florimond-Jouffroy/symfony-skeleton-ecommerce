@@ -135,7 +135,9 @@ class ReturnController extends AbstractController
             'status'      => $return->getStatus(),
             'reason'      => $return->getReason(),
             'items'       => array_values($items),
-            'createdAt'   => $return->getCreatedAt()->format(\DateTimeInterface::ATOM),
+            // Fil de discussion, à suivre depuis l'espace « Support » du compte.
+            'supportTicketId' => $return->getSupportTicket()?->getId(),
+            'createdAt'       => $return->getCreatedAt()->format(\DateTimeInterface::ATOM),
         ];
     }
 }

@@ -61,6 +61,17 @@ class ReturnRequest
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $adminNote = null;
 
+    /**
+     * Fil de discussion associé : le motif du client en est le premier message,
+     * les échanges avec l'admin y sont ensuite consignés.
+     *
+     * Nullable : une demande reste valide si l'ouverture du ticket échoue, et
+     * les demandes antérieures à cette fonctionnalité n'en ont pas.
+     */
+    #[ORM\OneToOne(targetEntity: SupportTicket::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?SupportTicket $supportTicket = null;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -92,6 +103,18 @@ class ReturnRequest
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getSupportTicket(): ?SupportTicket
+    {
+        return $this->supportTicket;
+    }
+
+    public function setSupportTicket(?SupportTicket $supportTicket): static
+    {
+        $this->supportTicket = $supportTicket;
+
+        return $this;
     }
 
     public function getOrder(): Order

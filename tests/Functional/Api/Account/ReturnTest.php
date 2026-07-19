@@ -59,6 +59,40 @@ class ReturnTest extends AbstractApiTestCase
         self::assertCount(1, $this->em->getRepository(ReturnRequest::class)->findAll());
     }
 
+    /**
+     * Le motif saisi par le client ouvre un fil de discussion dont il est le
+     * premier message, pour pouvoir échanger avant de trancher.
+     */
+    public function testCreateOpensSupportThreadWithReasonAsFirstMessage(): void
+    {
+        $this->enableReturns();
+        $user = $this->createUser('rma@example.com');
+        $this->loginAs($user);
+        $customer = $this->createCustomer('rma@example.com');
+        $order    = $this->createOrderWithProduct($customer, $this->createProduct(), 'ORD-RMA-6', Order::STATUS_DELIVERED);
+
+        $this->postJson('/api/compte/retours', [
+            'orderNumber' => 'ORD-RMA-6',
+            'reason'      => 'Article arrivé cassé',
+            'items'       => [['orderItemId' => $this->firstItemId($order), 'quantity' => 1]],
+        ]);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $ticketId = $this->getJson()['supportTicketId'];
+        self::assertNotNull($ticketId);
+
+        // Le fil est bien rattaché au client : il le retrouve dans son espace support.
+        $this->client->request('GET', '/api/account/support/'.$ticketId);
+
+        self::assertResponseIsSuccessful();
+        $ticket = $this->getJson();
+
+        self::assertStringContainsString('ORD-RMA-6', $ticket['subject']);
+        self::assertCount(1, $ticket['messages']);
+        self::assertSame('Article arrivé cassé', $ticket['messages'][0]['body']);
+        self::assertFalse($ticket['messages'][0]['isFromAdmin']);
+    }
+
     public function testCannotReturnMoreThanRemaining(): void
     {
         $this->enableReturns();

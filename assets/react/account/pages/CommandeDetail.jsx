@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Package } from 'lucide-react';
+import { MessageSquare, Package } from 'lucide-react';
 import { api, ApiError, getErrorMessage } from '../../utils/api';
 
 const STATUS_LABELS = {
@@ -190,7 +190,7 @@ export default function CommandeDetail({ urls, returnsEnabled = false }) {
                             value={returnReason}
                             onChange={(e) => setReturnReason(e.target.value)}
                             rows={3}
-                            placeholder="Motif du retour (obligatoire)"
+                            placeholder="Motif du retour (obligatoire) — il ouvre un échange avec notre service client"
                             className="w-full rounded border border-border px-3 py-2 text-sm"
                         />
                         <div className="flex gap-2">
@@ -232,7 +232,18 @@ export default function CommandeDetail({ urls, returnsEnabled = false }) {
                                     <span className="min-w-0 truncate text-muted-foreground">
                                         {r.items.map((i) => `${i.quantity}× ${i.productName}`).join(', ')}
                                     </span>
-                                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${s.class}`}>{s.label}</span>
+                                    <span className="flex shrink-0 items-center gap-2">
+                                        {r.supportTicketId && (
+                                            <button
+                                                type="button"
+                                                onClick={() => navigate(`/support/${r.supportTicketId}`)}
+                                                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground hover:underline"
+                                            >
+                                                <MessageSquare className="size-3.5" /> Suivre l'échange
+                                            </button>
+                                        )}
+                                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.class}`}>{s.label}</span>
+                                    </span>
                                 </li>
                             );
                         })}

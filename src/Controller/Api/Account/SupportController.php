@@ -7,7 +7,7 @@ namespace App\Controller\Api\Account;
 use App\Entity\SupportMessage;
 use App\Entity\SupportTicket;
 use App\Repository\SupportTicketRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\Manager\SupportTicketManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +19,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class SupportController extends AbstractController
 {
+    public function __construct(
+        private readonly SupportTicketManager $ticketManager,
+    ) {}
+
     private function serializeList(SupportTicket $t): array
     {
         return [
@@ -58,7 +62,7 @@ class SupportController extends AbstractController
     }
 
     #[Route('', name: 'api_account_support_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em): JsonResponse
+    public function create(Request $request): JsonResponse
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
@@ -71,18 +75,11 @@ class SupportController extends AbstractController
             return $this->json(['message' => 'Le sujet et le message sont requis.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $ticket = new SupportTicket();
-        $ticket->setSubject($subject);
-        $ticket->setUser($user);
+        $ticket = $this->ticketManager->open($user, $subject, $body, (string) $user->getEmail());
 
-        $message = new SupportMessage();
-        $message->setBody($body);
-        $message->setIsFromAdmin(false);
-        $message->setAuthorName($user->getEmail());
-
-        $ticket->addMessage($message);
-        $em->persist($ticket);
-        $em->flush();
+        if (null === $ticket) {
+            return $this->json(['message' => 'Une erreur est survenue.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
 
         return $this->json($this->serializeDetail($ticket), Response::HTTP_CREATED);
     }
@@ -102,7 +99,7 @@ class SupportController extends AbstractController
     }
 
     #[Route('/{id}/repondre', name: 'api_account_support_reply', methods: ['POST'])]
-    public function reply(int $id, Request $request, SupportTicketRepository $repo, EntityManagerInterface $em): JsonResponse
+    public function reply(int $id, Request $request, SupportTicketRepository $repo): JsonResponse
     {
         /** @var \App\Entity\User $user */
         $user   = $this->getUser();
@@ -121,15 +118,7 @@ class SupportController extends AbstractController
             return $this->json(['message' => 'Le message ne peut pas être vide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $message = new SupportMessage();
-        $message->setBody($body);
-        $message->setIsFromAdmin(false);
-        $message->setAuthorName($user->getEmail());
-
-        $ticket->addMessage($message);
-        $ticket->setStatus(SupportTicket::STATUS_OPEN);
-        $ticket->touch();
-        $em->flush();
+        $this->ticketManager->addCustomerMessage($ticket, $body, (string) $user->getEmail());
 
         return $this->json($this->serializeDetail($ticket));
     }

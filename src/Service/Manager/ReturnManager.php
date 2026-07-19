@@ -9,6 +9,7 @@ use App\Entity\Order;
 use App\Entity\OrderItem;
 use App\Entity\ReturnItem;
 use App\Entity\ReturnRequest;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Florimond\LogBundle\Service\Manager\ApplicationLogManager;
 
@@ -22,11 +23,24 @@ use Florimond\LogBundle\Service\Manager\ApplicationLogManager;
  */
 class ReturnManager
 {
+    /**
+     * Messages postés automatiquement dans le fil quand l'admin ne motive pas
+     * lui-même la décision. Le refus n'y figure pas : son motif est obligatoire.
+     *
+     * @var array<string, string>
+     */
+    private const array STATUS_MESSAGES = [
+        ReturnRequest::STATUS_APPROVED => 'Votre demande de retour a été acceptée. Vous pouvez nous renvoyer les articles concernés.',
+        ReturnRequest::STATUS_REFUNDED => 'Votre retour a été remboursé. Le délai de réception dépend de votre banque.',
+    ];
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly ApplicationLogManager $logManager,
         private readonly StockManager $stockManager,
         private readonly OrderManager $orderManager,
+        private readonly SupportTicketManager $supportTicketManager,
+        private readonly UserRepository $userRepository,
     ) {}
 
     /**
@@ -51,7 +65,41 @@ class ReturnManager
 
         $this->em->persist($return);
 
-        return $this->flush() ? $return : null;
+        if (!$this->flush()) {
+            return null;
+        }
+
+        $this->openSupportTicket($return);
+
+        return $return;
+    }
+
+    /**
+     * Ouvre le fil de discussion de la demande : le motif du client en devient
+     * le premier message, ce qui permet d'échanger avant de trancher.
+     *
+     * Best-effort et volontairement après le flush de la demande : un retour
+     * enregistré ne doit jamais être perdu parce que le support a échoué.
+     */
+    private function openSupportTicket(ReturnRequest $return): void
+    {
+        $customer = $return->getCustomer();
+        $user     = $this->userRepository->findOneBy(['email' => $customer->getEmail()]);
+
+        $ticket = $this->supportTicketManager->open(
+            $user,
+            sprintf('Demande de retour — commande #%s', $return->getOrder()->getOrderNumber()),
+            $return->getReason(),
+            trim($customer->getFirstName().' '.$customer->getLastName()) ?: $customer->getEmail(),
+            $customer->getEmail(),
+        );
+
+        if (null === $ticket) {
+            return;
+        }
+
+        $return->setSupportTicket($ticket);
+        $this->flush();
     }
 
     /**
@@ -69,6 +117,8 @@ class ReturnManager
             $return->setAdminNote($adminNote);
         }
 
+        $this->notifyStatusChange($return, $newStatus, $adminNote);
+
         if (ReturnRequest::STATUS_REFUNDED === $newStatus) {
             $this->stockManager->restoreForReturn($return);
             // Best-effort : delivered → refunded. Ignoré si déjà refunded (retour
@@ -77,6 +127,29 @@ class ReturnManager
         }
 
         return $this->flush();
+    }
+
+    /**
+     * Répercute le changement de statut dans le fil de discussion : la note de
+     * l'admin si elle existe (cas du refus, où elle est obligatoire), sinon un
+     * message de courtoisie pour que le client suive l'avancement.
+     */
+    private function notifyStatusChange(ReturnRequest $return, string $newStatus, ?string $adminNote): void
+    {
+        $ticket = $return->getSupportTicket();
+        if (null === $ticket) {
+            return;
+        }
+
+        $body = null !== $adminNote && '' !== trim($adminNote)
+            ? trim($adminNote)
+            : self::STATUS_MESSAGES[$newStatus] ?? null;
+
+        if (null === $body) {
+            return;
+        }
+
+        $this->supportTicketManager->addAdminMessage($ticket, $body);
     }
 
     private function flush(): bool
