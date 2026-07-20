@@ -130,7 +130,12 @@ export default function FaqManager({ urls, permissions = {} }) {
 
     const handleToggleActive = async (item) => {
         try {
-            const updated = await api.patch(`${faqUrl}/${item.id}`, { isActive: !item.isActive });
+            // L'API attend la ressource complète (validée par un DTO), pas un patch partiel.
+            const updated = await api.patch(`${faqUrl}/${item.id}`, {
+                question: item.question,
+                answer:   item.answer,
+                isActive: !item.isActive,
+            });
             setItems(items => items.map(i => i.id === item.id ? updated : i));
         } catch {
             setError('Erreur lors de la mise à jour.');

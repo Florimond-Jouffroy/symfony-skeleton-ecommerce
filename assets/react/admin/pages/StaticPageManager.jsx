@@ -193,7 +193,15 @@ export default function StaticPageManager({ urls, permissions = {} }) {
 
     const handleToggleActive = async (page) => {
         try {
-            const updated = await api.patch(`${pagesUrl}/${page.id}`, { isActive: !page.isActive });
+            // L'API attend la ressource complète (validée par un DTO). La liste ne contient
+            // pas le contenu : on récupère la page entière avant de renvoyer le PATCH.
+            const full    = await api.get(`${pagesUrl}/${page.id}`);
+            const updated = await api.patch(`${pagesUrl}/${page.id}`, {
+                title:    full.title,
+                slug:     full.slug,
+                content:  full.content,
+                isActive: !full.isActive,
+            });
             setPages(ps => ps.map(p => p.id === updated.id ? { ...p, ...updated } : p));
         } catch {
             setError('Erreur lors de la mise à jour.');

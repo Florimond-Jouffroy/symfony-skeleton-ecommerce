@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\FaqItemDto;
 use App\Entity\FaqItem;
 use App\Repository\FaqItemRepository;
 use App\Security\Voter\FaqVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/admin/faq')]
@@ -38,23 +39,15 @@ class FaqController extends AbstractController
     }
 
     #[Route('', name: 'api_admin_faq_create', methods: ['POST'])]
-    public function create(Request $request, FaqItemRepository $repo, EntityManagerInterface $em): JsonResponse
+    public function create(#[MapRequestPayload] FaqItemDto $dto, FaqItemRepository $repo, EntityManagerInterface $em): JsonResponse
     {
         $this->denyAccessUnlessGranted(FaqVoter::CREATE);
-        $data = $request->toArray();
-
-        $question = trim((string) ($data['question'] ?? ''));
-        $answer   = trim((string) ($data['answer'] ?? ''));
-
-        if ('' === $question || '' === $answer) {
-            return $this->json(['message' => 'La question et la réponse sont requises.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
 
         $item = new FaqItem();
-        $item->setQuestion($question);
-        $item->setAnswer($answer);
+        $item->setQuestion(trim($dto->question));
+        $item->setAnswer(trim($dto->answer));
         $item->setPosition($repo->getMaxPosition() + 1);
-        $item->setIsActive((bool) ($data['isActive'] ?? true));
+        $item->setIsActive($dto->isActive);
 
         $em->persist($item);
         $em->flush();
@@ -63,7 +56,7 @@ class FaqController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_admin_faq_update', methods: ['PATCH'])]
-    public function update(int $id, Request $request, FaqItemRepository $repo, EntityManagerInterface $em): JsonResponse
+    public function update(int $id, #[MapRequestPayload] FaqItemDto $dto, FaqItemRepository $repo, EntityManagerInterface $em): JsonResponse
     {
         $this->denyAccessUnlessGranted(FaqVoter::EDIT);
 
@@ -72,27 +65,9 @@ class FaqController extends AbstractController
             return $this->json(['message' => 'FAQ introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        $data = $request->toArray();
-
-        if (array_key_exists('question', $data)) {
-            $q = trim((string) $data['question']);
-            if ('' === $q) {
-                return $this->json(['message' => 'La question ne peut pas être vide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-            $item->setQuestion($q);
-        }
-
-        if (array_key_exists('answer', $data)) {
-            $a = trim((string) $data['answer']);
-            if ('' === $a) {
-                return $this->json(['message' => 'La réponse ne peut pas être vide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-            $item->setAnswer($a);
-        }
-
-        if (array_key_exists('isActive', $data)) {
-            $item->setIsActive((bool) $data['isActive']);
-        }
+        $item->setQuestion(trim($dto->question));
+        $item->setAnswer(trim($dto->answer));
+        $item->setIsActive($dto->isActive);
 
         $em->flush();
 
