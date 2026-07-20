@@ -176,7 +176,15 @@ export default function PromoCodeManager({ urls = {}, permissions = {} }) {
 
     const handleToggle = async (code) => {
         try {
-            const updated = await api.patch(`${baseUrl}/${code.id}`, { isActive: !code.isActive });
+            // L'API attend la ressource complète (validée par un DTO), pas un patch partiel.
+            const updated = await api.patch(`${baseUrl}/${code.id}`, {
+                code:      code.code,
+                type:      code.type,
+                value:     code.value,
+                expiresAt: code.expiresAt,
+                maxUses:   code.maxUses,
+                isActive:  !code.isActive,
+            });
             setCodes(prev => prev.map(c => c.id === updated.id ? updated : c));
         } catch {
             // silently ignore
