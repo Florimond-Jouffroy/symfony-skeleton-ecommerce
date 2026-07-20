@@ -173,6 +173,20 @@ class ProductTest extends AbstractApiTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
+    public function testUpdateRejectsNegativePrice(): void
+    {
+        $this->loginAs($this->createAdmin());
+        $product = $this->createProduct('T-shirt', 't-shirt');
+
+        $this->putJson('/api/admin/produits/'.$product->getId(), [
+            'name'  => 'T-shirt',
+            'price' => -100,
+            'stock' => 5,
+        ]);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
     public function testUpdateWithStaleVersionReturnsConflict(): void
     {
         $this->loginAs($this->createAdmin());

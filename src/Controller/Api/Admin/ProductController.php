@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\ProductCreateDto;
+use App\Dto\ProductUpdateDto;
 use App\Entity\Product;
 use App\Repository\ProductCategoryRepository;
 use App\Repository\ProductRepository;
@@ -17,6 +19,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
@@ -59,21 +62,13 @@ class ProductController extends AbstractController
     }
 
     #[Route('', name: 'api_admin_products_create', methods: ['POST'])]
-    public function create(Request $request, ProductCategoryRepository $categoryRepository): JsonResponse
+    public function create(#[MapRequestPayload] ProductCreateDto $dto, ProductCategoryRepository $categoryRepository): JsonResponse
     {
         $this->denyAccessUnlessGranted(ProductVoter::CREATE);
 
-        $payload = $request->toArray();
-        $name    = trim((string) ($payload['name'] ?? ''));
+        $categories = $this->resolveCategories($dto->categoryIds, $categoryRepository);
 
-        if ('' === $name) {
-            return $this->json(['message' => 'Le nom est obligatoire.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $categoryIds = array_filter(array_map('intval', (array) ($payload['categoryIds'] ?? [])));
-        $categories  = $categoryIds ? $categoryRepository->findBy(['id' => $categoryIds]) : [];
-
-        $product = $this->manager->create($name, $categories);
+        $product = $this->manager->create(trim($dto->name), $categories);
         if (null === $product) {
             return $this->json(['message' => 'Une erreur est survenue.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -90,23 +85,16 @@ class ProductController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_admin_products_update', methods: ['PUT'])]
-    public function update(Product $product, Request $request, ProductCategoryRepository $categoryRepository, EntityManagerInterface $em): JsonResponse
+    public function update(Product $product, #[MapRequestPayload] ProductUpdateDto $dto, ProductCategoryRepository $categoryRepository, EntityManagerInterface $em): JsonResponse
     {
         $this->denyAccessUnlessGranted(ProductVoter::EDIT, $product);
-
-        $payload = $request->toArray();
-        $name    = trim((string) ($payload['name'] ?? ''));
-
-        if ('' === $name) {
-            return $this->json(['message' => 'Le nom est obligatoire.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
 
         // Verrou optimiste : si le client renvoie la version qu'il a chargée et
         // que le produit a été modifié depuis (ex. une vente), on refuse pour ne
         // pas écraser en aveugle une écriture concurrente.
-        if (isset($payload['version'])) {
+        if (null !== $dto->version) {
             try {
-                $em->lock($product, LockMode::OPTIMISTIC, (int) $payload['version']);
+                $em->lock($product, LockMode::OPTIMISTIC, $dto->version);
             } catch (OptimisticLockException) {
                 return $this->json(
                     ['message' => 'Ce produit a été modifié entre-temps. Rechargez la page avant d\'enregistrer.'],
@@ -115,29 +103,29 @@ class ProductController extends AbstractController
             }
         }
 
-        $categoryIds = array_filter(array_map('intval', (array) ($payload['categoryIds'] ?? [])));
-        $categories  = $categoryIds ? $categoryRepository->findBy(['id' => $categoryIds]) : [];
-
-        $price          = max(0, (int) ($payload['price'] ?? 0));
-        $compareAtPrice = isset($payload['compareAtPrice'])
-            ? max(0, (int) $payload['compareAtPrice'])
-            : null;
-        $description       = is_array($payload['description'] ?? null) ? $payload['description'] : null;
-        $stock             = max(0, (int) ($payload['stock'] ?? 0));
-        $lowStockThreshold = max(0, (int) ($payload['lowStockThreshold'] ?? 5));
-        $hasVariants       = (bool) ($payload['hasVariants'] ?? false);
-        $images            = is_array($payload['images'] ?? null) ? $payload['images'] : [];
-        $variants          = is_array($payload['variants'] ?? null) ? $payload['variants'] : [];
+        $categories = $this->resolveCategories($dto->categoryIds, $categoryRepository);
 
         if (!$this->manager->update(
-            $product, $name, $description, $price, $compareAtPrice,
-            $stock, $lowStockThreshold, $hasVariants,
-            $categories, $images, $variants,
+            $product, trim($dto->name), $dto->description, $dto->price, $dto->compareAtPrice,
+            $dto->stock, $dto->lowStockThreshold, $dto->hasVariants,
+            $categories, $dto->images, $dto->variants,
         )) {
             return $this->json(['message' => 'Une erreur est survenue.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return $this->json($this->serializeFull($product));
+    }
+
+    /**
+     * @param list<int> $categoryIds
+     *
+     * @return list<\App\Entity\ProductCategory>
+     */
+    private function resolveCategories(array $categoryIds, ProductCategoryRepository $categoryRepository): array
+    {
+        $ids = array_values(array_filter($categoryIds));
+
+        return $ids ? $categoryRepository->findBy(['id' => $ids]) : [];
     }
 
     #[Route('/{id}', name: 'api_admin_products_delete', methods: ['DELETE'])]
