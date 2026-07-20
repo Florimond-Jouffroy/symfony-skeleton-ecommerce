@@ -43,6 +43,27 @@ class CheckoutTest extends AbstractApiTestCase
         self::assertSame(3, $this->freshStock($productId));
     }
 
+    public function testCheckoutRejectsIncompleteAddress(): void
+    {
+        $this->loginAs($this->createUser());
+
+        $this->postJson('/api/boutique/commande', [
+            'shippingMethodId' => 1,
+            'shippingAddress'  => ['firstName' => 'Jean'], // nom, adresse, ville, CP manquants
+        ]);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function testCheckoutRejectsMissingShippingMethod(): void
+    {
+        $this->loginAs($this->createUser());
+
+        $this->postJson('/api/boutique/commande', ['shippingAddress' => self::ADDRESS]);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
     public function testCheckoutRejectsInsufficientStock(): void
     {
         $this->client->disableReboot();
