@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\SettingsDto;
 use App\Repository\AppSettingRepository;
 use App\Security\Voter\SettingVoter;
 use App\Service\InvoiceService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/admin/parametres')]
@@ -29,110 +29,92 @@ class SettingController extends AbstractController
         return $this->json($this->buildPayload());
     }
 
+    /**
+     * Mise à jour partielle : seuls les champs non-null du DTO sont appliqués.
+     * Les plages/enum sont validés en amont par SettingsDto ; ne restent ici que
+     * la traduction champ → clé et la règle « ne pas écraser un secret par du vide ».
+     */
     #[Route('', name: 'api_admin_settings_update', methods: ['PATCH'])]
-    public function update(Request $request): JsonResponse
+    public function update(#[MapRequestPayload] SettingsDto $dto): JsonResponse
     {
         $this->denyAccessUnlessGranted(SettingVoter::EDIT);
 
-        $payload = $request->toArray();
-
-        if (isset($payload['invoiceTrigger'])) {
-            $trigger = trim((string) $payload['invoiceTrigger']);
-            if (!in_array($trigger, ['on_order', 'on_confirm'], true)) {
-                return $this->json(['message' => 'Valeur invalide pour invoiceTrigger.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-            $this->invoiceService->setInvoiceTrigger($trigger);
+        if (null !== $dto->invoiceTrigger) {
+            $this->invoiceService->setInvoiceTrigger($dto->invoiceTrigger);
         }
 
-        if (isset($payload['defaultTaxRate'])) {
-            $rate = (float) $payload['defaultTaxRate'];
-            if ($rate < 0 || $rate > 100) {
-                return $this->json(['message' => 'Taux de TVA invalide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-            $this->invoiceService->setDefaultTaxRate($rate);
+        if (null !== $dto->defaultTaxRate) {
+            $this->invoiceService->setDefaultTaxRate($dto->defaultTaxRate);
         }
 
-        if (array_key_exists('shopEnabled', $payload)) {
-            $this->settingRepo->setValue('shop.enabled', $payload['shopEnabled'] ? 'true' : 'false');
+        if (null !== $dto->shopEnabled) {
+            $this->settingRepo->setValue('shop.enabled', $dto->shopEnabled ? 'true' : 'false');
         }
 
-        if (array_key_exists('maintenanceMode', $payload)) {
-            $this->settingRepo->setValue('site.maintenance', $payload['maintenanceMode'] ? 'true' : 'false');
+        if (null !== $dto->maintenanceMode) {
+            $this->settingRepo->setValue('site.maintenance', $dto->maintenanceMode ? 'true' : 'false');
         }
 
-        if (array_key_exists('returnsEnabled', $payload)) {
-            $this->settingRepo->setValue('returns.enabled', $payload['returnsEnabled'] ? 'true' : 'false');
+        if (null !== $dto->returnsEnabled) {
+            $this->settingRepo->setValue('returns.enabled', $dto->returnsEnabled ? 'true' : 'false');
         }
 
-        if (array_key_exists('stripeEnabled', $payload)) {
-            $this->settingRepo->setValue('payment.stripe.enabled', $payload['stripeEnabled'] ? 'true' : 'false');
+        if (null !== $dto->stripeEnabled) {
+            $this->settingRepo->setValue('payment.stripe.enabled', $dto->stripeEnabled ? 'true' : 'false');
         }
 
-        if (isset($payload['stripePublicKey'])) {
-            $this->settingRepo->setValue('payment.stripe.public_key', trim((string) $payload['stripePublicKey']));
+        if (null !== $dto->stripePublicKey) {
+            $this->settingRepo->setValue('payment.stripe.public_key', trim($dto->stripePublicKey));
         }
 
-        if (isset($payload['stripeSecretKey']) && '' !== trim((string) $payload['stripeSecretKey'])) {
-            $this->settingRepo->setValue('payment.stripe.secret_key', trim((string) $payload['stripeSecretKey']));
+        $this->applySecret('payment.stripe.secret_key', $dto->stripeSecretKey);
+        $this->applySecret('payment.stripe.webhook_secret', $dto->stripeWebhookSecret);
+
+        if (null !== $dto->mollieEnabled) {
+            $this->settingRepo->setValue('payment.mollie.enabled', $dto->mollieEnabled ? 'true' : 'false');
         }
 
-        if (isset($payload['stripeWebhookSecret']) && '' !== trim((string) $payload['stripeWebhookSecret'])) {
-            $this->settingRepo->setValue('payment.stripe.webhook_secret', trim((string) $payload['stripeWebhookSecret']));
+        $this->applySecret('payment.mollie.api_key', $dto->mollieApiKey);
+
+        if (null !== $dto->paypalEnabled) {
+            $this->settingRepo->setValue('payment.paypal.enabled', $dto->paypalEnabled ? 'true' : 'false');
         }
 
-        if (array_key_exists('mollieEnabled', $payload)) {
-            $this->settingRepo->setValue('payment.mollie.enabled', $payload['mollieEnabled'] ? 'true' : 'false');
+        if (null !== $dto->paypalSandbox) {
+            $this->settingRepo->setValue('payment.paypal.sandbox', $dto->paypalSandbox ? 'true' : 'false');
         }
 
-        if (isset($payload['mollieApiKey']) && '' !== trim((string) $payload['mollieApiKey'])) {
-            $this->settingRepo->setValue('payment.mollie.api_key', trim((string) $payload['mollieApiKey']));
+        if (null !== $dto->paypalClientId) {
+            $this->settingRepo->setValue('payment.paypal.client_id', trim($dto->paypalClientId));
         }
 
-        if (array_key_exists('paypalEnabled', $payload)) {
-            $this->settingRepo->setValue('payment.paypal.enabled', $payload['paypalEnabled'] ? 'true' : 'false');
+        $this->applySecret('payment.paypal.client_secret', $dto->paypalClientSecret);
+        $this->applySecret('payment.paypal.webhook_id', $dto->paypalWebhookId);
+
+        if (null !== $dto->twoFaRememberDays) {
+            $this->settingRepo->setValue('security.2fa.trusted_device_days', (string) $dto->twoFaRememberDays);
         }
 
-        if (array_key_exists('paypalSandbox', $payload)) {
-            $this->settingRepo->setValue('payment.paypal.sandbox', $payload['paypalSandbox'] ? 'true' : 'false');
+        if (null !== $dto->rateLimitMaxAttempts) {
+            $this->settingRepo->setValue('security.rate_limit.max_attempts', (string) $dto->rateLimitMaxAttempts);
         }
 
-        if (isset($payload['paypalClientId'])) {
-            $this->settingRepo->setValue('payment.paypal.client_id', trim((string) $payload['paypalClientId']));
-        }
-
-        if (isset($payload['paypalClientSecret']) && '' !== trim((string) $payload['paypalClientSecret'])) {
-            $this->settingRepo->setValue('payment.paypal.client_secret', trim((string) $payload['paypalClientSecret']));
-        }
-
-        if (isset($payload['paypalWebhookId']) && '' !== trim((string) $payload['paypalWebhookId'])) {
-            $this->settingRepo->setValue('payment.paypal.webhook_id', trim((string) $payload['paypalWebhookId']));
-        }
-
-        if (isset($payload['twoFaRememberDays'])) {
-            $days = (int) $payload['twoFaRememberDays'];
-            if ($days < 0 || $days > 365) {
-                return $this->json(['message' => 'Valeur invalide pour twoFaRememberDays (0–365).'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-            $this->settingRepo->setValue('security.2fa.trusted_device_days', (string) $days);
-        }
-
-        if (isset($payload['rateLimitMaxAttempts'])) {
-            $max = (int) $payload['rateLimitMaxAttempts'];
-            if ($max < 0 || $max > 100) {
-                return $this->json(['message' => 'Valeur invalide pour rateLimitMaxAttempts (0–100).'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-            $this->settingRepo->setValue('security.rate_limit.max_attempts', (string) $max);
-        }
-
-        if (isset($payload['rateLimitWindowMinutes'])) {
-            $window = (int) $payload['rateLimitWindowMinutes'];
-            if ($window < 1 || $window > 1440) {
-                return $this->json(['message' => 'Valeur invalide pour rateLimitWindowMinutes (1–1440).'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-            $this->settingRepo->setValue('security.rate_limit.window_minutes', (string) $window);
+        if (null !== $dto->rateLimitWindowMinutes) {
+            $this->settingRepo->setValue('security.rate_limit.window_minutes', (string) $dto->rateLimitWindowMinutes);
         }
 
         return $this->json($this->buildPayload());
+    }
+
+    /**
+     * Écrit un secret uniquement s'il est fourni et non vide — un champ vide laisse
+     * la valeur existante intacte (les secrets ne sont jamais renvoyés par l'API).
+     */
+    private function applySecret(string $key, ?string $value): void
+    {
+        if (null !== $value && '' !== trim($value)) {
+            $this->settingRepo->setValue($key, trim($value));
+        }
     }
 
     /** @return array<string, mixed> */
