@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class PromoCodeDto
 {
-    #[Assert\NotBlank(message: 'Le code est obligatoire.')]
+    #[Assert\NotBlank(message: 'Le code est obligatoire.', normalizer: 'trim')]
     #[Assert\Regex(
         pattern: '/^[A-Za-z0-9_-]{2,50}$/',
         message: 'Le code ne peut contenir que des lettres, chiffres, tirets et underscores (2–50 caractères).',

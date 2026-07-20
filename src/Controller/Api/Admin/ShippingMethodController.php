@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\ShippingMethodDto;
 use App\Entity\ShippingMethod;
 use App\Repository\ShippingMethodRepository;
 use App\Security\Voter\ShippingVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/admin/livraison')]
@@ -26,18 +27,12 @@ class ShippingMethodController extends AbstractController
     }
 
     #[Route('', name: 'api_admin_shipping_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em): JsonResponse
+    public function create(#[MapRequestPayload] ShippingMethodDto $dto, EntityManagerInterface $em): JsonResponse
     {
         $this->denyAccessUnlessGranted(ShippingVoter::CREATE);
 
-        $data   = $request->toArray();
-        $errors = $this->validate($data);
-        if ($errors) {
-            return $this->json(['message' => implode(' ', $errors)], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         $method = new ShippingMethod();
-        $this->hydrate($method, $data);
+        $this->apply($method, $dto);
         $em->persist($method);
         $em->flush();
 
@@ -45,17 +40,11 @@ class ShippingMethodController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_admin_shipping_update', methods: ['PUT'])]
-    public function update(ShippingMethod $method, Request $request, EntityManagerInterface $em): JsonResponse
+    public function update(ShippingMethod $method, #[MapRequestPayload] ShippingMethodDto $dto, EntityManagerInterface $em): JsonResponse
     {
         $this->denyAccessUnlessGranted(ShippingVoter::EDIT);
 
-        $data   = $request->toArray();
-        $errors = $this->validate($data);
-        if ($errors) {
-            return $this->json(['message' => implode(' ', $errors)], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->hydrate($method, $data);
+        $this->apply($method, $dto);
         $em->flush();
 
         return $this->json($this->serialize($method));
@@ -72,32 +61,16 @@ class ShippingMethodController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
-    /** @return string[] */
-    private function validate(array $data): array
+    private function apply(ShippingMethod $method, ShippingMethodDto $dto): void
     {
-        $errors = [];
-        if (empty(trim((string) ($data['name'] ?? '')))) {
-            $errors[] = 'Le nom est obligatoire.';
-        }
-        if (!isset($data['price']) || !is_numeric($data['price']) || (int) $data['price'] < 0) {
-            $errors[] = 'Le prix doit être un entier positif ou nul (en centimes).';
-        }
+        $description = null !== $dto->description && '' !== trim($dto->description) ? trim($dto->description) : null;
 
-        return $errors;
-    }
-
-    private function hydrate(ShippingMethod $method, array $data): void
-    {
-        $method->setName(trim((string) ($data['name'] ?? '')));
-        $method->setDescription(isset($data['description']) && '' !== trim((string) $data['description'])
-            ? trim((string) $data['description'])
-            : null);
-        $method->setPrice(max(0, (int) ($data['price'] ?? 0)));
-        $method->setFreeAboveAmount(isset($data['freeAboveAmount']) && '' !== $data['freeAboveAmount']
-            ? max(0, (int) $data['freeAboveAmount'])
-            : null);
-        $method->setIsActive((bool) ($data['isActive'] ?? true));
-        $method->setPosition(max(0, (int) ($data['position'] ?? 0)));
+        $method->setName(trim($dto->name));
+        $method->setDescription($description);
+        $method->setPrice($dto->price);
+        $method->setFreeAboveAmount($dto->freeAboveAmount);
+        $method->setIsActive($dto->isActive);
+        $method->setPosition($dto->position);
     }
 
     private function serialize(ShippingMethod $method): array

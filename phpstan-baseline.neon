@@ -55,19 +55,7 @@ parameters:
 			path: src/Controller/Api/Admin/ReviewController.php
 
 		-
-			message: '#^Method App\\Controller\\Api\\Admin\\ShippingMethodController\:\:hydrate\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Controller/Api/Admin/ShippingMethodController.php
-
-		-
 			message: '#^Method App\\Controller\\Api\\Admin\\ShippingMethodController\:\:serialize\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Controller/Api/Admin/ShippingMethodController.php
-
-		-
-			message: '#^Method App\\Controller\\Api\\Admin\\ShippingMethodController\:\:validate\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Controller/Api/Admin/ShippingMethodController.php

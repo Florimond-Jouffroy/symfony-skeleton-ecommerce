@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\ArticleDto;
 use App\Entity\Article;
 use App\Repository\ArticleRepository;
 use App\Repository\CategoryRepository;
@@ -13,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/admin/articles')]
@@ -43,32 +45,21 @@ class ArticleController extends AbstractController
     }
 
     #[Route('', name: 'api_admin_articles_create', methods: ['POST'])]
-    public function create(Request $request, CategoryRepository $categoryRepository): JsonResponse
+    public function create(#[MapRequestPayload] ArticleDto $dto, CategoryRepository $categoryRepository): JsonResponse
     {
         $this->denyAccessUnlessGranted(ArticleVoter::CREATE);
-
-        /** @var array{title?: mixed, content?: mixed, excerpt?: mixed, coverImage?: mixed, categoryIds?: mixed} $payload */
-        $payload = $request->toArray();
-
-        $title = is_string($payload['title'] ?? null) ? trim((string) $payload['title']) : '';
-        if ('' === $title) {
-            return $this->json(['message' => 'Le titre est obligatoire.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $content = is_array($payload['content'] ?? null) ? (array) $payload['content'] : [];
-        $excerpt = is_string($payload['excerpt'] ?? null) && '' !== trim((string) $payload['excerpt'])
-            ? trim((string) $payload['excerpt'])
-            : null;
-        $coverImage = is_string($payload['coverImage'] ?? null) && '' !== trim((string) $payload['coverImage'])
-            ? trim((string) $payload['coverImage'])
-            : null;
-        $categoryIds = array_filter(array_map('intval', (array) ($payload['categoryIds'] ?? [])));
 
         /** @var \App\Entity\User $author */
         $author = $this->getUser();
 
-        $categories = $categoryIds ? $categoryRepository->findBy(['id' => $categoryIds]) : [];
-        $article    = $this->articleManager->create($title, $content, $author, $excerpt, $coverImage, $categories);
+        $article = $this->articleManager->create(
+            trim($dto->title),
+            $dto->content,
+            $author,
+            $this->normalizeText($dto->excerpt),
+            $this->normalizeText($dto->coverImage),
+            $this->resolveCategories($dto->categoryIds, $categoryRepository),
+        );
         if (null === $article) {
             return $this->json(['message' => 'Une erreur est survenue.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -85,33 +76,43 @@ class ArticleController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_admin_articles_update', methods: ['PUT'])]
-    public function update(Article $article, Request $request, CategoryRepository $categoryRepository): JsonResponse
+    public function update(Article $article, #[MapRequestPayload] ArticleDto $dto, CategoryRepository $categoryRepository): JsonResponse
     {
         $this->denyAccessUnlessGranted(ArticleVoter::EDIT, $article);
 
-        /** @var array{title?: mixed, content?: mixed, excerpt?: mixed, coverImage?: mixed, categoryIds?: mixed} $payload */
-        $payload = $request->toArray();
-
-        $title = is_string($payload['title'] ?? null) ? trim((string) $payload['title']) : '';
-        if ('' === $title) {
-            return $this->json(['message' => 'Le titre est obligatoire.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $content = is_array($payload['content'] ?? null) ? (array) $payload['content'] : [];
-        $excerpt = is_string($payload['excerpt'] ?? null) && '' !== trim((string) $payload['excerpt'])
-            ? trim((string) $payload['excerpt'])
-            : null;
-        $coverImage = is_string($payload['coverImage'] ?? null) && '' !== trim((string) $payload['coverImage'])
-            ? trim((string) $payload['coverImage'])
-            : null;
-        $categoryIds = array_filter(array_map('intval', (array) ($payload['categoryIds'] ?? [])));
-        $categories  = $categoryIds ? $categoryRepository->findBy(['id' => $categoryIds]) : [];
-
-        if (!$this->articleManager->update($article, $title, $content, $excerpt, $coverImage, $categories)) {
+        $updated = $this->articleManager->update(
+            $article,
+            trim($dto->title),
+            $dto->content,
+            $this->normalizeText($dto->excerpt),
+            $this->normalizeText($dto->coverImage),
+            $this->resolveCategories($dto->categoryIds, $categoryRepository),
+        );
+        if (!$updated) {
             return $this->json(['message' => 'Une erreur est survenue.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return $this->json($this->serializeArticleFull($article));
+    }
+
+    /** Normalise une chaîne optionnelle : trim, et '' → null. */
+    private function normalizeText(?string $value): ?string
+    {
+        $value = null !== $value ? trim($value) : '';
+
+        return '' !== $value ? $value : null;
+    }
+
+    /**
+     * @param list<int> $categoryIds
+     *
+     * @return list<\App\Entity\Category>
+     */
+    private function resolveCategories(array $categoryIds, CategoryRepository $categoryRepository): array
+    {
+        $ids = array_values(array_filter($categoryIds));
+
+        return $ids ? $categoryRepository->findBy(['id' => $ids]) : [];
     }
 
     #[Route('/{id}', name: 'api_admin_articles_delete', methods: ['DELETE'])]
