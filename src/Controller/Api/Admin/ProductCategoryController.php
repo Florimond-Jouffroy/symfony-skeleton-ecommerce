@@ -39,13 +39,9 @@ class ProductCategoryController extends AbstractController
     {
         $this->denyAccessUnlessGranted(ProductCategoryVoter::CREATE);
 
-        $category = $this->manager->create(trim($dto->name));
+        $category = $this->manager->create(trim($dto->name), $dto->taxRate);
         if (null === $category) {
             return $this->json(['message' => 'Une erreur est survenue.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
-        if (null !== $dto->taxRate) {
-            $category->setTaxRate($dto->taxRate);
         }
 
         return $this->json($this->serialize($category), Response::HTTP_CREATED);

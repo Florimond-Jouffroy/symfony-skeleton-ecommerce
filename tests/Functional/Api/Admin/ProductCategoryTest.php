@@ -97,6 +97,22 @@ class ProductCategoryTest extends AbstractApiTestCase
         self::assertSame(0, $data['productCount']);
     }
 
+    public function testCreateCategoryPersistsTaxRate(): void
+    {
+        $this->loginAs($this->createAdmin());
+
+        $this->postJson('/api/admin/categories-produits', ['name' => 'Livres', 'taxRate' => 550]);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $id = $this->getJson()['id'];
+
+        // Relit depuis la base (hors identity map) pour prouver la persistance.
+        $this->em->clear();
+        $category = $this->em->getRepository(ProductCategory::class)->find($id);
+        self::assertNotNull($category);
+        self::assertSame(550, $category->getTaxRate());
+    }
+
     public function testCreateCategoryRequiresName(): void
     {
         $this->loginAs($this->createAdmin());

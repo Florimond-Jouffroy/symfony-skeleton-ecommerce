@@ -21,11 +21,12 @@ class ProductCategoryManager
         private readonly ProductCategoryRepository $repository,
     ) {}
 
-    public function create(string $name): ?ProductCategory
+    public function create(string $name, ?int $taxRate = null): ?ProductCategory
     {
         $category = new ProductCategory();
         $category->setName($name);
         $category->setSlug($this->generateUniqueSlug($name));
+        $category->setTaxRate($taxRate);
 
         return $this->insert($category) ? $category : null;
     }
