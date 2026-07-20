@@ -1,74 +1,119 @@
- # 🚀 Lancer un nouveau projet avec le Skeleton Symfony + React
- 
- Bienvenue sur le Skeleton officiel de l'application. Ce projet est pré-configuré pour Docker, PHP 8.4, PHPUnit 10, React, Tailwind v4 et Shadcn UI avec une architecture multi-bases de données.
- 
- ---
- 
- ## 📚 Documentations Détaillées
- 
- Pour comprendre en détail le fonctionnement et la philosophie de chaque brique de ce Skeleton, consulte les guides dédiés dans le dossier `/doc` :
- * [🐳 1. Guide Docker & Environnement](./doc/1-docker-and-environment.md)
- * [🐘 2. Architecture Backend & DDD](./doc/2-backend-architecture.md)
- * [🎨 3. Workflow Frontend (React/Tailwind v4/Shadcn)](./doc/3-frontend-workflow.md)
- * [🧪 4. Qualité de Code & Tests (PHPUnit 10)](./doc/4-qa-and-tests.md)
- * [🗄️ 5. Double base de données & migrations](./doc/5-multi-database-and-migrations.md)
- 
- ---
- 
- ## Prérequis
- Avant de démarrer, assure-toi que ton infrastructure globale (`_infra`) est bien lancée et opérationnelle sur ton PC.
- 
- ## Procédure d'initialisation
- 
- ### 1. Cloner ou dupliquer le Skeleton
- Crée ton nouveau répertoire de projet dans ton dossier habituel, puis place-toi à l'intérieur.
- 
- ### 2. Configurer l'environnement local
- Lance la commande suivante pour générer tes fichiers de configuration personnalisés :
- ```bash
- make setup
- ```
- Le script `setup.sh` va se lancer automatiquement dans ton terminal pour te demander le nom de ton projet (ex: `mon-super-blog`). Il créera automatiquement les fichiers `.env.docker.local` et `.env.local`.
- 
- ### 3. Installer et démarrer le projet
- Exécute la commande magique pour tout orchestrer d'un coup (téléchargement des images Docker, build du conteneur Apache/PHP, installation des dépendances Composer/NPM, et création automatique de tes bases de données `main` et `log`) :
- ```bash
- make install
- ```
+# 🚀 Skeleton e-commerce — Symfony 8 / PHP 8.4 + React 19
+
+Base de départ **réutilisable et générique** pour un site e-commerce, pré-câblée pour
+Docker, PHP 8.4, Symfony 8, PHPUnit, React 19, Tailwind v4 et Shadcn UI, avec une
+**architecture à double base de données** (`main` applicative + `log` d'audit).
+
+> Ce dépôt est un **skeleton** : tout doit y rester générique et configurable, pas de
+> logique métier propre à un client donné.
+
+---
+
+## 📚 Documentation
+
+Le fonctionnement détaillé de chaque brique est décrit dans les guides du dossier
+[`/doc`](./doc/README.md) :
+
+| Guide | Contenu |
+|-------|---------|
+| [🐳 1. Docker & environnement](./doc/1-docker-and-environment.md) | Conteneurs, Traefik, fichiers `.env`, `setup.sh`, Makefile |
+| [🐘 2. Architecture Backend & DDD](./doc/2-backend-architecture.md) | Couches, managers, autorisation, machines à états, paiement, auth, async |
+| [🎨 3. Workflow Frontend](./doc/3-frontend-workflow.md) | React 19, Tailwind v4, Shadcn, les SPA par section, intégration Symfony↔React |
+| [🧪 4. Qualité de code & tests](./doc/4-qa-and-tests.md) | php-cs-fixer, PHPStan, Rector, PHPUnit, DAMA, CI |
+| [🗄️ 5. Double base de données & migrations](./doc/5-multi-database-and-migrations.md) | Les 2 bases `main`/`log`, cloisonnement des EM, `CustomMigration`, pièges |
+
+**Nouveau sur le projet ?** Commence par le [guide 1](./doc/1-docker-and-environment.md)
+pour lancer l'environnement, puis le [guide 2](./doc/2-backend-architecture.md) pour
+l'architecture. **Avant de toucher à la base de données**, lis le
+[guide 5](./doc/5-multi-database-and-migrations.md) : il documente les deux pièges les
+plus coûteux du projet (`auto_mapping` et la convention `CustomMigration`).
+
+---
+
+## ⚡ Démarrage rapide
+
+### Prérequis
+L'infrastructure globale (`_infra`) doit être lancée et opérationnelle sur ton poste
+(Traefik + réseau Docker partagé).
+
+### 1. Configurer l'environnement local
+```bash
+make setup
+```
+`setup.sh` te demande le nom du projet (ex. `mon-super-shop`) et génère les fichiers
+`.env.docker.local` et `.env.local`.
+
+### 2. Installer et démarrer
+```bash
+make install
+```
+Cette commande orchestre tout : images Docker, build du conteneur PHP/Apache,
+dépendances Composer/NPM, build des assets et création des deux bases (`main` + `log`).
+
+### 3. (Optionnel) Créer un compte admin
+```bash
+make create-admin email=admin@exemple.fr password=motdepasse
+```
+
+---
 
 ## 🌍 Accès aux services
-Une fois l'installation terminée avec succès, tes services personnels sont disponibles instantanément aux adresses suivantes :
 
-* 💻 **Application Symfony :** http://<nom-de-ton-projet>.localhost
-* 📬 **Boîte Mailpit (Capture de mails) :** http://mail.<nom-de-ton-projet>.localhost
-* 🗄️ **Gestion de la BDD (phpMyAdmin global) :** http://localhost:8080 (ou via ton url globale d'infra)
+Une fois `make install` terminé, `<projet>` étant le nom saisi lors du `make setup` :
+
+* 💻 **Application** : `http://<projet>.localhost`
+* 📬 **Mailpit** (capture des mails) : `http://mail.<projet>.localhost`
+* 🗄️ **phpMyAdmin** (via l'infra globale) : `http://localhost:8080`
+
+---
 
 ## 🛠️ Commandes utiles au quotidien
 
-### 🐳 Docker & Environnement
-* `make up` : Démarre les conteneurs du projet en arrière-plan.
-* `make down` : Arrête et supprime les conteneurs (ajoute `cmd=-v` pour purger les volumes).
-* `make ps` : Affiche l'état et les ports des conteneurs qui tournent.
-* `make shell` (ou `make sh`) : Ouvre un terminal (Zsh/Starship) directement dans le conteneur applicatif PHP.
-* `make cmd cmd="ls -la"` : Exécute une commande rapide dans le conteneur sans y entrer.
+> Toujours passer par `make` — jamais de commande directe dans le conteneur.
+> `make help` liste l'ensemble des cibles disponibles.
 
-### 🧙‍♂️ Composer & Symfony
-* `make composer cmd="require <package>"` : Exécute une commande Composer dans le conteneur.
-* `make sf cmd="debug:autowiring"` : Exécute une commande de la console Symfony.
-* `make cc` : Vide instantanément le cache de l'application Symfony.
+### 🐳 Docker & environnement
+| Commande | Rôle |
+|----------|------|
+| `make up` / `make down` | Démarre / arrête les conteneurs (`make down cmd=-v` purge les volumes) |
+| `make ps` | État et ports des conteneurs |
+| `make shell` (ou `make sh`) | Ouvre un shell dans le conteneur PHP |
+| `make cmd cmd="ls -la"` | Exécute une commande ponctuelle dans le conteneur |
 
-### 🗄️ Base de données (Multi-DB : Main + Log)
-* `make make-migration` : Génère un nouveau fichier de migration Doctrine (diff).
-* `make migrate` : Applique les migrations en attente sur la base de données principale.
-* `make db-setup` : **(Bouton Panic)** Réinitialise complètement et re-migre à blanc les deux bases de données (`main` et `log`).
+### 🧙 Composer & Symfony
+| Commande | Rôle |
+|----------|------|
+| `make composer cmd="require <pkg>"` | Commande Composer |
+| `make sf cmd="debug:router"` | Console Symfony |
+| `make cc` | Vide le cache |
+| `make worker` | Lance le worker Messenger (emails async) |
 
-### 📦 Frontend & Assets
-* `make watch` : **(Recommandé en dev)** Lance le build d'assets en temps réel avec auto-recompilation (idéal pour React).
-* `make npm cmd="install <package>"` : Exécute une commande NPM à la volée.
-* `make npm-setup` : Purge le dossier `node_modules` et reconstruit proprement tous tes assets.
+### 🗄️ Base de données (double DB : main + log)
+| Commande | Rôle |
+|----------|------|
+| `make db-main-migration` | Génère une migration sur la base **principale** (patchée en `CustomMigration`) |
+| `make db-log-migration` | Génère une migration sur la base **log** |
+| `make db-main-migrate` | Applique les migrations en attente sur la base principale |
+| `make db-setup` | **(Reset)** Réinitialise et re-migre les **deux** bases |
+| `make fixtures` / `make fixtures-reset` | (Re)charge les fixtures |
 
-### 🚀 Qualité de code & Tests (QA)
-* `make cs` : Aligne et corrige automatiquement ton code PHP selon les standards de l'entreprise via PHP-CS-Fixer.
-* `make stan` : Déclenche l'analyse statique PHPStan pour débusquer les bugs cachés.
-* `make qa` : **(Recommandé avant chaque commit)** Exécute la suite complète de contrôle qualité (CS-Fixer + PHPStan + PHPUnit).
-* `make perm` : Répare instantanément les conflits de droits de fichiers (indispensable pour l'interopérabilité WSL2 & Windows).
+> ⚠️ Ne **jamais** générer une migration via `make:migration` directement : ça produit
+> un `AbstractMigration` nu qui s'exécute sur les deux bases. Voir le
+> [guide 5](./doc/5-multi-database-and-migrations.md).
+
+### 🎨 Frontend & assets
+| Commande | Rôle |
+|----------|------|
+| `make watch` | Build des assets en temps réel (recommandé en dev) |
+| `make npm-build` | Build de production |
+| `make npm cmd="install <pkg>"` | Commande NPM à la volée |
+| `make npm-setup` | Purge `node_modules` et reconstruit tout le front |
+
+### 🚀 Qualité de code & tests
+| Commande | Rôle |
+|----------|------|
+| `make cs` | Corrige le style (php-cs-fixer, standard `@Symfony`) |
+| `make stan` | Analyse statique PHPStan |
+| `make qa` | **(Avant chaque commit)** Suite complète : CS + PHPStan + PHPUnit |
+| `make db-test-setup && make test` | Prépare la base de test et lance PHPUnit |
+| `make perm` | Répare les permissions de fichiers (WSL2 / Windows) |
