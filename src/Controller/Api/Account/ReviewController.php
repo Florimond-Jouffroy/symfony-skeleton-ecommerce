@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Account;
 
+use App\Dto\ReviewCreateDto;
 use App\Entity\ProductReview;
 use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
@@ -11,8 +12,8 @@ use App\Repository\ProductReviewRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -45,30 +46,22 @@ class ReviewController extends AbstractController
 
     #[Route('', name: 'api_account_reviews_create', methods: ['POST'])]
     public function create(
-        Request $request,
+        #[MapRequestPayload] ReviewCreateDto $dto,
         ProductRepository $productRepo,
         ProductReviewRepository $reviewRepo,
         OrderRepository $orderRepo,
         EntityManagerInterface $em,
     ): JsonResponse {
         /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $data = $request->toArray();
+        $user    = $this->getUser();
+        $comment = null !== $dto->comment ? trim($dto->comment) : '';
 
-        $productId = (int) ($data['productId'] ?? 0);
-        $rating    = (int) ($data['rating'] ?? 0);
-        $comment   = trim((string) ($data['comment'] ?? ''));
-
-        if (!$productId || $rating < 1 || $rating > 5) {
-            return $this->json(['message' => 'Données invalides.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $product = $productRepo->find($productId);
+        $product = $productRepo->find($dto->productId);
         if (!$product) {
             return $this->json(['message' => 'Produit introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        if (!$orderRepo->hasCustomerEmailOrderedProduct($user->getEmail(), $productId)) {
+        if (!$orderRepo->hasCustomerEmailOrderedProduct($user->getEmail(), $dto->productId)) {
             return $this->json(['message' => 'Vous devez avoir acheté ce produit pour laisser un avis.'], Response::HTTP_FORBIDDEN);
         }
 
@@ -80,7 +73,7 @@ class ReviewController extends AbstractController
         $review->setProduct($product);
         $review->setUser($user);
         $review->setAuthorName($user->getEmail());
-        $review->setRating($rating);
+        $review->setRating($dto->rating);
         $review->setComment('' !== $comment ? $comment : null);
 
         $em->persist($review);

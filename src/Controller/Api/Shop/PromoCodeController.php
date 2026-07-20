@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Shop;
 
+use App\Dto\ShopPromoApplyDto;
 use App\Repository\PromoCodeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/boutique/panier/promo')]
@@ -38,14 +40,9 @@ class PromoCodeController extends AbstractController
     }
 
     #[Route('', name: 'api_shop_promo_apply', methods: ['POST'])]
-    public function apply(Request $request, PromoCodeRepository $repo): JsonResponse
+    public function apply(Request $request, #[MapRequestPayload] ShopPromoApplyDto $dto, PromoCodeRepository $repo): JsonResponse
     {
-        $data    = $request->toArray();
-        $rawCode = strtoupper(trim((string) ($data['code'] ?? '')));
-
-        if ('' === $rawCode) {
-            return $this->json(['message' => 'Code manquant.'], Response::HTTP_BAD_REQUEST);
-        }
+        $rawCode = strtoupper(trim($dto->code));
 
         $promo = $repo->findByCode($rawCode);
 

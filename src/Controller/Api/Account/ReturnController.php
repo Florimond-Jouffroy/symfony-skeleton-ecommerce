@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Account;
 
+use App\Dto\ReturnRequestDto;
 use App\Entity\Order;
 use App\Entity\OrderItem;
 use App\Entity\ReturnRequest;
@@ -14,8 +15,8 @@ use App\Repository\ReturnRequestRepository;
 use App\Service\Manager\ReturnManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/compte/retours')]
@@ -46,7 +47,7 @@ class ReturnController extends AbstractController
     }
 
     #[Route('', name: 'api_account_returns_create', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
+    public function create(#[MapRequestPayload] ReturnRequestDto $dto): JsonResponse
     {
         if ('true' !== $this->settingRepo->getValue('returns.enabled', 'false')) {
             return $this->json(['message' => 'Les retours ne sont pas activés.'], Response::HTTP_FORBIDDEN);
@@ -59,15 +60,9 @@ class ReturnController extends AbstractController
             return $this->json(['message' => 'Aucune commande à retourner.'], Response::HTTP_NOT_FOUND);
         }
 
-        $payload     = $request->toArray();
-        $orderNumber = trim((string) ($payload['orderNumber'] ?? ''));
-        $reason      = trim((string) ($payload['reason'] ?? ''));
+        $reason = trim($dto->reason);
 
-        if ('' === $reason) {
-            return $this->json(['message' => 'Le motif du retour est obligatoire.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $order = $this->orderRepository->findByOrderNumber($orderNumber);
+        $order = $this->orderRepository->findByOrderNumber(trim($dto->orderNumber));
         if (null === $order || $order->getCustomer()->getId() !== $customer->getId()) {
             return $this->json(['message' => 'Commande introuvable.'], Response::HTTP_NOT_FOUND);
         }
@@ -86,9 +81,11 @@ class ReturnController extends AbstractController
         // plus que le restant, même en cumulant plusieurs demandes.
         $returnedMap = $this->returnRepository->getReturnedQuantitiesForOrder((int) $order->getId());
 
-        $lines    = [];
-        $rawItems = is_array($payload['items'] ?? null) ? $payload['items'] : [];
-        foreach ($rawItems as $raw) {
+        $lines = [];
+        foreach ($dto->items as $raw) {
+            if (!is_array($raw)) {
+                continue;
+            }
             $itemId    = (int) ($raw['orderItemId'] ?? 0);
             $quantity  = (int) ($raw['quantity'] ?? 0);
             $orderItem = $orderItemsById[$itemId] ?? null;

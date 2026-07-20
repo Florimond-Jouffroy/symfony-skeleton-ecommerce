@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Account;
 
+use App\Dto\PasswordChangeDto;
+use App\Dto\ProfileUpdateDto;
 use App\Entity\Customer;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -29,21 +31,13 @@ class ProfileController extends AbstractController
 
     #[Route('/profil', name: 'api_account_profile_update', methods: ['PUT'])]
     public function update(
-        Request $request,
+        #[MapRequestPayload] ProfileUpdateDto $dto,
         CustomerRepository $customerRepository,
         EntityManagerInterface $em,
     ): JsonResponse {
         /** @var \App\Entity\User $user */
-        $user    = $this->getUser();
-        $payload = $request->toArray();
-
-        $firstName = trim((string) ($payload['firstName'] ?? ''));
-        $lastName  = trim((string) ($payload['lastName'] ?? ''));
-        $phone     = trim((string) ($payload['phone'] ?? '')) ?: null;
-
-        if ('' === $firstName || '' === $lastName) {
-            return $this->json(['message' => 'Le prénom et le nom sont obligatoires.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
+        $user  = $this->getUser();
+        $phone = null !== $dto->phone ? (trim($dto->phone) ?: null) : null;
 
         $customer = $customerRepository->findOneBy(['email' => $user->getEmail()]);
         if (null === $customer) {
@@ -52,8 +46,8 @@ class ProfileController extends AbstractController
             $em->persist($customer);
         }
 
-        $customer->setFirstName($firstName);
-        $customer->setLastName($lastName);
+        $customer->setFirstName(trim($dto->firstName));
+        $customer->setLastName(trim($dto->lastName));
         $customer->setPhone($phone);
         $em->flush();
 
@@ -62,31 +56,20 @@ class ProfileController extends AbstractController
 
     #[Route('/mot-de-passe', name: 'api_account_password_update', methods: ['PUT'])]
     public function changePassword(
-        Request $request,
+        #[MapRequestPayload] PasswordChangeDto $dto,
         UserPasswordHasherInterface $hasher,
         EntityManagerInterface $em,
     ): JsonResponse {
         /** @var \App\Entity\User $user */
-        $user    = $this->getUser();
-        $payload = $request->toArray();
+        $user = $this->getUser();
 
-        $current = (string) ($payload['currentPassword'] ?? '');
-        $new     = (string) ($payload['newPassword'] ?? '');
-        $confirm = (string) ($payload['newPasswordConfirm'] ?? '');
-
-        if (!$hasher->isPasswordValid($user, $current)) {
+        // La longueur et la confirmation sont validées par le DTO ; ne reste que
+        // la vérification du mot de passe actuel, qui exige le hasher.
+        if (!$hasher->isPasswordValid($user, $dto->currentPassword)) {
             return $this->json(['message' => 'Mot de passe actuel incorrect.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        if (strlen($new) < 8) {
-            return $this->json(['message' => 'Le nouveau mot de passe doit contenir au moins 8 caractères.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        if ($new !== $confirm) {
-            return $this->json(['message' => 'Les mots de passe ne correspondent pas.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $user->setPassword($hasher->hashPassword($user, $new));
+        $user->setPassword($hasher->hashPassword($user, $dto->newPassword));
         $em->flush();
 
         return $this->json(['message' => 'Mot de passe mis à jour.']);
