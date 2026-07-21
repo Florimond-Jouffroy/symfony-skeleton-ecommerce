@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Shop;
 
+use App\Dto\Shop\CartAddDto;
+use App\Dto\Shop\CartUpdateDto;
 use App\Repository\ProductRepository;
 use App\Repository\ProductVariantRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/boutique/panier')]
@@ -26,17 +29,13 @@ class CartController extends AbstractController
     #[Route('', name: 'api_shop_cart_add', methods: ['POST'])]
     public function add(
         Request $request,
+        #[MapRequestPayload] CartAddDto $dto,
         ProductRepository $productRepo,
         ProductVariantRepository $variantRepo,
     ): JsonResponse {
-        $data      = json_decode($request->getContent(), true) ?? [];
-        $productId = (int) ($data['productId'] ?? 0);
-        $variantId = isset($data['variantId']) ? (int) $data['variantId'] : null;
-        $quantity  = max(1, (int) ($data['quantity'] ?? 1));
-
-        if ($productId <= 0) {
-            return $this->json(['message' => 'Produit invalide.'], Response::HTTP_BAD_REQUEST);
-        }
+        $productId = $dto->productId;
+        $variantId = $dto->variantId;
+        $quantity  = max(1, $dto->quantity);
 
         $product = $productRepo->find($productId);
         if (null === $product || !$product->isPublished()) {
@@ -95,10 +94,9 @@ class CartController extends AbstractController
     }
 
     #[Route('/{key}', name: 'api_shop_cart_update', methods: ['PUT'], requirements: ['key' => '[^/]+'])]
-    public function update(string $key, Request $request): JsonResponse
+    public function update(string $key, #[MapRequestPayload] CartUpdateDto $dto, Request $request): JsonResponse
     {
-        $data     = json_decode($request->getContent(), true) ?? [];
-        $quantity = max(0, (int) ($data['quantity'] ?? 0));
+        $quantity = max(0, $dto->quantity);
         $cart     = $this->getCart($request);
 
         if (!isset($cart[$key])) {

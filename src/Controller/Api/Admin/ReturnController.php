@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\Account\SupportReplyDto;
+use App\Dto\Admin\ReturnStatusDto;
 use App\Entity\ReturnRequest;
 use App\Entity\SupportMessage;
 use App\Repository\ReturnRequestRepository;
@@ -13,8 +15,8 @@ use App\Service\Manager\ReturnManager;
 use App\Service\Manager\SupportTicketManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/admin/retours')]
@@ -53,25 +55,13 @@ class ReturnController extends AbstractController
     }
 
     #[Route('/{id}/statut', name: 'api_admin_returns_status', methods: ['PATCH'])]
-    public function updateStatus(ReturnRequest $return, Request $request): JsonResponse
+    public function updateStatus(ReturnRequest $return, #[MapRequestPayload] ReturnStatusDto $dto): JsonResponse
     {
         $this->denyAccessUnlessGranted(ReturnVoter::EDIT);
 
-        $payload   = $request->toArray();
-        $status    = trim((string) ($payload['status'] ?? ''));
-        $adminNote = isset($payload['adminNote']) ? trim((string) $payload['adminNote']) : null;
+        $adminNote = null !== $dto->adminNote ? (trim($dto->adminNote) ?: null) : null;
 
-        $allowed = [ReturnRequest::STATUS_APPROVED, ReturnRequest::STATUS_REJECTED, ReturnRequest::STATUS_REFUNDED];
-        if (!in_array($status, $allowed, true)) {
-            return $this->json(['message' => 'Statut invalide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        // Un refus doit toujours être motivé : la note part au client dans le fil.
-        if (ReturnRequest::STATUS_REJECTED === $status && (null === $adminNote || '' === $adminNote)) {
-            return $this->json(['message' => 'Un motif est obligatoire pour refuser un retour.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        if (!$this->returnManager->transition($return, $status, $adminNote)) {
+        if (!$this->returnManager->transition($return, $dto->status, $adminNote)) {
             return $this->json(['message' => 'Transition impossible depuis le statut actuel.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -84,7 +74,7 @@ class ReturnController extends AbstractController
      * permissions du module Support.
      */
     #[Route('/{id}/message', name: 'api_admin_returns_message', methods: ['POST'])]
-    public function reply(ReturnRequest $return, Request $request): JsonResponse
+    public function reply(ReturnRequest $return, #[MapRequestPayload] SupportReplyDto $dto): JsonResponse
     {
         $this->denyAccessUnlessGranted(ReturnVoter::EDIT);
 
@@ -93,12 +83,7 @@ class ReturnController extends AbstractController
             return $this->json(['message' => 'Cette demande n\'a pas de fil de discussion.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $body = trim((string) ($request->toArray()['body'] ?? ''));
-        if ('' === $body) {
-            return $this->json(['message' => 'Le message ne peut pas être vide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        if (null === $this->supportTicketManager->addAdminMessage($ticket, $body)) {
+        if (null === $this->supportTicketManager->addAdminMessage($ticket, trim($dto->body))) {
             return $this->json(['message' => 'Une erreur est survenue.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 

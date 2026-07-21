@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\Account\SupportReplyDto;
+use App\Dto\Admin\SupportStatusDto;
 use App\Entity\SupportMessage;
 use App\Entity\SupportTicket;
 use App\Repository\CustomerRepository;
@@ -17,6 +19,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/admin/support')]
@@ -130,7 +133,7 @@ class SupportController extends AbstractController
     #[Route('/{id}/repondre', name: 'api_admin_support_reply', methods: ['POST'])]
     public function reply(
         int $id,
-        Request $request,
+        #[MapRequestPayload] SupportReplyDto $dto,
         SupportTicketRepository $repo,
         CustomerRepository $customerRepo,
         OrderRepository $orderRepo,
@@ -142,18 +145,13 @@ class SupportController extends AbstractController
             return $this->json(['message' => 'Ticket introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        $body = trim((string) ($request->toArray()['body'] ?? ''));
-        if ('' === $body) {
-            return $this->json(['message' => 'Le message ne peut pas être vide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->ticketManager->addAdminMessage($ticket, $body);
+        $this->ticketManager->addAdminMessage($ticket, trim($dto->body));
 
         return $this->json($this->serializeDetail($ticket, $this->fetchRecentOrders($ticket, $customerRepo, $orderRepo), $this->fetchOtherTickets($ticket, $repo)));
     }
 
     #[Route('/{id}/statut', name: 'api_admin_support_status', methods: ['PATCH'])]
-    public function updateStatus(int $id, Request $request, SupportTicketRepository $repo, EntityManagerInterface $em, ActivityLogger $activityLogger): JsonResponse
+    public function updateStatus(int $id, #[MapRequestPayload] SupportStatusDto $dto, SupportTicketRepository $repo, EntityManagerInterface $em, ActivityLogger $activityLogger): JsonResponse
     {
         $this->denyAccessUnlessGranted(SupportVoter::EDIT);
 
@@ -162,15 +160,8 @@ class SupportController extends AbstractController
             return $this->json(['message' => 'Ticket introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        $status  = (string) ($request->toArray()['status'] ?? '');
-        $allowed = [SupportTicket::STATUS_OPEN, SupportTicket::STATUS_IN_PROGRESS, SupportTicket::STATUS_CLOSED];
-
-        if (!in_array($status, $allowed, true)) {
-            return $this->json(['message' => 'Statut invalide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         $previousStatus = $ticket->getStatus();
-        $ticket->setStatus($status);
+        $ticket->setStatus($dto->status);
         $ticket->touch();
         $em->flush();
 
@@ -179,7 +170,7 @@ class SupportController extends AbstractController
             'ticket',
             $ticket->getId(),
             $ticket->getSubject(),
-            ['from' => $previousStatus, 'to' => $status],
+            ['from' => $previousStatus, 'to' => $dto->status],
         );
 
         return $this->json($this->serializeDetail($ticket));

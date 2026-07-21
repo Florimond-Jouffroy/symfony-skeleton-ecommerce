@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\Admin\UserRolesDto;
 use App\Entity\Order;
 use App\Entity\ReturnRequest;
 use App\Entity\User;
@@ -19,6 +20,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/admin/utilisateurs')]
@@ -170,7 +172,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}/roles', name: 'api_admin_users_update_roles', methods: ['PUT'])]
-    public function updateRoles(User $user, Request $request): JsonResponse
+    public function updateRoles(User $user, #[MapRequestPayload] UserRolesDto $dto): JsonResponse
     {
         $this->denyAccessUnlessGranted(UserVoter::EDIT_ROLES, $user);
 
@@ -181,18 +183,7 @@ class UserController extends AbstractController
             );
         }
 
-        /** @var array{roles?: mixed} $payload */
-        $payload = $request->toArray();
-        $roles   = $payload['roles'] ?? null;
-
-        if (!is_array($roles)) {
-            return $this->json(
-                ['message' => 'Le champ "roles" est obligatoire.'],
-                Response::HTTP_UNPROCESSABLE_ENTITY,
-            );
-        }
-
-        $user->setRoles(array_values(array_intersect(self::ASSIGNABLE_ROLES, $roles)));
+        $user->setRoles(array_values(array_intersect(self::ASSIGNABLE_ROLES, $dto->roles)));
 
         if (!$this->userManager->update($user)) {
             return $this->json(

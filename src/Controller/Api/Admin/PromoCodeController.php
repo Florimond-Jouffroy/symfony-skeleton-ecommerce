@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\Admin\PromoCodeDto;
 use App\Entity\PromoCode;
 use App\Repository\PromoCodeRepository;
 use App\Security\Voter\PromoCodeVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/admin/codes-promo')]
@@ -33,15 +34,12 @@ class PromoCodeController extends AbstractController
     }
 
     #[Route('', name: 'api_admin_promo_create', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
+    public function create(#[MapRequestPayload] PromoCodeDto $dto): JsonResponse
     {
         $this->denyAccessUnlessGranted(PromoCodeVoter::CREATE);
 
-        $payload = $request->toArray();
-
         $code = new PromoCode();
-        $err  = $this->hydrate($code, $payload, isNew: true);
-        if ($err) {
+        if ($err = $this->apply($code, $dto)) {
             return $this->json(['message' => $err], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -52,14 +50,11 @@ class PromoCodeController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_admin_promo_update', methods: ['PATCH'])]
-    public function update(PromoCode $code, Request $request): JsonResponse
+    public function update(PromoCode $code, #[MapRequestPayload] PromoCodeDto $dto): JsonResponse
     {
         $this->denyAccessUnlessGranted(PromoCodeVoter::EDIT);
 
-        $payload = $request->toArray();
-
-        $err = $this->hydrate($code, $payload, isNew: false);
-        if ($err) {
+        if ($err = $this->apply($code, $dto)) {
             return $this->json(['message' => $err], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -79,55 +74,26 @@ class PromoCodeController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
-    private function hydrate(PromoCode $code, array $p, bool $isNew): ?string
+    /**
+     * Applique le DTO validé à l'entité. La seule règle non exprimable sur le DTO
+     * (unicité du code en base, en s'excluant soi-même) est contrôlée ici.
+     *
+     * @return string|null message d'erreur, ou null si tout est valide
+     */
+    private function apply(PromoCode $code, PromoCodeDto $dto): ?string
     {
-        if ($isNew || array_key_exists('code', $p)) {
-            $raw = strtoupper(trim((string) ($p['code'] ?? '')));
-            if ('' === $raw) {
-                return 'Le code est obligatoire.';
-            }
-            if (!preg_match('/^[A-Z0-9_-]{2,50}$/', $raw)) {
-                return 'Le code ne peut contenir que des lettres, chiffres, tirets et underscores (2–50 caractères).';
-            }
-            $existing = $this->repo->findByCode($raw);
-            if ($existing && $existing->getId() !== $code->getId()) {
-                return 'Ce code existe déjà.';
-            }
-            $code->setCode($raw);
+        $normalized = strtoupper(trim($dto->code));
+        $existing   = $this->repo->findByCode($normalized);
+        if ($existing && $existing->getId() !== $code->getId()) {
+            return 'Ce code existe déjà.';
         }
 
-        if ($isNew || array_key_exists('type', $p)) {
-            $type = (string) ($p['type'] ?? PromoCode::TYPE_PERCENT);
-            if (!in_array($type, [PromoCode::TYPE_PERCENT, PromoCode::TYPE_FIXED], true)) {
-                return 'Type invalide (percent ou fixed).';
-            }
-            $code->setType($type);
-        }
-
-        if ($isNew || array_key_exists('value', $p)) {
-            $value = (int) ($p['value'] ?? 0);
-            if ($value <= 0) {
-                return 'La valeur doit être supérieure à 0.';
-            }
-            if (PromoCode::TYPE_PERCENT === $code->getType() && $value > 100) {
-                return 'Un pourcentage ne peut pas dépasser 100.';
-            }
-            $code->setValue($value);
-        }
-
-        if (array_key_exists('expiresAt', $p)) {
-            $code->setExpiresAt(
-                $p['expiresAt'] ? new \DateTimeImmutable((string) $p['expiresAt']) : null
-            );
-        }
-
-        if (array_key_exists('maxUses', $p)) {
-            $code->setMaxUses(null !== $p['maxUses'] ? max(1, (int) $p['maxUses']) : null);
-        }
-
-        if (array_key_exists('isActive', $p)) {
-            $code->setIsActive((bool) $p['isActive']);
-        }
+        $code->setCode($dto->code);
+        $code->setType($dto->type);
+        $code->setValue($dto->value);
+        $code->setExpiresAt($dto->expiresAt);
+        $code->setMaxUses($dto->maxUses);
+        $code->setIsActive($dto->isActive);
 
         return null;
     }

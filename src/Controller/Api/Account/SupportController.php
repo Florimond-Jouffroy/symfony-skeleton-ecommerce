@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Account;
 
+use App\Dto\Account\SupportReplyDto;
+use App\Dto\Account\SupportTicketDto;
 use App\Entity\SupportMessage;
 use App\Entity\SupportTicket;
 use App\Repository\SupportTicketRepository;
 use App\Service\Manager\SupportTicketManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -62,20 +64,12 @@ class SupportController extends AbstractController
     }
 
     #[Route('', name: 'api_account_support_create', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
+    public function create(#[MapRequestPayload] SupportTicketDto $dto): JsonResponse
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $data = $request->toArray();
 
-        $subject = trim((string) ($data['subject'] ?? ''));
-        $body    = trim((string) ($data['body'] ?? ''));
-
-        if ('' === $subject || '' === $body) {
-            return $this->json(['message' => 'Le sujet et le message sont requis.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $ticket = $this->ticketManager->open($user, $subject, $body, (string) $user->getEmail());
+        $ticket = $this->ticketManager->open($user, trim($dto->subject), trim($dto->body), (string) $user->getEmail());
 
         if (null === $ticket) {
             return $this->json(['message' => 'Une erreur est survenue.'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -99,7 +93,7 @@ class SupportController extends AbstractController
     }
 
     #[Route('/{id}/repondre', name: 'api_account_support_reply', methods: ['POST'])]
-    public function reply(int $id, Request $request, SupportTicketRepository $repo): JsonResponse
+    public function reply(int $id, #[MapRequestPayload] SupportReplyDto $dto, SupportTicketRepository $repo): JsonResponse
     {
         /** @var \App\Entity\User $user */
         $user   = $this->getUser();
@@ -113,12 +107,7 @@ class SupportController extends AbstractController
             return $this->json(['message' => 'Ce ticket est fermé.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $body = trim((string) ($request->toArray()['body'] ?? ''));
-        if ('' === $body) {
-            return $this->json(['message' => 'Le message ne peut pas être vide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->ticketManager->addCustomerMessage($ticket, $body, (string) $user->getEmail());
+        $this->ticketManager->addCustomerMessage($ticket, trim($dto->body), (string) $user->getEmail());
 
         return $this->json($this->serializeDetail($ticket));
     }

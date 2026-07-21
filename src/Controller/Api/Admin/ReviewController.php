@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\Admin\ReviewModerationDto;
 use App\Entity\ProductReview;
 use App\Repository\ProductReviewRepository;
 use App\Security\Voter\ReviewVoter;
@@ -13,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/admin/avis')]
@@ -49,7 +51,7 @@ class ReviewController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_admin_reviews_update', methods: ['PATCH'])]
-    public function update(int $id, Request $request, ProductReviewRepository $repo, EntityManagerInterface $em, ActivityLogger $activityLogger): JsonResponse
+    public function update(int $id, #[MapRequestPayload] ReviewModerationDto $dto, ProductReviewRepository $repo, EntityManagerInterface $em, ActivityLogger $activityLogger): JsonResponse
     {
         $this->denyAccessUnlessGranted(ReviewVoter::EDIT);
 
@@ -58,10 +60,7 @@ class ReviewController extends AbstractController
             return $this->json(['message' => 'Avis introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        $data = $request->toArray();
-        if (array_key_exists('isApproved', $data)) {
-            $review->setIsApproved((bool) $data['isApproved']);
-        }
+        $review->setIsApproved($dto->isApproved);
 
         $em->flush();
 

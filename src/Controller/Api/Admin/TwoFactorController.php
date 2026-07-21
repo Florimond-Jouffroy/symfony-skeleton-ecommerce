@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\TwoFactorVerifyDto;
+use App\Dto\Auth\TwoFactorVerifyDto;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use OTPHP\TOTP;

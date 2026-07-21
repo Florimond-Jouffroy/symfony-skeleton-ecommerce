@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Dto\ConfirmPasswordResetDto;
-use App\Dto\LoginDto;
-use App\Dto\RegisterDto;
-use App\Dto\RequestPasswordResetDto;
-use App\Dto\TwoFactorVerifyDto;
+use App\Dto\Auth\ConfirmPasswordResetDto;
+use App\Dto\Auth\LoginDto;
+use App\Dto\Auth\RegisterDto;
+use App\Dto\Auth\RequestPasswordResetDto;
+use App\Dto\Auth\TwoFactorVerifyDto;
 use App\Repository\AppSettingRepository;
 use App\Repository\PasswordResetTokenRepository;
 use App\Repository\UserRepository;

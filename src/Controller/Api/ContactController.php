@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Dto\Contact\ContactDto;
+use App\Dto\Contact\ContactReplyDto;
 use App\Entity\SupportMessage;
 use App\Entity\SupportTicket;
 use App\Repository\SupportTicketRepository;
@@ -13,9 +15,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/contact')]
 class ContactController extends AbstractController
@@ -44,37 +45,14 @@ class ContactController extends AbstractController
 
     #[Route('/ticket', name: 'api_contact_create', methods: ['POST'])]
     public function create(
-        Request $request,
+        #[MapRequestPayload] ContactDto $dto,
         EntityManagerInterface $em,
         SupportMailer $mailer,
-        ValidatorInterface $validator,
     ): JsonResponse {
-        $data = $request->toArray();
-
-        $name    = trim((string) ($data['name'] ?? ''));
-        $email   = trim((string) ($data['email'] ?? ''));
-        $subject = trim((string) ($data['subject'] ?? ''));
-        $body    = trim((string) ($data['body'] ?? ''));
-
-        $errors = [];
-        if ('' === $name) {
-            $errors[] = 'Le nom est requis.';
-        }
-        if ('' === $subject) {
-            $errors[] = 'Le sujet est requis.';
-        }
-        if ('' === $body) {
-            $errors[] = 'Le message est requis.';
-        }
-
-        $emailViolations = $validator->validate($email, [new Assert\NotBlank(), new Assert\Email()]);
-        if (count($emailViolations) > 0) {
-            $errors[] = 'Adresse e-mail invalide.';
-        }
-
-        if (!empty($errors)) {
-            return $this->json(['message' => implode(' ', $errors)], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
+        $name    = trim($dto->name);
+        $email   = trim($dto->email);
+        $subject = trim($dto->subject);
+        $body    = trim($dto->body);
 
         $ticket = new SupportTicket();
         $ticket->setSubject($subject);
@@ -113,12 +91,9 @@ class ContactController extends AbstractController
     }
 
     #[Route('/suivi/repondre', name: 'api_contact_suivi_reply', methods: ['POST'])]
-    public function reply(Request $request, SupportTicketRepository $repo, EntityManagerInterface $em): JsonResponse
+    public function reply(#[MapRequestPayload] ContactReplyDto $dto, SupportTicketRepository $repo, EntityManagerInterface $em): JsonResponse
     {
-        $data   = $request->toArray();
-        $token  = trim((string) ($data['token'] ?? ''));
-        $body   = trim((string) ($data['body'] ?? ''));
-        $ticket = $repo->findByToken($token);
+        $ticket = $repo->findByToken(trim($dto->token));
 
         if (!$ticket || !$ticket->isGuest()) {
             return $this->json(['message' => 'Ticket introuvable.'], Response::HTTP_NOT_FOUND);
@@ -128,12 +103,8 @@ class ContactController extends AbstractController
             return $this->json(['message' => 'Ce ticket est fermé.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        if ('' === $body) {
-            return $this->json(['message' => 'Le message ne peut pas être vide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         $message = new SupportMessage();
-        $message->setBody($body);
+        $message->setBody(trim($dto->body));
         $message->setIsFromAdmin(false);
         $message->setAuthorName($ticket->getGuestName() ?? 'Invité');
 

@@ -134,8 +134,11 @@ class StaticPageTest extends AbstractApiTestCase
         $this->loginAs($this->createAdmin());
         $page = $this->createStaticPage('Ancienne', 'ancienne');
 
+        // Contrat option C : le PATCH remplace la ressource complète.
         $this->patchJson('/api/admin/pages/'.$page->getId(), [
             'title'    => 'Nouvelle',
+            'slug'     => 'ancienne',
+            'content'  => ['blocks' => []],
             'isActive' => false,
         ]);
 
@@ -151,7 +154,11 @@ class StaticPageTest extends AbstractApiTestCase
         $this->createStaticPage('Page A', 'slug-a');
         $pageB = $this->createStaticPage('Page B', 'slug-b');
 
-        $this->patchJson('/api/admin/pages/'.$pageB->getId(), ['slug' => 'slug-a']);
+        $this->patchJson('/api/admin/pages/'.$pageB->getId(), [
+            'title'   => 'Page B',
+            'slug'    => 'slug-a',
+            'content' => [],
+        ]);
 
         self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
     }

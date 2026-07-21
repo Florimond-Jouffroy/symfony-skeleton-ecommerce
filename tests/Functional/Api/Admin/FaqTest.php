@@ -90,6 +90,7 @@ class FaqTest extends AbstractApiTestCase
 
         $this->patchJson('/api/admin/faq/'.$item->getId(), [
             'question' => 'Question modifiée ?',
+            'answer'   => 'Réponse conservée.',
             'isActive' => false,
         ]);
 
@@ -99,11 +100,22 @@ class FaqTest extends AbstractApiTestCase
         self::assertFalse($data['isActive']);
     }
 
+    public function testUpdateRequiresAnswer(): void
+    {
+        $this->loginAs($this->createAdmin());
+        $item = $this->createFaqItem();
+
+        // Contrat option C : le PATCH remplace la ressource complète — l'answer est requis.
+        $this->patchJson('/api/admin/faq/'.$item->getId(), ['question' => 'Sans réponse ?']);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
     public function testUpdateNonExistentItemReturns404(): void
     {
         $this->loginAs($this->createAdmin());
 
-        $this->patchJson('/api/admin/faq/99999', ['question' => 'X ?']);
+        $this->patchJson('/api/admin/faq/99999', ['question' => 'X ?', 'answer' => 'Y.']);
 
         self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }

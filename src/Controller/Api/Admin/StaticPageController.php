@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\Admin\StaticPageDto;
 use App\Entity\StaticPage;
 use App\Repository\StaticPageRepository;
 use App\Security\Voter\StaticPageVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 
@@ -64,20 +65,12 @@ class StaticPageController extends AbstractController
     }
 
     #[Route('', name: 'api_admin_pages_create', methods: ['POST'])]
-    public function create(Request $request, StaticPageRepository $repo, EntityManagerInterface $em): JsonResponse
+    public function create(#[MapRequestPayload] StaticPageDto $dto, StaticPageRepository $repo, EntityManagerInterface $em): JsonResponse
     {
         $this->denyAccessUnlessGranted(StaticPageVoter::CREATE);
 
-        $data  = $request->toArray();
-        $title = trim((string) ($data['title'] ?? ''));
-
-        if ('' === $title) {
-            return $this->json(['message' => 'Le titre est requis.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $slug = '' !== trim((string) ($data['slug'] ?? ''))
-            ? trim((string) $data['slug'])
-            : $this->generateSlug($title);
+        $title = trim($dto->title);
+        $slug  = '' !== trim($dto->slug) ? trim($dto->slug) : $this->generateSlug($title);
 
         if ($repo->findBySlug($slug)) {
             return $this->json(['message' => 'Ce slug est déjà utilisé.'], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -86,8 +79,8 @@ class StaticPageController extends AbstractController
         $page = new StaticPage();
         $page->setTitle($title);
         $page->setSlug($slug);
-        $page->setContent(is_array($data['content'] ?? null) ? $data['content'] : []);
-        $page->setIsActive((bool) ($data['isActive'] ?? true));
+        $page->setContent($dto->content);
+        $page->setIsActive($dto->isActive);
 
         $em->persist($page);
         $em->flush();
@@ -96,7 +89,7 @@ class StaticPageController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_admin_pages_update', methods: ['PATCH'])]
-    public function update(int $id, Request $request, StaticPageRepository $repo, EntityManagerInterface $em): JsonResponse
+    public function update(int $id, #[MapRequestPayload] StaticPageDto $dto, StaticPageRepository $repo, EntityManagerInterface $em): JsonResponse
     {
         $this->denyAccessUnlessGranted(StaticPageVoter::EDIT);
 
@@ -105,35 +98,20 @@ class StaticPageController extends AbstractController
             return $this->json(['message' => 'Page introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        $data = $request->toArray();
-
-        if (array_key_exists('title', $data)) {
-            $title = trim((string) $data['title']);
-            if ('' === $title) {
-                return $this->json(['message' => 'Le titre ne peut pas être vide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-            $page->setTitle($title);
+        $slug = trim($dto->slug);
+        if ('' === $slug) {
+            return $this->json(['message' => 'Le slug ne peut pas être vide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        if (array_key_exists('slug', $data)) {
-            $slug = trim((string) $data['slug']);
-            if ('' === $slug) {
-                return $this->json(['message' => 'Le slug ne peut pas être vide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-            $existing = $repo->findBySlug($slug);
-            if ($existing && $existing->getId() !== $page->getId()) {
-                return $this->json(['message' => 'Ce slug est déjà utilisé.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-            $page->setSlug($slug);
+        $existing = $repo->findBySlug($slug);
+        if ($existing && $existing->getId() !== $page->getId()) {
+            return $this->json(['message' => 'Ce slug est déjà utilisé.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        if (array_key_exists('content', $data) && is_array($data['content'])) {
-            $page->setContent($data['content']);
-        }
-
-        if (array_key_exists('isActive', $data)) {
-            $page->setIsActive((bool) $data['isActive']);
-        }
+        $page->setTitle(trim($dto->title));
+        $page->setSlug($slug);
+        $page->setContent($dto->content);
+        $page->setIsActive($dto->isActive);
 
         $em->flush();
 

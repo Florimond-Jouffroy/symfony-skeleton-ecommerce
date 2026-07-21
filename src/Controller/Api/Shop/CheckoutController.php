@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Shop;
 
+use App\Dto\Shop\CheckoutDto;
 use App\Entity\Customer;
 use App\Entity\Order;
 use App\Entity\OrderItem;
@@ -23,6 +24,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/boutique/commande')]
@@ -31,6 +33,7 @@ class CheckoutController extends AbstractController
     #[Route('', name: 'api_shop_checkout', methods: ['POST'])]
     public function checkout(
         Request $request,
+        #[MapRequestPayload] CheckoutDto $dto,
         EntityManagerInterface $em,
         ProductRepository $productRepo,
         ProductVariantRepository $variantRepo,
@@ -54,25 +57,16 @@ class CheckoutController extends AbstractController
             return $this->json(['message' => 'Le panier est vide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        // ── 2. Parse & validate payload ───────────────────────────────────────
-        $data             = $request->toArray();
-        $shippingMethodId = (int) ($data['shippingMethodId'] ?? 0);
-        $addr             = $data['shippingAddress'] ?? [];
-        $customerNote     = isset($data['customerNote']) ? trim((string) $data['customerNote']) : null;
-
-        if ($shippingMethodId <= 0) {
-            return $this->json(['message' => 'Méthode de livraison obligatoire.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        // ── 2. Payload validé par CheckoutDto (méthode de livraison + adresse) ─
+        $addr = $dto->shippingAddress;
+        if (null === $addr) {
+            return $this->json(['message' => 'L\'adresse de livraison est obligatoire.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
+        $customerNote = null !== $dto->customerNote ? (trim($dto->customerNote) ?: null) : null;
 
-        $shippingMethod = $shippingRepo->find($shippingMethodId);
+        $shippingMethod = $shippingRepo->find($dto->shippingMethodId);
         if (null === $shippingMethod || !$shippingMethod->isActive()) {
             return $this->json(['message' => 'Méthode de livraison invalide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        foreach (['firstName', 'lastName', 'line1', 'city', 'postalCode'] as $field) {
-            if ('' === trim((string) ($addr[$field] ?? ''))) {
-                return $this->json(['message' => "Le champ « {$field} » est obligatoire."], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
         }
 
         // ── 3. Pre-validate all cart items (stock check) ──────────────────────
@@ -136,8 +130,8 @@ class CheckoutController extends AbstractController
             $customer = new Customer();
             $customer
                 ->setEmail($user->getEmail())
-                ->setFirstName(trim((string) ($addr['firstName'] ?? '')))
-                ->setLastName(trim((string) ($addr['lastName'] ?? '')));
+                ->setFirstName(trim($addr->firstName))
+                ->setLastName(trim($addr->lastName));
             $em->persist($customer);
         }
 
@@ -154,13 +148,13 @@ class CheckoutController extends AbstractController
             ->setShippingAmount($shippingAmount)
             ->setCustomerNote($customerNote ?: null)
             ->setShippingAddress([
-                'firstName'  => trim((string) ($addr['firstName'] ?? '')),
-                'lastName'   => trim((string) ($addr['lastName'] ?? '')),
-                'line1'      => trim((string) ($addr['line1'] ?? '')),
-                'line2'      => trim((string) ($addr['line2'] ?? '')) ?: null,
-                'city'       => trim((string) ($addr['city'] ?? '')),
-                'postalCode' => trim((string) ($addr['postalCode'] ?? '')),
-                'country'    => trim((string) ($addr['country'] ?? 'France')),
+                'firstName'  => trim($addr->firstName),
+                'lastName'   => trim($addr->lastName),
+                'line1'      => trim($addr->line1),
+                'line2'      => null !== $addr->line2 ? (trim($addr->line2) ?: null) : null,
+                'city'       => trim($addr->city),
+                'postalCode' => trim($addr->postalCode),
+                'country'    => trim((string) ($addr->country ?? 'France')),
             ]);
 
         // ── 8. Persist order + items and decrement stock atomically ───────────
