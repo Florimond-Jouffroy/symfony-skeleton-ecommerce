@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\ShippingMethodDto;
+use App\Dto\Admin\ShippingMethodDto;
 use App\Entity\ShippingMethod;
 use App\Repository\ShippingMethodRepository;
 use App\Security\Voter\ShippingVoter;

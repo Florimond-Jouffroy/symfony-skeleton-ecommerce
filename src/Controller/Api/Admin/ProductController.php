@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\ProductCreateDto;
-use App\Dto\ProductUpdateDto;
+use App\Dto\Admin\ProductCreateDto;
+use App\Dto\Admin\ProductUpdateDto;
 use App\Entity\Product;
 use App\Repository\ProductCategoryRepository;
 use App\Repository\ProductRepository;

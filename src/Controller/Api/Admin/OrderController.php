@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\OrderNoteDto;
-use App\Dto\OrderTransitionDto;
+use App\Dto\Admin\OrderNoteDto;
+use App\Dto\Admin\OrderTransitionDto;
 use App\Entity\Order;
 use App\Repository\OrderRepository;
 use App\Repository\UserRepository;

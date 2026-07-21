@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\PromoCodeDto;
+use App\Dto\Admin\PromoCodeDto;
 use App\Entity\PromoCode;
 use App\Repository\PromoCodeRepository;
 use App\Security\Voter\PromoCodeVoter;

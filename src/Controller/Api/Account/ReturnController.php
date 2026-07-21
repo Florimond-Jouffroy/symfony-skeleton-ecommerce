@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Account;
 
-use App\Dto\ReturnRequestDto;
+use App\Dto\Account\ReturnRequestDto;
 use App\Entity\Order;
 use App\Entity\OrderItem;
 use App\Entity\ReturnRequest;

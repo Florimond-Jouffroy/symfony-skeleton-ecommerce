@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\SettingsDto;
+use App\Dto\Admin\SettingsDto;
 use App\Repository\AppSettingRepository;
 use App\Security\Voter\SettingVoter;
 use App\Service\InvoiceService;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\StaticPageDto;
+use App\Dto\Admin\StaticPageDto;
 use App\Entity\StaticPage;
 use App\Repository\StaticPageRepository;
 use App\Security\Voter\StaticPageVoter;

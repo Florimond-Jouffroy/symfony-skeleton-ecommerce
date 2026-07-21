@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Shop;
 
-use App\Dto\CartAddDto;
-use App\Dto\CartUpdateDto;
+use App\Dto\Shop\CartAddDto;
+use App\Dto\Shop\CartUpdateDto;
 use App\Repository\ProductRepository;
 use App\Repository\ProductVariantRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

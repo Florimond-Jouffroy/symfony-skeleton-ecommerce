@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\SupportReplyDto;
-use App\Dto\SupportStatusDto;
+use App\Dto\Account\SupportReplyDto;
+use App\Dto\Admin\SupportStatusDto;
 use App\Entity\SupportMessage;
 use App\Entity\SupportTicket;
 use App\Repository\CustomerRepository;

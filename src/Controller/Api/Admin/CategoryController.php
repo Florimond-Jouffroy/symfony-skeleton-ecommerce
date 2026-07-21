@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\CategoryDto;
+use App\Dto\Admin\CategoryDto;
 use App\Entity\Category;
 use App\Repository\CategoryRepository;
 use App\Security\Voter\CategoryVoter;

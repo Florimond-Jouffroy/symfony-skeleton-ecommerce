@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Account;
 
-use App\Dto\PasswordChangeDto;
-use App\Dto\ProfileUpdateDto;
+use App\Dto\Account\PasswordChangeDto;
+use App\Dto\Account\ProfileUpdateDto;
 use App\Entity\Customer;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;

@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Dto\Shop;
+
+use Symfony\Component\Validator\Constraints as Assert;
+
+class ShopPromoApplyDto
+{
+    #[Assert\NotBlank(message: 'Code manquant.', normalizer: 'trim')]
+    public string $code = '';
+}

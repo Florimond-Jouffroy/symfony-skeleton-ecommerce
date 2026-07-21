@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Dto\ContactDto;
-use App\Dto\ContactReplyDto;
+use App\Dto\Contact\ContactDto;
+use App\Dto\Contact\ContactReplyDto;
 use App\Entity\SupportMessage;
 use App\Entity\SupportTicket;
 use App\Repository\SupportTicketRepository;

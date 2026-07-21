@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\UserRolesDto;
+use App\Dto\Admin\UserRolesDto;
 use App\Entity\Order;
 use App\Entity\ReturnRequest;
 use App\Entity\User;

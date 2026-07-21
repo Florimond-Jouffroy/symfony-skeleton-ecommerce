@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Account;
 
-use App\Dto\ReviewCreateDto;
+use App\Dto\Account\ReviewCreateDto;
 use App\Entity\ProductReview;
 use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;

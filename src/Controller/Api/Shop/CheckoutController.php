@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Shop;
 
-use App\Dto\CheckoutDto;
+use App\Dto\Shop\CheckoutDto;
 use App\Entity\Customer;
 use App\Entity\Order;
 use App\Entity\OrderItem;

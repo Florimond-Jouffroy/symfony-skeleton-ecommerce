@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\InvoiceStatusDto;
+use App\Dto\Admin\InvoiceStatusDto;
 use App\Entity\Invoice;
 use App\Entity\Order;
 use App\Repository\InvoiceRepository;

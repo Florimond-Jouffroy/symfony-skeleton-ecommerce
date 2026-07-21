@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\ReturnStatusDto;
-use App\Dto\SupportReplyDto;
+use App\Dto\Account\SupportReplyDto;
+use App\Dto\Admin\ReturnStatusDto;
 use App\Entity\ReturnRequest;
 use App\Entity\SupportMessage;
 use App\Repository\ReturnRequestRepository;

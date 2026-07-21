@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\ReviewModerationDto;
+use App\Dto\Admin\ReviewModerationDto;
 use App\Entity\ProductReview;
 use App\Repository\ProductReviewRepository;
 use App\Security\Voter\ReviewVoter;

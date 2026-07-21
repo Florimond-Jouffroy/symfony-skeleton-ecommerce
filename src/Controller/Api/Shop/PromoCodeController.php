@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Shop;
 
-use App\Dto\ShopPromoApplyDto;
+use App\Dto\Shop\ShopPromoApplyDto;
 use App\Repository\PromoCodeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;

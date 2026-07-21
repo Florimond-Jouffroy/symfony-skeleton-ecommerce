@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
-use App\Dto\FaqItemDto;
+use App\Dto\Admin\FaqItemDto;
 use App\Entity\FaqItem;
 use App\Repository\FaqItemRepository;
 use App\Security\Voter\FaqVoter;

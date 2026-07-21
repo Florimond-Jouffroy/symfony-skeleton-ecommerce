@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Manager;
 
-use App\Dto\RegisterDto;
+use App\Dto\Auth\RegisterDto;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Florimond\LogBundle\Service\Manager\ApplicationLogManager;
