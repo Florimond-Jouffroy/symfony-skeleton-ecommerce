@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\OrderNoteDto;
+use App\Dto\OrderTransitionDto;
 use App\Entity\Order;
 use App\Repository\OrderRepository;
 use App\Repository\UserRepository;
@@ -14,6 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
@@ -72,17 +75,12 @@ class OrderController extends AbstractController
      * 2. La transition doit être autorisée depuis l'état actuel (Order::TRANSITIONS).
      */
     #[Route('/{id}/transition', name: 'api_admin_orders_transition', methods: ['POST'])]
-    public function transition(Order $order, Request $request): JsonResponse
+    public function transition(Order $order, #[MapRequestPayload] OrderTransitionDto $dto): JsonResponse
     {
         $this->denyAccessUnlessGranted(OrderVoter::EDIT);
 
-        $payload = $request->toArray();
-        $status  = trim((string) ($payload['status'] ?? ''));
-        $comment = trim((string) ($payload['comment'] ?? '')) ?: null;
-
-        if (!in_array($status, Order::STATUSES, true)) {
-            return $this->json(['message' => 'Statut invalide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
+        $status  = $dto->status;
+        $comment = trim((string) $dto->comment) ?: null;
 
         if (!$order->canTransitionTo($status)) {
             return $this->json([
@@ -108,14 +106,11 @@ class OrderController extends AbstractController
     }
 
     #[Route('/{id}/note', name: 'api_admin_orders_note', methods: ['PATCH'])]
-    public function updateNote(Order $order, Request $request): JsonResponse
+    public function updateNote(Order $order, #[MapRequestPayload] OrderNoteDto $dto): JsonResponse
     {
         $this->denyAccessUnlessGranted(OrderVoter::EDIT);
 
-        $payload = $request->toArray();
-        $note    = isset($payload['internalNote']) && '' !== trim((string) $payload['internalNote'])
-            ? trim((string) $payload['internalNote'])
-            : null;
+        $note = trim((string) $dto->internalNote) ?: null;
 
         if (!$this->manager->updateInternalNote($order, $note)) {
             return $this->json(['message' => 'Une erreur est survenue.'], Response::HTTP_INTERNAL_SERVER_ERROR);

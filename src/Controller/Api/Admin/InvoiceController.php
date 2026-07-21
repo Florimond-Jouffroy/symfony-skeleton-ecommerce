@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Dto\InvoiceStatusDto;
 use App\Entity\Invoice;
 use App\Entity\Order;
 use App\Repository\InvoiceRepository;
@@ -12,9 +13,9 @@ use App\Service\InvoiceService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/admin/factures')]
@@ -79,18 +80,11 @@ class InvoiceController extends AbstractController
     }
 
     #[Route('/{id}/statut', name: 'api_admin_invoices_status', methods: ['PATCH'])]
-    public function updateStatus(Invoice $invoice, Request $request, EntityManagerInterface $em): JsonResponse
+    public function updateStatus(Invoice $invoice, #[MapRequestPayload] InvoiceStatusDto $dto, EntityManagerInterface $em): JsonResponse
     {
         $this->denyAccessUnlessGranted(InvoiceVoter::EDIT);
 
-        $payload = $request->toArray();
-        $status  = trim((string) ($payload['status'] ?? ''));
-
-        if (!in_array($status, Invoice::STATUSES, true)) {
-            return $this->json(['message' => 'Statut invalide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $invoice->setStatus($status);
+        $invoice->setStatus($dto->status);
         $em->flush();
 
         return $this->json($this->serialize($invoice));
