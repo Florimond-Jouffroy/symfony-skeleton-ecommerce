@@ -15,7 +15,9 @@
         <main class="flex-1">
             {% block content %}{% endblock %}
         </main>
-        {% include 'layout/_footer.html.twig' %}
+        {% block footer %}
+            {% include 'layout/_footer.html.twig' %}
+        {% endblock %}
     </div>
 
     {% if shopEnabled %}

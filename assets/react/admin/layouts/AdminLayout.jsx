@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, Globe, ShoppingCart, MessageCircle, RotateCcw, Star } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { api } from '../../utils/api';
@@ -150,10 +149,9 @@ export default function AdminLayout({ userEmail = '', logoutUrl = '/deconnexion'
                 <AppSidebar userEmail={userEmail} logoutUrl={logoutUrl} permissions={permissions} appName={appName} />
 
                 <SidebarInset>
-                    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+                    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
                         <SidebarTrigger className="-ml-1" />
-                        <Separator orientation="vertical" className="mr-2 h-4" />
-                        <span className="text-sm font-medium text-foreground">{title}</span>
+                        <span className="ml-2 text-sm font-medium text-foreground">{title}</span>
 
                         <div className="ml-auto flex items-center gap-2">
                             <NotificationBell notificationsUrl={notificationsUrl} permissions={permissions} />
