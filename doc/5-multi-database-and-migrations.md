@@ -163,7 +163,8 @@ make db-main-migrate     # applique les migrations main
 make db-log-migration    # génère une migration log (déjà patchée)
 make db-log-migrate       # applique les migrations log
 
-make db-setup            # reset + re-migre les DEUX bases (destructif)
+make db-install          # crée les bases manquantes + migre (NON destructif)
+make db-setup            # (bouton panic) supprime les deux bases et rejoue tout
 ```
 
 ### Workflow type pour une nouvelle feature

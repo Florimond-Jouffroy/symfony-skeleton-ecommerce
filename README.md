@@ -36,30 +36,30 @@ plus coûteux du projet (`auto_mapping` et la convention `CustomMigration`).
 L'infrastructure globale (`_infra`) doit être lancée et opérationnelle sur ton poste
 (Traefik + réseau Docker partagé).
 
-### 1. Configurer l'environnement local
-```bash
-make setup
-```
-`setup.sh` te demande le nom du projet (ex. `mon-super-shop`) et génère les fichiers
-`.env.docker.local` et `.env.local`.
-
-### 2. Installer et démarrer
+### Une seule commande
 ```bash
 make install
 ```
-Cette commande orchestre tout : images Docker, build du conteneur PHP/Apache,
-dépendances Composer/NPM, build des assets et création des deux bases (`main` + `log`).
+Depuis un clone frais, elle fait **tout** : elle commence par l'assistant de
+configuration (nom du projet, token GitHub pour les bundles privés, CI), puis se
+relance et enchaîne images Docker, dépendances Composer/NPM, build des assets,
+création + migration des deux bases (`main` + `log`), table Messenger, bases de
+test et vidage du cache.
 
-### 3. (Optionnel) Créer un compte admin
+Elle est **idempotente** : relance-la autant que nécessaire. `make setup` seul
+permet de (re)configurer sans installer.
+
+### Puis, pour avoir de quoi cliquer
 ```bash
-make create-admin email=admin@exemple.fr password=motdepasse
+make create-admin email=admin@exemple.fr password=motdepasse   # accès au back-office
+make fixtures                                                  # catalogue de démonstration
 ```
 
 ---
 
 ## 🌍 Accès aux services
 
-Une fois `make install` terminé, `<projet>` étant le nom saisi lors du `make setup` :
+Une fois `make install` terminé, `<projet>` étant le nom saisi à l'installation :
 
 * 💻 **Application** : `http://<projet>.localhost`
 * 📬 **Mailpit** (capture des mails) : `http://mail.<projet>.localhost`
@@ -94,7 +94,8 @@ Une fois `make install` terminé, `<projet>` étant le nom saisi lors du `make s
 | `make db-main-migration` | Génère une migration sur la base **principale** (patchée en `CustomMigration`) |
 | `make db-log-migration` | Génère une migration sur la base **log** |
 | `make db-main-migrate` | Applique les migrations en attente sur la base principale |
-| `make db-setup` | **(Reset)** Réinitialise et re-migre les **deux** bases |
+| `make db-install` | Crée les bases manquantes et applique les migrations (non destructif) |
+| `make db-setup` | **(Bouton panic)** Supprime les **deux** bases et rejoue tout |
 | `make fixtures` / `make fixtures-reset` | (Re)charge les fixtures |
 
 > ⚠️ Ne **jamais** générer une migration via `make:migration` directement : ça produit

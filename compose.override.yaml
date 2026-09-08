@@ -14,3 +14,20 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 ###< symfony/mailer ###
+
+  # Développement des bundles privés en direct.
+  #
+  # Monter les sources d'un bundle dans le conteneur permet de les éditer et de
+  # voir l'effet sans repasser par un `composer update`. Le chemin dépend de
+  # l'arborescence de ta machine : il n'a donc rien à faire dans compose.yaml,
+  # que tout projet dérivé hérite — un chemin absent y ferait créer par Docker
+  # un dossier vide appartenant à root.
+  #
+  # À décommenter et à adapter si tu développes le bundle en même temps que
+  # l'application. Il faut aussi déclarer un `repositories` de type `path` dans
+  # composer.json pour que Composer charge cette copie plutôt que celle de
+  # GitHub — le montage seul ne suffit pas.
+  #
+  # app:
+  #   volumes:
+  #     - ../log-bundle:/var/www/log-bundle:cached

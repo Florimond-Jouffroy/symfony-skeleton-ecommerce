@@ -35,8 +35,7 @@ Les conteneurs sont préfixés par `${PROJECT_NAME}` (défini dans
 | Service | Image | Rôle | Réseau |
 |---------|-------|------|--------|
 | **app** | build `docker/Dockerfile` (`php:8.4-apache`) | PHP + **Apache/mod_php** (pas de PHP-FPM/nginx) — sert `public/` | `gateway` + `internal` |
-| **database** | `mariadb:10.11` | Base applicative + logs (`app_main`, `app_log`) | `internal` + `gateway` |
-| **database_test** | `mariadb:10.11` | Base de test **en RAM** (`tmpfs`, éphémère) | `internal` |
+| **database** | `mariadb:10.11` | Base applicative + logs (`app_main`, `app_log`) — et leurs jumelles `_test` | `internal` + `gateway` |
 | **mailer** | `axllent/mailpit` | Capture des emails en dev, UI web | `gateway` + `internal` |
 
 Points à connaître :
@@ -45,16 +44,20 @@ Points à connaître :
   plan, via `make worker` (voir [guide backend §7](./2-backend-architecture.md)).
 - Le service `app` monte le code (`.:/var/www/html`), la conf Apache
   (`docker/apache/site-enabled/vhost.conf`, DocumentRoot `/var/www/html/public`),
-  `docker/config/php.ini` (timezone), et **le log-bundle depuis le dossier parent**
-  (`../log-bundle:/var/www/log-bundle`) pour pouvoir le développer en parallèle.
+  `docker/config/php.ini` (timezone) et l'horloge de l'hôte.
+- **Il n'y a pas de base de test séparée** : en environnement `test`, Doctrine
+  suffixe les deux bases (`app_main_test`, `app_log_test`) via `dbname_suffix`
+  (voir `config/packages/doctrine.yaml`). `make db-test-setup` les (re)construit.
 - `app` **n'expose aucun port** : l'accès passe uniquement par Traefik (labels
   `traefik.*` → `Host(\`${PROJECT_NAME}.localhost\`)`). Le mailer est exposé sur
   `http://mail.${PROJECT_NAME}.localhost`.
 - `database` a un **healthcheck** ; `app` attend `service_healthy` avant de
-  démarrer. `database_test` n'en a pas (base jetable).
-- `compose.override.yaml` publie en plus des ports hôte aléatoires pour
-  `database` (3306) et le mailer (1025 SMTP / 8025 UI), pratique pour s'y
-  connecter depuis l'hôte.
+  démarrer. `make install` attend en plus que MariaDB accepte les connexions
+  (cible interne `wait-db`) avant la première commande Doctrine.
+- `compose.override.yaml` contient ce qui **dépend de ta machine** : ports hôte
+  aléatoires pour `database` (3306) et le mailer (1025 SMTP / 8025 UI), et un
+  montage commenté des sources d'un bundle privé (`../log-bundle`) pour le
+  développer en parallèle de l'application.
 
 ### L'image (`docker/Dockerfile`)
 
@@ -73,7 +76,7 @@ de priorité. En dev, **`.env.local` fait foi** (il écrase `.env`).
 | Fichier | Commité ? | Rôle |
 |---------|-----------|------|
 | `.env` | ✅ | Valeurs par défaut génériques (host `database`, DSN, `APP_ENV=dev`) |
-| `.env.local` | ❌ (généré) | **Config dev réelle** — écrase `.env`. Host = nom de conteneur (`${projet}-db`), `DATABASE_URL`, `LOG_DATABASE_URL`, `DATABASE_URL_TEST` |
+| `.env.local` | ❌ (généré) | **Config dev réelle** — écrase `.env`. Host = nom de conteneur (`${projet}-db`), `DATABASE_URL`, `LOG_DATABASE_URL`, plus les secrets tirés au sort au setup (`APP_SECRET`, pepper du log-bundle) |
 | `.env.docker.local` | ❌ (généré) | Variables **Docker/Traefik** : `PROJECT_NAME`, domaine local, `GITHUB_COMPOSER_TOKEN`. **C'est le fichier chargé par le Makefile** (`--env-file`) |
 | `.env.test` | ✅ | Surcharges de test : `MAILER_DSN=null://null`, `LOG_DATABASE_URL`, secret de test |
 | `.env.local.example` | ✅ | Modèle de `.env.local` (référence) |
@@ -99,19 +102,35 @@ Variables clés :
 
 ## 4. Première installation
 
+**Une seule commande**, depuis un clone frais :
+
 ```bash
-make setup     # assistant interactif : demande le nom de projet + le token GitHub
-make install   # build Docker, composer install, npm install + dev, db-setup, cache
+make install
 ```
 
-`make setup` (script `setup.sh`) :
-1. demande le **nom de projet** (slug, défaut `symfony-app`) ;
+Le projet n'étant pas encore configuré, `make install` lance d'abord
+`setup.sh`, puis **se relance lui-même** — indispensable, car les variables du
+fichier d'environnement (`PROJECT_NAME`…) sont lues au chargement du Makefile,
+donc bien avant que la recette ne tourne.
+
+**Phase 1 — configuration** (`setup.sh`, aussi accessible via `make setup`).
+Elle ne fait qu'écrire des fichiers, elle n'installe rien :
+1. demande le **nom de projet** (slug, défaut `symfony-shop`) ;
 2. demande un **GitHub PAT** (saisie masquée) — obligatoire, il donne accès en
    lecture aux 3 dépôts privés `florimond/*` ;
-3. génère `.env.docker.local` et `.env.local` ;
-4. démarre les conteneurs, installe Composer + les bundles privés, déploie leurs
-   recettes, puis crée et migre les **deux** bases via
-   `florimond:migrations:diff/migrate`, enfin `npm install` + build des assets.
+3. propose d'activer la **CI GitHub Actions** (sinon le workflow est supprimé) ;
+   si `gh` est authentifié, le secret `COMPOSER_GITHUB_TOKEN` est posé sur le dépôt ;
+4. écrit `.env.docker.local` et `.env.local`, en **tirant au sort les secrets
+   propres au projet** (`APP_SECRET`, pepper de pseudonymisation des IP).
+
+**Phase 2 — installation** (`make install`), idempotente et relançable :
+images Docker → `composer install` → `npm install` + build dev → attente de la
+base → `db-install` (création + migrations + table Messenger) → `db-test-setup`
+→ `cache:clear`. Elle se termine en affichant les URLs et les deux commandes
+qui restent à ta main : `make create-admin` et `make fixtures`.
+
+> `make setup` seul reste utile pour (re)configurer sans installer. Il refuse de
+> tourner si `.env.docker.local` existe déjà — supprime-le pour repartir de zéro.
 
 ---
 
@@ -147,7 +166,8 @@ make composer cmd="require foo/bar"     # composer libre
 ### Base de données
 
 ```bash
-make db-setup            # reset + re-migre les DEUX bases (destructif)
+make db-install          # crée les bases manquantes + applique les migrations (NON destructif)
+make db-setup            # (bouton panic) supprime les deux bases et rejoue tout
 make db-main-migration   # génère une migration main (déjà patchée CustomMigration)
 make db-main-migrate     # applique les migrations main
 make db-log-migration / db-log-migrate
@@ -183,8 +203,10 @@ make perm                                # répare les permissions var/ (WSL2)
 - **Deux commandes du README sont obsolètes** : `make make-migration` et
   `make migrate` **n'existent pas**. Les bonnes cibles sont `db-main-migration` /
   `db-log-migration` et `db-main-migrate` / `db-log-migrate`.
-- **`make install` n'installe pas les bundles privés** `florimond/*` (contrairement
-  à `setup.sh`) : il suppose que `make setup` a déjà tourné.
+- Les bundles privés `florimond/*` sont dans le `require` du `composer.json` :
+  c'est `composer install` qui les installe, donc **une install sans PAT valide
+  échoue**. La cible interne `check-migrations-bundle` le dit explicitement au
+  lieu de laisser passer une `CommandNotFoundException`.
 - **Node 22** est effectivement installé, même si un `ARG NODE_VERSION=20` traîne
   dans le Dockerfile (non utilisé).
 - Tout PHP tourne **dans le conteneur `app`** — il n'y a pas de PHP sur l'hôte WSL.
