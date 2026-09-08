@@ -267,7 +267,14 @@ npm-setup: npm-rm npm-build ## Réinstallation propre de NPM et build complet du
 
 ## —— ADMINISTRATION 👤 ————————————————————————————————————————————————————————
 
-create-admin: ## Crée ou promeut un compte admin (usage: make create-admin [email=x] [password=x])
+# Les deux arguments sont obligatoires côté commande : un skeleton ne doit pas
+# pouvoir créer un compte administrateur avec des identifiants par défaut.
+create-admin: ## Crée ou promeut un compte admin (usage: make create-admin email=x password=x)
+	@if [ -z "$(email)" ] || [ -z "$(password)" ]; then \
+	   printf "\033[0;31m❌ email et password sont obligatoires.\033[0m\n"; \
+	   printf "   → \033[36mmake create-admin email=admin@exemple.fr password=motdepasse\033[0m\n"; \
+	   exit 1; \
+	fi
 	$(CONSOLE) app:create-admin $(email) $(password)
 
 fixtures: ## Charge les fixtures de développement (sans vider la base)
