@@ -9,6 +9,7 @@ Toute fonctionnalité doit rester **générique, configurable et clean** — pas
 ## Commandes (toujours via `make`, jamais directement dans le conteneur)
 
 ```bash
+make install                 # installation complète depuis un clone frais (config comprise)
 make up / down / ps          # cycle de vie Docker
 make shell                   # bash dans le conteneur app
 make sf cmd="debug:router"   # console Symfony
@@ -16,7 +17,8 @@ make cc                      # cache:clear
 
 # Base de données (double DB : main + log)
 make db-main-migration       # génère une migration (base principale)
-make db-setup                # reset + migre les DEUX bases
+make db-install              # crée les bases manquantes + migre (non destructif)
+make db-setup                # (panic) supprime les DEUX bases et rejoue tout
 make fixtures / fixtures-reset
 
 # Qualité (à lancer avant tout commit)

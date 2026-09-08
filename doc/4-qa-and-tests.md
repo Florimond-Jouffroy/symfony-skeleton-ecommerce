@@ -127,9 +127,28 @@ fonctionnel d'API en hérite.** Il fournit :
 Il **ne fait aucun rollback manuel** : c'est DAMA qui s'en charge (§6).
 
 ```bash
-make db-test-setup    # (re)construit les bases de test — à faire une fois / après changement de schéma
 make test             # lance PHPUnit
+make db-test-setup    # (re)construit les bases de test — après un changement de schéma
 ```
+
+`make install` appelle déjà `db-test-setup` : sur un projet fraîchement installé,
+`make test` fonctionne directement.
+
+### Quelles bases utilisent les tests ?
+
+`app_main_test` et `app_log_test` — les bases de développement suffixées par
+Doctrine (`when@test` dans `config/packages/doctrine.yaml`).
+
+Deux pièges, corrigés une fois pour toutes dans `.env` :
+
+1. **Symfony ignore `.env.local` quand `APP_ENV=test`**, pour que les tests ne
+   dépendent pas de la machine. Le `DATABASE_URL` de l'environnement de test vient
+   donc de `.env`, pas de celui que `setup.sh` a écrit dans `.env.local` : les deux
+   doivent nommer la même base, sinon les tests visent une base que personne ne crée.
+2. **L'hôte doit être `${PROJECT_NAME}-db`, jamais l'alias `database`.** Tous les
+   projets partagent le réseau `gateway`, où plusieurs conteneurs répondent à
+   `database` : le DNS Docker en tire un au hasard, et `db-test-setup` peut créer
+   une base sur un serveur puis en chercher une autre ailleurs.
 
 ---
 

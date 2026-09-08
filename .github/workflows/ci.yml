@@ -28,7 +28,9 @@ jobs:
       APP_ENV: test
       # Bases de test (main + log) sur le service MariaDB, accessibles en 127.0.0.1.
       # Ces variables d'env réelles priment sur les fichiers .env* (Symfony Dotenv).
-      DATABASE_URL: "mysql://root:root@127.0.0.1:3306/app_test?serverVersion=mariadb-10.11.2&charset=utf8mb4"
+      # Mêmes noms qu'en local : le suffixe `_test` est ajouté par Doctrine en env
+      # test, d'où `app_main_test` et `app_log_test`.
+      DATABASE_URL: "mysql://root:root@127.0.0.1:3306/app_main?serverVersion=mariadb-10.11.2&charset=utf8mb4"
       LOG_DATABASE_URL: "mysql://root:root@127.0.0.1:3306/app_log?serverVersion=mariadb-10.11.2&charset=utf8mb4"
 
     steps:
